@@ -2,6 +2,10 @@
 
 Lightweight ADRs. Append-only, newest first: decision, context, reasoning. Decided once — don't relitigate.
 
+## 2026-08-25 — Repo and site live under the personal owner, not a `scuttlarr` org
+
+Repo is `mitchmalone/scuttlarr`, Vercel project `scuttlarr-web` on the existing team, matching launcharr (`mitchmalone/launcharr`, `launcharr-web`). Reasoning: the jig's one-shared-tap-per-owner and release fan-out assume one owner across sibling projects; a separate org buys nothing until there's a second maintainer. The `scuttlarr` GitHub org name is free if that day comes. Site is the jig's `www-next` flavor unchanged: static export, one Vercel project, ignored build step scoped to `apps/www` + lockfile.
+
 ## 2026-08-25 — Terminal and shell stack: open, decided by trial not debate
 
 Deferred. The inherited stack (iTerm2 + Oh My Zsh + zplug + Powerlevel10k) works but is what Mitch inherited, not what he'd choose fresh; a distro must defend every pick. Candidate: Ghostty + a lean plugin approach (no OMZ, no zplug) + a fast prompt (p10k or starship). Reasoning for deferring: this is the one surface where the author is attached and the cost of being wrong is daily, so it gets a one-week trial on the primary machine before the base commits. Trigger: end of the trial, record the outcome here and set the Stack table in AGENTS.md.

@@ -22,3 +22,7 @@ local/*
 
 # interrupted bun-compile intermediates
 *.bun-build
+
+# Vercel
+.vercel/
+.env*.local

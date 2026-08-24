@@ -9,7 +9,7 @@ The cursor. Keep it short — prune or archive past ~150 lines.
 
 ## Done (cont.)
 
-- 2026-08-25 — `scuttlarr.com` registered. Public repo `mitchmalone/scuttlarr` pushed, CI green. Vercel project `scuttlarr-web` (team ramenamok, root `apps/www`), git-connected, domain added; landing page deploys on push.
+- 2026-08-25 — `scuttlarr.com` registered. Public repo `mitchmalone/scuttlarr` pushed, CI green. Vercel project `scuttlarr-web` (team ramenamok, root `apps/www`), git-connected, domain added; landing page deploys on push. DNS on Cloudflare: `scuttlarr.com` A → Vercel, `www` CNAME; `scutlarr.com` (registered by typo, kept) + its `www` 301 → `scuttlarr.com` via Vercel domain redirects.
 
 ## In progress
 
@@ -17,7 +17,6 @@ The cursor. Keep it short — prune or archive past ~150 lines.
 
 ## Next
 
-- Point scuttlarr.com DNS at Vercel (`vercel domains inspect scuttlarr.com`).
 - Vercel dashboard: set Framework Preset = Next.js and Ignored Build Step = `git diff --quiet HEAD^ HEAD -- . ../../pnpm-lock.yaml` (matches launcharr-web).
 - Terminal trial (Phase 0) — started 2026-08-25: Ghostty installed, `~/.config/ghostty/config` with bundled Dracula + Hack Nerd Font Mono 16. Shell (OMZ/zplug/p10k) untouched for now; decide at end of trial.
 - Extract `defaults/` from dotfiles `.macos`; first `bin/scuttlarr` with `doctor` and `defaults`.

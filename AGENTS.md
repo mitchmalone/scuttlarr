@@ -1,8 +1,8 @@
 # AGENTS.md — scuttlarr
 
-<!-- One line: what this product is and who it's for. -->
-
-scuttlarr is …
+scuttlarr is an opinionated macOS distro for developers: one install, one theme
+everywhere, a lifecycle (update/migrate/doctor), and a user overlay that survives it all.
+Sibling of launcharr, which it installs as the launcher/bar/tiling layer.
 
 ## Standard
 
@@ -14,43 +14,40 @@ Living state is in `docs/` — see the standard for roles and discipline. Sessio
 
 ## Stack
 
-<!-- Table or short list: runtime, frameworks, data, deploy target. Delete what doesn't apply. -->
-
-| Surface | Choice |
-| ------- | ------ |
-| …       | …      |
+| Surface         | Choice                                                                                        |
+| --------------- | --------------------------------------------------------------------------------------------- |
+| Installer + CLI | zsh 5.9 (ships with every supported macOS; no bootstrap dependency). See DEVIATIONS.          |
+| Tests           | zsh test scripts under `test/`, run by `scripts/test.zsh`; `zsh -n` on every script as floor  |
+| Themes          | `themes/<name>/palette.toml` is the source; per-app files rendered by `scuttlarr theme build` |
+| macOS defaults  | `defaults/*.sh`, one file per concern, idempotent                                             |
+| Desktop layer   | launcharr (via the shared Homebrew tap) → AeroSpace, bar, JankyBorders                        |
+| Packages        | Homebrew; `Brewfile` (base) + `~/.config/scuttlarr/Brewfile` (overlay)                        |
+| Site            | `apps/www` — Next.js static, serves `scuttlarr.com/install`                                   |
+| Release         | tag → GitHub release with notes; the install URL always resolves to the latest tag            |
+| Supported       | Apple Silicon, current macOS and one back                                                     |
 
 ## Invariants
 
-<!-- Numbered, non-negotiable, product-specific. Decided once — don't relitigate here; that's DECISIONS.md's job. Exemplars of the right altitude, from a real project:
-"**`packages/<core>` is pure.** No I/O, no network, no direct `Date.now()` — time is injected. Every behaviour is unit-tested. If you're tempted to import anything with a side effect, you're in the wrong package."
-"Sync state transitions, never ticks — nothing that runs every second may touch the network." -->
-
-1. …
-
-<!-- Optional, for perf-sensitive products — budgets are requirements:
-
-## Performance budgets
-
-| Metric                       | Budget                  |
-| ---------------------------- | ----------------------- |
-| e.g. keystroke → new results | < 16 ms (one frame)     |
-| e.g. idle memory             | < 120 MB ceiling        |
-
-A budget miss cuts or flags the offending feature. Measure before claiming;
-record numbers in the plan file or JOURNAL. Release notes carry a
-"Performance receipts" table; the release gate refuses while `_ ms`/`_ MB`
-placeholders remain. -->
+1. **The base is never edited on a user's machine.** Anything a user changes lives in `~/.config/scuttlarr/`. If a feature needs the user to touch a base file, the feature is wrong.
+2. **Every script is idempotent.** `install`, `update`, `theme set`, every `defaults/*.sh` — running twice is a no-op.
+3. **One opinion per surface.** A surface (launcher, bar, terminal, prompt, tiling, theme format) has exactly one choice in the base. Alternatives are overlays, never flags.
+4. **A base change that alters user-visible state ships with a migration**, in the same commit. Migrations run once, are recorded, and are idempotent too.
+5. **No permissions beyond the standard Automation consents.** The base never requires Accessibility or Full Disk Access. The one known exception (`com.apple.universalaccess`) is documented in the install output, not silently skipped.
+6. **Themes are data.** A theme is a palette plus rendered files. No theme contains logic; rendering is the CLI's job and the rendered files are committed so every theme dir is usable without the CLI.
+7. **launcharr is a dependency, not a vendored copy.** scuttlarr configures it through its public `config.json`; anything launcharr can't express is a launcharr feature request, not a scuttlarr workaround.
+8. **Never redistribute what we don't have the licence for.** Dracula Pro and any paid theme are overlay-only.
 
 ## Commands
 
-| Command       | What                                             |
-| ------------- | ------------------------------------------------ |
-| `pnpm dev`    | Run all apps in parallel                         |
-| `pnpm verify` | The gate: typecheck + lint + format check + test |
+| Command         | What                                                              |
+| --------------- | ----------------------------------------------------------------- |
+| `pnpm dev`      | Run the site                                                      |
+| `pnpm verify`   | The gate: shell syntax + shell tests + site typecheck/lint/format |
+| `bin/scuttlarr` | The CLI, runnable from the checkout                               |
 
 ## Definition of done
 
 - `pnpm verify` green.
 - New behavior has tests, written first (red/green/refactor).
+- User-visible base change → migration in the same commit.
 - `docs/STATUS.md` updated and the plan moved to `done/` in the same commit.

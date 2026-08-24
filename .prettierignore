@@ -1,0 +1,5 @@
+pnpm-lock.yaml
+dist/
+.next/
+*.gen.ts
+docs/STANDARDS.md

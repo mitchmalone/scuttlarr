@@ -1,0 +1,26 @@
+# Public-layer variant of the base lefthook.yml — adds secret scanning.
+# Keep in sync with template/base/lefthook.yml when the base changes.
+
+pre-commit:
+  parallel: true
+  commands:
+    lint:
+      glob: '*.{ts,tsx,js,mjs}'
+      run: pnpm eslint --fix {staged_files}
+      stage_fixed: true
+    format:
+      glob: '*.{ts,tsx,js,mjs,json,md,css,yml,yaml}'
+      run: pnpm prettier --write {staged_files}
+      stage_fixed: true
+    gitleaks:
+      run: gitleaks protect --staged --verbose
+
+commit-msg:
+  commands:
+    commitlint:
+      run: pnpm commitlint --edit {1}
+
+pre-push:
+  commands:
+    verify:
+      run: pnpm verify

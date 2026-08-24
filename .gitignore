@@ -1,0 +1,22 @@
+node_modules/
+dist/
+.next/
+*.tsbuildinfo
+.DS_Store
+
+# env: commit .example templates only
+.env
+.env.*
+!.env.*.example
+
+# claude/agent personal state
+.claude/settings.local.json
+.claude/*.local.json
+.claude/worktrees/
+
+# private notes escape hatch (README documents the convention in clones)
+local/*
+!local/README.md
+
+# interrupted bun-compile intermediates
+*.bun-build

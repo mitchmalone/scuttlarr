@@ -1,0 +1,76 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Release notes are written first, from docs/releases/_TEMPLATE.md.
+      # No notes file for this tag → no release.
+      - name: Require release notes
+        run: |
+          NOTES="docs/releases/${GITHUB_REF_NAME}.md"
+          if [ ! -f "$NOTES" ]; then
+            echo "::error::missing $NOTES — write release notes before tagging"
+            exit 1
+          fi
+          if grep -qE 'vX\.Y\.Z|<!-- Written BEFORE|\| _ (ms|MB)' "$NOTES"; then
+            echo "::error::$NOTES still contains template placeholders"
+            exit 1
+          fi
+
+      # --- replace with your real build (bun compile matrix, tauri build, …) ---
+      # Cross-platform binaries: use a job matrix over targets, e.g.
+      #   bun build --compile --target=bun-darwin-arm64 / bun-linux-arm64 / bun-linux-x64
+      - name: Build artifacts
+        run: |
+          mkdir -p dist
+          echo "replace this step with your build" > dist/README.txt
+      # -------------------------------------------------------------------------
+
+      - name: Checksums
+        run: cd dist && shasum -a 256 * > sha256sums.txt
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file "docs/releases/${GITHUB_REF_NAME}.md"
+
+  # Satellite fan-out: generated repos are release outputs. Each job no-ops
+  # honestly when its repo variable/token isn't configured.
+  homebrew:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check configuration
+        id: config
+        run: |
+          if [ -z "${{ vars.HOMEBREW_TAP_REPO }}" ]; then
+            echo "::notice::vars.HOMEBREW_TAP_REPO not set — skipping tap update"
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.config.outputs.configured == 'true'
+        uses: actions/checkout@v4
+      - if: steps.config.outputs.configured == 'true'
+        name: Render and push formula
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          # Render the formula (Formula/<name>.rb) or cask (Casks/<name>.rb)
+          # from a unit-tested generator script in this repo, clone the shared
+          # tap ${{ vars.HOMEBREW_TAP_REPO }} (<owner>/homebrew-tap), commit, push.
+          # Satellites are generated output: fix the generator, not the output.
+          echo "wire your formula renderer here"

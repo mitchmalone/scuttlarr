@@ -1,0 +1,31 @@
+{
+  "name": "scuttlarr",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "prepare": "git rev-parse --git-dir >/dev/null 2>&1 && lefthook install || true",
+    "dev": "pnpm --filter \"./apps/*\" --parallel dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "verify": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.1",
+    "@eslint/js": "^10.0.0",
+    "@commitlint/config-conventional": "^21.2.0",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "eslint": "^10.8.1",
+    "lefthook": "^2.1.10",
+    "prettier": "^3.9.6",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.67.0"
+  }
+}

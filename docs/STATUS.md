@@ -23,5 +23,7 @@ The cursor. Keep it short — prune or archive past ~150 lines.
 
 ## Blocked
 
+- launcharr contract items (light mode, Ghostty target, typed `desktop`, dark-mode delegation) — tracked in launcharr's roadmap; scuttlarr theme/desktop rendering can't be finished without them.
+
 - Shell/terminal stack: awaiting the trial (DECISIONS 2026-08-25).
 - Caps→Hyper: verify permission-free Esc-on-tap before promising it in the README.

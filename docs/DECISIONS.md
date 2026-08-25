@@ -2,6 +2,14 @@
 
 Lightweight ADRs. Append-only, newest first: decision, context, reasoning. Decided once — don't relitigate.
 
+## 2026-08-25 — Audience: Omarchy-curious developers who won't take on Linux; AI-first is the differentiator
+
+scuttlarr is for people excited by Omarchy — an opinionated, agent-oriented developer setup — who don't want Linux's frustrations. If only Mitch ever runs it, that's acceptable; the design still assumes a second user (overlay model, migrations). "AI-oriented" is the differentiator over Omarchy and belongs in the first paragraph: Claude Code and agent tooling provisioned by the distro, agent status surfaced by launcharr. Reasoning: "opinionated macOS" alone is a weaker pitch than "the Omarchy-shaped setup for agent-first developers, on the Mac you already have."
+
+## 2026-08-25 — Boundary with launcharr: launcharr is the runtime, scuttlarr is provisioning and state
+
+launcharr owns everything that runs while you work: launcher, bar, panels, widgets, agent cells, and the _generation_ of AeroSpace/JankyBorders config from its settings; it writes only `~/.config/launcharr/` and the files it generates. scuttlarr owns everything that makes the machine yours: install, `defaults`, packages, theme source of truth, keyboard, default apps, shell, terminal, wallpaper, migrations; it never writes `aerospace.toml` or borders config directly. **The one interface is launcharr's `config.json`** — scuttlarr renders theme and desktop opinions into it. launcharr's non-goals already say "anything distro-shaped"; this entry is the other side of that line. Known gaps on the launcharr side, tracked in its roadmap: light mode is a launcharr non-goal (scuttlarr ships Solarized Light — launcharr must lift it), terminal hand-off lacks a Ghostty target, the `desktop` config block is untyped, and launcharr's "dark mode" command must delegate to `scuttlarr theme` when present so palette and appearance can't diverge. Duplication that's fine: both can `brew install` AeroSpace/borders; scuttlarr installs first, launcharr detects.
+
 ## 2026-08-25 — Repo and site live under the personal owner, not a `scuttlarr` org
 
 Repo is `mitchmalone/scuttlarr`, Vercel project `scuttlarr-web` on the existing team, matching launcharr (`mitchmalone/launcharr`, `launcharr-web`). Reasoning: the jig's one-shared-tap-per-owner and release fan-out assume one owner across sibling projects; a separate org buys nothing until there's a second maintainer. The `scuttlarr` GitHub org name is free if that day comes. Site is the jig's `www-next` flavor unchanged: static export, one Vercel project, ignored build step scoped to `apps/www` + lockfile.

@@ -2,10 +2,14 @@
 
 > _Scuttle the ship. Sail the wreck._
 
-scuttlarr is an opinionated macOS distro for developers. One command turns a fresh Mac
-into a fast, quiet, keyboard-first machine: the Liquid Glass shine scraped off, the Dock
-parked, windows tiled, one launcher, one menu bar, one theme across everything — and a
-lifecycle to keep it that way.
+scuttlarr is an opinionated macOS distro for developers who live in agents. One command
+turns a fresh Mac into a fast, quiet, keyboard-first machine: the Liquid Glass shine
+scraped off, the Dock parked, windows tiled, one launcher, one menu bar, one theme across
+everything, Claude Code and the agent tooling wired in — and a lifecycle to keep it that
+way.
+
+It's for people who look at [Omarchy](https://omarchy.org) and want that — an opinionated,
+AI-first developer setup — without taking on Linux to get it.
 
 It is not a dotfiles manager. Dotfiles are the residue of a person; nobody installs
 someone else's. scuttlarr is a **base with a lifecycle** — you don't write dotfiles, you
@@ -31,6 +35,10 @@ curl -fsSL https://scuttlarr.com/install | sh
 - **Default apps, declared.** Which app opens `.md`, `.json`, `.mp4`, `http://` — one
   file, applied with `duti`.
 - **A fast shell.** zsh, fzf, zoxide, ripgrep, bat, eza, fd, delta, tmux + sesh.
+- **Agent-ready.** Claude Code installed and configured, agent status in the bar and in
+  tmux, a shell that behaves under non-interactive agents, project conventions
+  (`AGENTS.md`) stamped by default. The runtime half of this is launcharr's; scuttlarr
+  provisions it.
 - **A lifecycle.** `scuttlarr update` pulls the base and runs migrations; `doctor`
   tells you what drifted; your overlay in `~/.config/scuttlarr/` survives all of it.
 

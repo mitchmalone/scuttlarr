@@ -18,6 +18,8 @@ Phases and backlog. Deferred items carry triggers, not dates.
 - Theme system per `docs/THEMES.md`, Dracula first, Solarized Light second (proves light).
 - Caps→Hyper.
 - `duti` default-app declarations.
+- Agent provisioning: Claude Code via brew, `claude-tmux-status` plugin, agent-safe shell defaults (no interactive prompts under `CI`/non-tty, predictable `PS1`), the jig available for new projects.
+- launcharr contract (see DECISIONS 2026-08-25, boundary): scuttlarr writes only `~/.config/launcharr/config.json` — theme block + typed `desktop` block. Blocked on launcharr items: light-mode support, Ghostty hand-off target, typed `desktop` schema, dark-mode command delegation.
 - Mitch's dotfiles reconciled: Mac opinions moved here, overlay left behind.
 
 ## Phase 2 — Shipped

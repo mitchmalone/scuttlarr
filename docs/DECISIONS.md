@@ -5,6 +5,31 @@
 
 ---
 
+### 2026-08-25 · scuttlarr is the distro; launcharr is the runtime — the contract, and what it costs us
+
+- **Decision.** The "anything distro-shaped" non-goal gets a name: it's
+  [scuttlarr](https://github.com/mitchmalone/scuttlarr), a sibling project. launcharr is the
+  runtime (launcher, bar, panels, widgets, agent cells, AeroSpace/borders config generation);
+  scuttlarr is provisioning and state (install, defaults, packages, theme source of truth,
+  keyboard, default apps, shell, terminal, wallpaper, migrations). **The only interface is
+  `~/.config/launcharr/config.json`** — scuttlarr renders a theme into `themes.<name>` +
+  `theme`, and desktop opinions into `desktop`. scuttlarr never writes `aerospace.toml` or
+  borders config; launcharr never writes outside its own config and generated files.
+- **What it costs launcharr.** Four items, now on the roadmap: (1) **light mode stops being a
+  non-goal** — scuttlarr ships Solarized Light as a first-class theme, and the token model
+  already supports it; the non-goal was about not designing a second look, not about refusing
+  a palette. (2) A **Ghostty** terminal hand-off target beside iTerm2/Terminal.app. (3) The
+  `desktop` config block becomes a **typed, documented schema** — today it's
+  `serde_json::Value`, which would make scuttlarr couple to internals. (4) The **dark mode**
+  system command **delegates to `scuttlarr theme`** when the CLI is on PATH, else does the
+  naive flip — so appearance and palette can't diverge.
+- **Duplication that's fine.** Both can `brew install` AeroSpace/borders. scuttlarr installs
+  first; `deps.rs` is detection-first, so launcharr just sees them present.
+- **Trigger for "theming beyond the built-in look".** It was "a second user exists" — scuttlarr
+  is that user. The theme tokens become a contract (documented in `packages/tui` `./themes`).
+
+---
+
 ### 2026-08-20 · Widgets piggyback CLI credentials first, and say so: `requires` + `setup`
 
 - **Decision.** The primary credential story returns to piggybacking the provider CLI's

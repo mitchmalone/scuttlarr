@@ -92,6 +92,16 @@ Candidates carried over from v0.4, to be cut down in the 0.5 scope session:
 - **PRD revision pass** — predates the control-surface direction (DECISIONS 2026-08-15 is
   the scope source until then).
 
+## scuttlarr contract (DECISIONS 2026-08-25)
+
+What launcharr owes its distro sibling, so scuttlarr can render themes and desktop opinions
+through `config.json` alone. Trigger for each: scuttlarr's theme/desktop rendering reaches it.
+
+- **Light mode** — lift the non-goal; make the token model render a light palette (Solarized Light is the test).
+- **Ghostty hand-off** — bang mode target beside iTerm2/Terminal.app, auto-detected.
+- **Typed `desktop` schema** — replace the `serde_json::Value` block with a documented struct; document `themes.<name>` tokens as the theme contract.
+- **Dark-mode delegation** — the `dark mode` system command calls `scuttlarr theme` when present.
+
 ## v2 horizon (recorded now, built later — PRD §10)
 
 | Item                                                      | Trigger                                                   |
@@ -104,7 +114,9 @@ Candidates carried over from v0.4, to be cut down in the 0.5 scope session:
 
 ## Explicitly not doing (non-goals — load-bearing, PRD §3, amended by v0.4)
 
-File search, snippets, light mode, Windows/Linux, **anything distro-shaped**. Still true
+File search, snippets, Windows/Linux, **anything distro-shaped** (that's
+[scuttlarr](https://github.com/mitchmalone/scuttlarr) — DECISIONS 2026-08-25; light mode
+left this list the same day, as a palette scuttlarr supplies, not a second look). Still true
 for the **launcher core**: zero network, zero permissions. Amended by DECISIONS
 2026-08-15/16 for v0.4: window management arrives _wrapped_ (Aerospace, which brings its
 own Accessibility grant — launcharr itself still requests nothing), and bar **modules**

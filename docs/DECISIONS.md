@@ -5,6 +5,30 @@
 
 ---
 
+### 2026-08-26 · Liveness comes from the process; tmux only ever adds evidence
+
+- **Decision.** `reap()` consults the pid before it acts on a missing pane. A pane found in the
+  layout is still proof of life and still short-circuits (no `ps` sweep for a fleet whose panes
+  all turn up); what changes is the reaping direction — a pane _absent_ from even a trusted
+  layout no longer reaps a session whose pid is alive and whose `comm` still matches. Only a
+  pid-less session, or one whose process is gone or recycled, can be reaped that way. Alongside
+  it, `trusted_layout()` demotes a successful-but-empty `list-panes` read to untrusted and
+  refuses to cache it.
+- **Why.** A pane list is a second-hand report about someone else's process tree, and it fails
+  in a way that reads as "the entire fleet died" (JOURNAL 2026-08-26: one empty read emptied
+  the bar until the app was restarted). The process table is the thing actually being asked
+  about. This also makes the failure _shaped right_: a launcharr that can't read tmux now loses
+  pane grouping and jump targets — visible, annoying, honest — instead of silently deleting
+  agents that are running.
+- **What it costs.** A pane that genuinely closed while its agent process lives on keeps its
+  cell (pane-less, so no group border and no jump). That is the trade the module's own comments
+  already argue for: a ghost cell is an annoyance, a vanished live agent is a lie. And a fleet
+  whose panes stop resolving now pays one cached `ps -Ao` sweep per 2 s — far under budget.
+- **Alternatives.** Pid-first ordering outright: rejected because it flips the 2026-08-18 rule
+  that a live pane outranks a missing process, and it spends a sweep on every tick in the
+  all-tmux case. Trusting an empty layout after N consecutive empties: more machinery, same
+  answer, and the honest reading of zero panes on a running server is "the read is broken".
+
 ### 2026-08-25 · scuttlarr is the distro; launcharr is the runtime — the contract, and what it costs us
 
 - **Decision.** The "anything distro-shaped" non-goal gets a name: it's

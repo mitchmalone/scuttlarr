@@ -6,6 +6,34 @@
 
 ---
 
+### 2026-08-26 · One empty `list-panes` read deleted every agent on the bar
+
+Field bug: no agent cells at all, `agents.json` permanently `[]` — monitoring on, hooks
+firing, socket bound, binary current. Bisected by injecting events straight onto
+`agents.sock`: a session carrying **any** pane id was reaped microseconds after it was
+recorded, while the same session without a pane survived and kept its `pidComm`. Adding
+`"tmux":"%11"` to a live, surviving session killed it; sending it again without the pane
+brought it back. Scanning `%0`–`%24` reaped all 25.
+
+- **Mechanism.** `tmux_layout()` returned an empty map marked `layout_fresh = true` — a
+  _successful but empty_ pane read — and `reap()` checked the pane branch first and treated a
+  trusted layout as proof of death. Every Claude session here lives in a pane (the hook always
+  sends `TMUX_PANE`), so the whole fleet died on arrival, permanently.
+- **Not the environment.** tmux 3.7c answered correctly from launcharr's exact env (`PATH`,
+  its Darwin `TMPDIR`), with no controlling terminal, `setsid`, `cwd=/`, and from a GUI
+  launchd context via `osascript do shell script`. An unreachable server exits **1**, not 0,
+  so a genuinely missing tmux would have taken the harmless untrusted path. The empty read is
+  process-local rot in that long-lived instance, which was also carrying 23 zombie children —
+  something spawns without waiting; worth its own look.
+- **Diagnosis trick worth keeping.** The state file is written by `own_list()` after every
+  applied event, so it mirrors the store exactly: injecting one crafted event per hypothesis
+  on the socket and reading the file back is a complete black-box probe of the reaper. Probing
+  pane ids one by one reads the layout the app _thinks_ it has.
+- **Fix.** The process outranks the multiplexer: a live pane still short-circuits as proof of
+  life (and still costs no `ps` sweep), but a missing pane now asks the pid before reaping.
+  Plus `trusted_layout()` — a zero-pane success is a broken read, never an empty world.
+  DECISIONS 2026-08-26, `plans/done/agent-liveness-pid-first.md`.
+
 ### 2026-08-19 · Settings opened from the panel sat behind the front app; `tauri build` flashes Finder
 
 - **Settings behind.** launcharr is Accessory and the panel is non-activating, so when

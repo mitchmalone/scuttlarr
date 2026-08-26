@@ -3,9 +3,19 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-08-19
+> Last updated: 2026-08-26
 
 ## Where we are
+
+**Agent liveness fix, 2026-08-26 (on main, unreleased — built + running):** the process
+outranks the multiplexer. A pane found in the layout is still proof of life; a pane _missing_
+from one now asks the pid before reaping, and a successful-but-empty `list-panes` read is
+treated as broken rather than as an empty world (`trusted_layout`). Chased down from a live
+field bug — the bar had no agent cells at all, because one empty pane read deleted every
+tmux-hosted session on arrival, permanently. JOURNAL + DECISIONS 2026-08-26,
+`plans/done/agent-liveness-pid-first.md`. **Proved live:** cells return, correctly grouped
+(`gogogo` / window `Launcharr`), after rebuild + relaunch. **Loose thread:** the rotted
+instance was carrying 23 zombie children — something spawns without waiting; not chased.
 
 **v0.6.0 released 2026-08-20** (signed + notarized; docs/releases/v0.6.0.md; fan-out
 green: cask 0.6.0, Notion, mitchmalone.com hook; perf receipts 2.0 ms / 186 ms / 118 MB).

@@ -225,15 +225,19 @@ fn own_list() -> Vec<AgentSession> {
 /// session, because a ghost cell is an annoyance while a vanished live agent is
 /// a lie:
 /// - too old to matter (the existing `pruneHours` sweep) → gone;
-/// - has a tmux pane that a *successful* `list-panes` read didn't list → gone.
-///   A failed read (tmux missing, cold start) reaps nothing at all;
-/// - otherwise, if a pid is known and `comm` says it's gone, or now belongs to
-///   a different command → gone;
+/// - has a tmux pane a `list-panes` read did list → alive, and cheaply: the
+///   process table is never consulted for a pane we can see;
+/// - otherwise, if a pid is known, it decides: `comm` says gone, or now belongs
+///   to a different command → gone, whatever the layout thinks. A missing pane
+///   is a question for the process, not a death certificate (field bug
+///   2026-08-26: one empty pane read deleted every agent on the bar);
+/// - a pid-less session with a pane is reaped only by a *successful* read that
+///   didn't list it. A failed read (tmux missing, cold start) reaps nothing;
 /// - a session with neither a pane nor a pid can only be judged on silence, and
 ///   is held to `UNVERIFIABLE_STALE_SECS` rather than the full prune window.
 fn reap(
     sessions: &mut Vec<AgentSession>,
-    layout: &std::collections::HashMap<String, PaneLocation>,
+    layout: &Layout,
     layout_fresh: bool,
     now: u64,
     stale: u64,
@@ -245,23 +249,21 @@ fn reap(
         if now.saturating_sub(s.updated_at) > stale {
             return false;
         }
-        if !s.mux_target.is_empty() {
-            // A live pane is proof of life; a dead one, proof of death — but
-            // only when we actually managed to ask tmux.
-            if layout.contains_key(&s.mux_target) {
-                return true;
-            }
-            if layout_fresh {
-                return false;
-            }
+        // A live pane is proof of life, and a cheap one — settled without
+        // waking the process table at all.
+        if !s.mux_target.is_empty() && layout.contains_key(&s.mux_target) {
+            return true;
         }
         let Some(pid) = s.pid else {
-            // No process to interrogate. If it still claims a pane we simply
-            // couldn't reach tmux — that's ignorance, and ignorance keeps the
-            // session. With no pane either, silence is the only signal left,
-            // and it's held to a much shorter one.
-            return !s.mux_target.is_empty()
-                || now.saturating_sub(s.updated_at) <= UNVERIFIABLE_STALE_SECS;
+            // No process to interrogate. A pane we couldn't find in a layout we
+            // couldn't trust is ignorance, and ignorance keeps the session;
+            // one missing from a layout we could is the death certificate.
+            // With no pane either, silence is the only signal left, and it's
+            // held to a much shorter window.
+            if !s.mux_target.is_empty() {
+                return !layout_fresh;
+            }
+            return now.saturating_sub(s.updated_at) <= UNVERIFIABLE_STALE_SECS;
         };
         match (comm(pid), s.pid_comm.as_deref()) {
             (None, _) => false,
@@ -283,15 +285,27 @@ struct PaneLocation {
     window_name: String,
 }
 
+type Layout = std::collections::HashMap<String, PaneLocation>;
+
+/// Which reads of the pane list are worth believing. A run that failed is
+/// obviously worthless — but so is one that succeeded and found nothing: a tmux
+/// server with zero panes doesn't stay running, so an empty answer is a broken
+/// read, not an empty world. Believing one is catastrophic, because `reap`
+/// treats a trusted layout as a death certificate and every agent here lives in
+/// a pane (field bug 2026-08-26: the whole bar emptied, permanently).
+fn trusted_layout(parsed: Option<Layout>) -> Option<Layout> {
+    parsed.filter(|layout| !layout.is_empty())
+}
+
 /// pane id → location from `tmux list-panes -a`, plus whether that layout is a
-/// *trusted* one — i.e. a successful read, cached or not. Cached briefly:
+/// *trusted* one — a read that both succeeded and found panes (`trusted_layout`),
+/// cached or not. Cached briefly:
 /// list() runs on the 1 Hz bar push and must not pay a process spawn per tick.
 ///
 /// The flag is what lets the reaper treat a missing pane as a dead agent: a
 /// layout we failed to fetch says nothing about who is alive.
-fn tmux_layout() -> (std::collections::HashMap<String, PaneLocation>, bool) {
+fn tmux_layout() -> (Layout, bool) {
     use std::time::{Duration, Instant};
-    type Layout = std::collections::HashMap<String, PaneLocation>;
     static CACHE: Mutex<Option<(Instant, Layout)>> = Mutex::new(None);
     let mut cache = CACHE.lock().unwrap();
     if let Some((at, layout)) = cache.as_ref() {
@@ -299,20 +313,23 @@ fn tmux_layout() -> (std::collections::HashMap<String, PaneLocation>, bool) {
             return (layout.clone(), true);
         }
     }
-    let fresh = tmux_out(&[
-        "list-panes",
-        "-a",
-        "-F",
-        "#{pane_id}\t#{session_name}\t#{window_index}\t#{window_name}",
-    ])
-    .as_deref()
-    .map(parse_panes);
+    let fresh = trusted_layout(
+        tmux_out(&[
+            "list-panes",
+            "-a",
+            "-F",
+            "#{pane_id}\t#{session_name}\t#{window_index}\t#{window_name}",
+        ])
+        .as_deref()
+        .map(parse_panes),
+    );
     match fresh {
-        // Only successes are cached: a failed spawn during app cold start used
-        // to pin an empty layout for 2s and the bar painted agents without
-        // their tmux group borders (field report 2026-08-16). On failure,
-        // serve the previous layout (if any), marked untrusted, and retry next
-        // call — stale panes are better than reaping a live fleet.
+        // Only trustworthy reads are cached: a failed spawn during app cold
+        // start used to pin an empty layout for 2s and the bar painted agents
+        // without their tmux group borders (field report 2026-08-16). On a
+        // failed — or empty, see `trusted_layout` — read, serve the previous
+        // layout (if any), marked untrusted, and retry next call: stale panes
+        // are better than reaping a live fleet.
         Some(layout) => {
             *cache = Some((Instant::now(), layout.clone()));
             (layout, true)
@@ -328,8 +345,8 @@ fn tmux_layout() -> (std::collections::HashMap<String, PaneLocation>, bool) {
 }
 
 /// A pid's command, or None when no such process exists. Backed by one cached
-/// `ps` sweep — built lazily, so the all-tmux case (every session reaped by
-/// pane) never spawns anything.
+/// `ps` sweep — built lazily, so a fleet whose panes all turn up in the layout
+/// never spawns anything.
 fn comm_of(pid: u32) -> Option<String> {
     use std::time::{Duration, Instant};
     type Procs = std::collections::HashMap<u32, String>;
@@ -373,7 +390,7 @@ fn parse_procs(out: &str) -> std::collections::HashMap<u32, String> {
         .collect()
 }
 
-fn parse_panes(out: &str) -> std::collections::HashMap<String, PaneLocation> {
+fn parse_panes(out: &str) -> Layout {
     out.lines()
         .filter_map(|line| {
             let mut parts = line.split('\t');
@@ -1000,6 +1017,51 @@ mod tests {
             no_procs
         ));
         assert_eq!(s.len(), 1);
+    }
+
+    #[test]
+    fn a_live_process_outlives_a_layout_that_lost_its_pane() {
+        // Field bug 2026-08-26: a successful-but-empty `list-panes` read made
+        // every pane look dead and the bar emptied. A pane we can't find is a
+        // question for the process, never a death certificate on its own.
+        let live = || {
+            vec![AgentSession {
+                pid: Some(42),
+                pid_comm: Some("claude".into()),
+                ..paned("a", "%1")
+            }]
+        };
+        let claude = |_: u32| Some("claude".to_owned());
+        let mut s = live();
+        assert!(!reap(
+            &mut s,
+            &layout(&[]),
+            true,
+            100,
+            DEFAULT_STALE_SECS,
+            claude
+        ));
+        assert_eq!(s.len(), 1, "the process is alive; the layout is wrong");
+        // The process going away is what reaps it — layout or no layout.
+        let mut s = live();
+        assert!(reap(
+            &mut s,
+            &layout(&[]),
+            true,
+            100,
+            DEFAULT_STALE_SECS,
+            no_procs
+        ));
+        assert!(s.is_empty());
+    }
+
+    #[test]
+    fn an_empty_pane_read_is_never_trusted() {
+        // A tmux server with no panes doesn't stay running, so this can only be
+        // a broken read — and a trusted one reaps the entire fleet.
+        assert!(trusted_layout(None).is_none());
+        assert!(trusted_layout(Some(layout(&[]))).is_none());
+        assert!(trusted_layout(Some(layout(&["%1"]))).is_some());
     }
 
     #[test]

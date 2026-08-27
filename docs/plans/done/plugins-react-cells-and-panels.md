@@ -120,6 +120,9 @@ cell.js`; an edit to `cell.tsx` rebuilt and hot-swapped within the second). Devi
 - **lucide is shared** (a plugin dir has no `node_modules`); it was suspected of the
   memory rise and cleared by measurement. Memory numbers in STATUS.
 - **G is rolling**, not done: awake/agents/wifi/audio/battery migrate as touched.
+- **Follow-up 2026-08-28:** a second reference plugin, `mirror` (tick mode), pulls
+  another machine's journals so usage counts every Mac; usage.rs scans
+  `~/.local/share/launcharr/mirrors/<host>/` by convention (DECISIONS 2026-08-28).
 - **No `launcharr plugin add` CLI** — `git clone` into the plugins dir _is_ the CLI (the
   watcher picks it up); Settings has the URL field.
 

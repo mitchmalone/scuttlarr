@@ -145,6 +145,18 @@ files runs under either.
 - **Logs:** `Console.app` → launcharr → `[plugin <id>]` (stderr) and
   `[launcharr plugins]` (supervisor).
 
+## Reference plugins
+
+- **`apps/desktop/plugins/hello/`** — stream service, cell with a card, panel, `host.send`.
+  Copy it to start.
+- **`apps/desktop/plugins/mirror/`** — tick service, no UI of its own (hidden while
+  healthy, red with a card when a sync fails). Every 5 minutes it rsyncs another
+  machine's Codex and Claude Code journals over your own ssh into
+  `~/.local/share/launcharr/mirrors/<host>/{codex,claude}/`, which the usage monitor
+  scans by convention alongside the local journals — so `usage ⏎` counts every machine.
+  Settings: `MIRROR_HOST` (an ssh alias that works with `BatchMode=yes`). Anything else
+  that puts `*.jsonl` under that path counts too (Syncthing, a cron).
+
 ## Bundled plugins
 
 `packages/plugins/` holds the plugins launcharr ships — `usage` (the agent usage cell +

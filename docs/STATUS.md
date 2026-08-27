@@ -30,7 +30,12 @@ plan's risk note.
 **Hands-check pending (Mitch):** the hello cell + card + `hello ⏎` panel (`r` resets via
 `host.send`), `cal ⏎`, `usage` cell/panel unchanged, Settings → Plugins, `plugins ⏎`.
 Plan: `plans/done/plugins-react-cells-and-panels.md`; slice G (awake/agents/wifi/audio/
-battery → plugins) is rolling.
+battery → plugins) is rolling. **2026-08-28:** `usage ⏎` counts the Mac Mini too — the
+`mirror` reference plugin (`apps/desktop/plugins/mirror/`, installed with
+`MIRROR_HOST=beebee`) rsyncs its Codex/Claude journals into
+`~/.local/share/launcharr/mirrors/beebee/`, which usage.rs scans by convention
+(DECISIONS 2026-08-28). First pull: 124 journal files, 51 MB, 1.7 s. **Hands-check:** the
+Codex tile's day/model bars should now include beebee's sessions.
 
 **Usage in the menubar, every account, 2026-08-27 (on main, unreleased — built + running):**
 a `usage` bar cell — CodexBar's tiny meter in our style — showing the tightest window across

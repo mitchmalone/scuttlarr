@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "mirror",
+  "name": "Journal mirror",
+  "version": "0.1.0",
+  "description": "Pulls another machine's Codex and Claude Code journals over SSH into ~/.local/share/launcharr/mirrors/<host>/ so the usage panel counts every machine, not just this one.",
+  "kinds": ["bar-widget", "service"],
+  "zone": "right",
+  "icon": "refresh-cw",
+  "interval": 300,
+  "timeout": 60,
+  "settings": [
+    {
+      "key": "MIRROR_HOST",
+      "label": "Host",
+      "hint": "an ssh host alias, e.g. beebee",
+      "required": true
+    },
+    {
+      "key": "MIRROR_CODEX",
+      "label": "Codex sessions",
+      "hint": "remote path (default .codex/sessions)"
+    },
+    {
+      "key": "MIRROR_CLAUDE",
+      "label": "Claude projects",
+      "hint": "remote path (default .claude/projects)"
+    }
+  ],
+  "requires": [
+    {
+      "label": "rsync and non-interactive ssh to the host",
+      "fix": "ssh -o BatchMode=yes <host> true"
+    }
+  ]
+}

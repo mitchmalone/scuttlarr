@@ -5,6 +5,25 @@
 
 ---
 
+### 2026-08-28 · Mirrored journals are a directory convention, pulled by a plugin
+
+- **Decision.** The usage monitor also scans
+  `~/.local/share/launcharr/mirrors/<host>/{codex,claude}/` — journals from other
+  machines, merged into the Codex account and the default Claude account. What puts
+  them there is not launcharr's business: the reference `mirror` plugin
+  (`apps/desktop/plugins/mirror/`, tick mode, `rsync` over the user's own ssh every
+  5 min, `*.jsonl` only, hidden cell while healthy) is one way; Syncthing or a cron is
+  another. No `agents.mirrors` config knob.
+- **Why.** Mitch's Codex use is mostly on the Mac Mini (beebee, running OpenClaw); the
+  account limits were already account-wide, but the day/model histograms were local
+  only. A convention keeps invariant 2 exactly where the widgets carve-out put it — the
+  plugin's network, over the user's ssh, to the user's machine; launcharr reads files.
+  One setting (`MIRROR_HOST`) instead of two places to configure the same fact.
+- **Not decided.** Mirrors as their own accounts (they merge into the default one);
+  pushing from the remote instead of pulling; Claude journals from a machine on a
+  different subscription (they would land in the wrong account — label them, or don't
+  mirror Claude from it).
+
 ### 2026-08-27 · Plugin host API: four calls, blob-loaded modules, native providers for bundled plugins
 
 - **Decision.** Plugin UI (`cell.tsx`/`panel.tsx`) reaches the app through a `host` of

@@ -10,5 +10,5 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["widgets", "src-tauri/scripts", "plugins/hello/service.ts"]
+  "include": ["widgets", "src-tauri/scripts", "plugins/*/service.ts"]
 }

@@ -187,12 +187,13 @@ fn scan() -> UsageReport {
     let overrides = ACCOUNT_OVERRIDES.lock().unwrap().clone();
     let mut providers = Vec::new();
     for account in discover_claude_accounts(&home, &overrides) {
-        let scanned = scan_provider(
-            &account.dir.join("projects"),
-            parse_claude_line,
-            offset,
-            today,
-        );
+        // Mirrored journals from other machines join the default account
+        // (a mirror has no account identity of its own).
+        let mut roots = vec![account.dir.join("projects")];
+        if account.is_default {
+            roots.extend(mirror_roots(&home, "claude"));
+        }
+        let scanned = scan_provider(&roots, parse_claude_line, offset, today);
         let (limits, note) = claude_account_limits(&account);
         providers.push(aggregate(
             &account.id,
@@ -205,12 +206,11 @@ fn scan() -> UsageReport {
             today,
         ));
     }
-    let codex = scan_provider(
-        &home.join(".codex/sessions"),
-        parse_codex_line,
-        offset,
-        today,
-    );
+    let mut codex_roots = vec![home.join(".codex/sessions")];
+    let mirrored = mirror_roots(&home, "codex");
+    codex_roots.extend(mirrored.iter().cloned());
+    let codex = scan_provider(&codex_roots, parse_codex_line, offset, today);
+    note_mirrors(&mirrored);
     let (codex_limits, codex_note) = codex_account_limits(&home, codex.1);
     providers.push(aggregate(
         "codex",
@@ -338,14 +338,55 @@ fn keychain_service(dir: &Path, is_default: bool) -> String {
 
 /// Walk a provider root, reusing per-file results keyed by (len, mtime) —
 /// journals are append-only, so unchanged files cost nothing on rescans.
+/// Journals pulled from other machines by convention (the `mirror` reference
+/// plugin, docs/PLUGINS.md): `~/.local/share/launcharr/mirrors/<host>/<provider>/`.
+/// Anything that syncs journals there — rsync, Syncthing, a cron — counts.
+pub fn mirror_roots(home: &Path, provider: &str) -> Vec<PathBuf> {
+    let base = home.join(".local/share/launcharr/mirrors");
+    let Ok(hosts) = std::fs::read_dir(&base) else {
+        return Vec::new();
+    };
+    let mut roots: Vec<PathBuf> = hosts
+        .flatten()
+        .map(|e| e.path().join(provider))
+        .filter(|p| p.is_dir())
+        .collect();
+    roots.sort();
+    roots
+}
+
+/// One breadcrumb when the set of mirrored journal files changes — the only
+/// evidence, short of the panel, that another machine's usage is counted.
+fn note_mirrors(roots: &[PathBuf]) {
+    static LAST: Mutex<usize> = Mutex::new(usize::MAX);
+    let mut files = Vec::new();
+    for root in roots {
+        collect_jsonl(root, &mut files);
+    }
+    let mut last = LAST.lock().unwrap();
+    if *last != files.len() {
+        *last = files.len();
+        crate::logbook::breadcrumb(
+            "usage",
+            &format!(
+                "codex: {} mirrored journal file(s) from {} host(s)",
+                files.len(),
+                roots.len()
+            ),
+        );
+    }
+}
+
 fn scan_provider(
-    root: &Path,
+    roots: &[PathBuf],
     parse: fn(&str, i32, &mut ParseState) -> Option<Entry>,
     offset: i32,
     _today: i64,
 ) -> (Vec<Entry>, Option<RateLimit>) {
     let mut files = Vec::new();
-    collect_jsonl(root, &mut files);
+    for root in roots {
+        collect_jsonl(root, &mut files);
+    }
     let mut cache_guard = FILE_CACHE.lock().unwrap();
     let cache = cache_guard.get_or_insert_with(HashMap::new);
     let mut entries = Vec::new();

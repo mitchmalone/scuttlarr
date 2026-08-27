@@ -5,6 +5,55 @@
 
 ---
 
+### 2026-08-27 · Plugins are code: cells and panels as React on `@launcharr/tui`, service in Bun
+
+- **Decision.** "Widgets are data, never code" (2026-08-19) is **superseded**. A plugin is
+  a directory — `manifest.json` (+ `kinds`), optional `service.ts` (long-lived Bun process
+  emitting JSON-line state events), optional `cell.tsx` / `panel.tsx` (React components
+  importing only `@launcharr/tui` / `@launcharr/core`, receiving `{state, settings, host}`),
+  `model.ts` for tested logic. No UI files = today's widget, unchanged; `tick` widgets are
+  wrapped as services. Built with `bun build` on install, served over a `launcharr-plugin://`
+  scheme, one shared React instance via import map. `host` is a tiny recorded IPC surface
+  (`open`, `copy`, `send`, `openPanel`); no direct `invoke` from plugin code. **First-party
+  panels become plugins** under `apps/desktop/plugins/` — usage first — so the API is
+  dogfooded. Plan: `plans/active/plugins-react-cells-and-panels.md`.
+- **Why.** The data-only card (title + dot-rows) is the ceiling every real panel hits —
+  usage meters, a month grid, charts — so each becomes a hand-written first-party panel and
+  a launcharr PR. Studying Omarchy Quattro: its plugins are UI files on a shared component
+  library (`qs.Ui`) over a few OS primitives, and its first-party panels are plugins. We
+  already run the equivalent stack (WKWebView + React + `@launcharr/tui`); only the rule was
+  in the way, and Mitch called it overstated (2026-08-27). Invariant 10 _improves_: a plugin
+  cell renders on launcharr.com from fixture state, which Omarchy's QML cannot.
+- **Trade.** Plugins become code (Omarchy/Raycast/VS Code posture): a git URL installs
+  something that runs. React/tui become a public API (semver + `schemaVersion`). Resident
+  memory moves — measured before usage migrates (118 of 120 MB today).
+- **Rejected.** A richer declarative layout JSON (a worse React with a schema we own
+  forever); a second component system; per-cell iframes (cells must be cheap; revisit on a
+  real need).
+
+### 2026-08-27 · Omarchy plugins on macOS: rejected (a Quickshell backend, not a proxy)
+
+- **Question.** Could launcharr run Omarchy Quattro plugins unmodified — 0 → many plugins
+  overnight — rather than build its own?
+- **Finding.** A Quattro plugin is `manifest.json` + QML (`BarWidget.qml`, `Panel.qml`,
+  `Service.qml`) on **Quickshell** (Qt 6.6+, Linux/Wayland only, needs `qt6wayland` private
+  headers) plus Omarchy's `qs.Ui` (32 components) / `qs.Commons`. Across ten community
+  plugins the imports are QtQuick + `Quickshell` + `Quickshell.Io` + `qs.*` in 8/10;
+  Hyprland/Mpris/Wayland in the rest; first-party ones lean on Pipewire, UPower, Polkit,
+  Pam. Running them means **writing a macOS backend for Quickshell** (Wine, not a shim):
+  ship Qt (~50 MB, a QML engine idling at 60–120 MB against a 120 MB whole-app budget),
+  reimplement `PanelWindow`/`Process`/`FileView`/`IpcHandler` on Cocoa in a separate helper
+  process (Qt and Tauri both want `NSApplication`), vendor `qs.Ui`, and chase a three-week-
+  old, weekly-shipping target forever. ~8/10 community bar widgets would load, then shell
+  out to `hyprctl`/`nmcli`/`omarchy-*`. Catalogue today is ~100–150 repos, mostly Linux
+  system widgets and plugin managers; the data-driven remainder is what a small plugin
+  covers. It also ends invariant 10 (QML can't render on the site).
+- **Kept.** The _shape_ — manifest with `kinds`, plugin owns its UI on the shell's component
+  library, first-party panels are plugins, `Model.js` logic testable outside the shell,
+  `plugin add <git-url>`. See the entry above. A launcharr plugin may import an Omarchy
+  plugin's `Model.js` directly; the reverse (an Omarchy plugin hosting launcharr's JSON
+  widget contract) is cheap if ever wanted.
+
 ### 2026-08-27 · Claude accounts are a directory convention; usage rides the bar push
 
 - **Decision.** The usage monitor treats every Claude Code config dir as one account:

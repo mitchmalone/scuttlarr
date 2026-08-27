@@ -262,6 +262,12 @@ display. Consider a v0.5.1 for the post-release batch once those pass.
 
 ## In progress / next (ROADMAP B2–B4, P1)
 
+- **Plugins — direction set 2026-08-27, planned** (`plans/active/plugins-react-cells-and-panels.md`,
+  DECISIONS 2026-08-27 ×2): "widgets are data, never code" superseded — plugins own
+  `cell.tsx` / `panel.tsx` on `@launcharr/tui` with a Bun `service.ts`; legacy `tick`
+  widgets wrap unchanged; usage is the first first-party panel to migrate. Omarchy QML
+  plugins on macOS studied and rejected (a Quickshell backend, not a shim). Slice A
+  (`docs/PLUGINS.md` contract) is next.
 - **`awake` keep-alive sessions** (plans/active/awake.md — retire Amphetamine +
   Caffeinated): **slices A–D shipped** — in-process assertions (`power.rs`, release on
   drop/quit/crash), `awake ⏎` panel (form: what stays on / until / rails, two-keystroke

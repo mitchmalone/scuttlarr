@@ -3,9 +3,11 @@
 //! not the mechanics — no OAuth, no cookie reading, no network (invariant 2).
 //!
 //! Sources:
-//! - Claude Code: `~/.claude/projects/**/*.jsonl` — assistant messages carry
-//!   `message.usage`, model, id, timestamp. Sessions fork and duplicate
-//!   history, so entries dedup globally by message id.
+//! - Claude Code: `<config dir>/projects/**/*.jsonl` — assistant messages
+//!   carry `message.usage`, model, id, timestamp. Sessions fork and duplicate
+//!   history, so entries dedup globally by message id. One account per config
+//!   dir: `~/.claude` plus every `~/.claude-*` (the `CLAUDE_CONFIG_DIR`
+//!   convention for a second subscription — plans/usage-accounts-and-bar.md).
 //! - Codex: `~/.codex/sessions/**/*.jsonl` — `token_count` events carry
 //!   per-turn totals plus a `rate_limits` snapshot; `turn_context` names the
 //!   model for subsequent turns.
@@ -17,6 +19,7 @@ use std::sync::Mutex;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use serde::Serialize;
+use sha2::{Digest, Sha256};
 
 /// Days shown, today inclusive.
 const WINDOW_DAYS: i64 = 7;
@@ -63,7 +66,16 @@ pub struct LimitWindow {
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProviderUsage {
+    /// Panel/bar key: `claude` (default config dir), `claude-<suffix>` for a
+    /// `~/.claude-<suffix>` account, `codex`.
+    pub id: String,
+    /// Provider kind: `claude` | `codex`.
     pub provider: String,
+    /// Human name for the account: the organisation, "Personal", or the
+    /// config dir's name.
+    pub label: String,
+    /// The signed-in email where the CLI recorded one.
+    pub account: Option<String>,
     /// Oldest first, today last; always WINDOW_DAYS entries.
     pub days: Vec<DayUsage>,
     /// Window total per model, largest first.
@@ -82,6 +94,39 @@ pub struct UsageReport {
     /// Unix seconds of the finished scan; 0 = never scanned.
     pub generated_at: u64,
     pub providers: Vec<ProviderUsage>,
+}
+
+/// What the bar cell renders (bar.rs `BarSnapshot.usage`): per-account
+/// windows only — the day/model histograms stay in the panel. Folded from
+/// the cached report on every push; `None` in the snapshot when the monitor
+/// is off so the cell renders nothing.
+#[derive(Debug, Clone, Default, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UsageBarState {
+    /// Highest used-percent across every account's windows — the cell's number.
+    pub tightest: Option<f64>,
+    pub accounts: Vec<UsageBarAccount>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UsageBarAccount {
+    pub id: String,
+    pub provider: String,
+    pub label: String,
+    pub account: Option<String>,
+    pub limits: Vec<LimitWindow>,
+    pub limits_note: Option<String>,
+}
+
+/// A Claude Code config dir treated as one account (see module docs).
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ClaudeAccount {
+    id: String,
+    dir: PathBuf,
+    is_default: bool,
+    label: String,
+    email: Option<String>,
 }
 
 /// One counted usage record. `id` is the dedup key where the journal has one.
@@ -109,6 +154,8 @@ static SCANNING: AtomicBool = AtomicBool::new(false);
 static ENABLED: AtomicBool = AtomicBool::new(false);
 static CLAUDE_CREDS: AtomicBool = AtomicBool::new(false);
 static CODEX_CREDS: AtomicBool = AtomicBool::new(false);
+/// `agents.claudeAccounts`: label/enabled overrides keyed by config dir.
+static ACCOUNT_OVERRIDES: Mutex<Vec<crate::config::ClaudeAccountConfig>> = Mutex::new(Vec::new());
 
 /// Apply settings; called at setup and from the config watcher. Drops the
 /// report cache so a consent change shows up on the next panel poll.
@@ -116,6 +163,7 @@ pub fn configure(cfg: &crate::config::AgentsConfig) {
     ENABLED.store(cfg.usage, Ordering::Relaxed);
     CLAUDE_CREDS.store(cfg.claude_creds, Ordering::Relaxed);
     CODEX_CREDS.store(cfg.codex_creds, Ordering::Relaxed);
+    *ACCOUNT_OVERRIDES.lock().unwrap() = cfg.claude_accounts.clone();
     *REPORT.lock().unwrap() = None;
 }
 #[allow(clippy::type_complexity)]
@@ -149,31 +197,192 @@ pub fn report() -> UsageReport {
         .unwrap_or_default()
 }
 
+/// The bar's view of the cached report. Calling `report()` here is what keeps
+/// the 60 s refresh alive while the panel is closed — the cell is never stale
+/// for longer than the panel would be.
+pub fn bar_state() -> Option<UsageBarState> {
+    if !ENABLED.load(Ordering::Relaxed) {
+        return None;
+    }
+    Some(fold_bar_state(&report()))
+}
+
+fn fold_bar_state(report: &UsageReport) -> UsageBarState {
+    let accounts: Vec<UsageBarAccount> = report
+        .providers
+        .iter()
+        .map(|p| UsageBarAccount {
+            id: p.id.clone(),
+            provider: p.provider.clone(),
+            label: p.label.clone(),
+            account: p.account.clone(),
+            limits: p.limits.clone(),
+            limits_note: p.limits_note.clone(),
+        })
+        .collect();
+    let tightest = accounts
+        .iter()
+        .flat_map(|a| a.limits.iter().map(|l| l.used_percent))
+        .fold(None, |acc: Option<f64>, pct| {
+            Some(acc.map_or(pct, |a| a.max(pct)))
+        });
+    UsageBarState { tightest, accounts }
+}
+
 fn scan() -> UsageReport {
     let home = dirs::home_dir().unwrap_or_default();
     let offset = local_offset_secs();
     let today = epoch_day(now_secs() as i64, offset);
-    let claude = scan_provider(
-        &home.join(".claude/projects"),
-        parse_claude_line,
-        offset,
-        today,
-    );
+    let overrides = ACCOUNT_OVERRIDES.lock().unwrap().clone();
+    let mut providers = Vec::new();
+    for account in discover_claude_accounts(&home, &overrides) {
+        let scanned = scan_provider(
+            &account.dir.join("projects"),
+            parse_claude_line,
+            offset,
+            today,
+        );
+        let (limits, note) = claude_account_limits(&account);
+        providers.push(aggregate(
+            &account.id,
+            "claude",
+            &account.label,
+            account.email.clone(),
+            scanned.0,
+            limits,
+            note,
+            today,
+        ));
+    }
     let codex = scan_provider(
         &home.join(".codex/sessions"),
         parse_codex_line,
         offset,
         today,
     );
-    let (claude_limits, claude_note) = claude_account_limits(&home);
     let (codex_limits, codex_note) = codex_account_limits(&home, codex.1);
+    providers.push(aggregate(
+        "codex",
+        "codex",
+        "Codex",
+        None,
+        codex.0,
+        codex_limits,
+        codex_note,
+        today,
+    ));
     UsageReport {
         generated_at: now_secs(),
-        providers: vec![
-            aggregate("claude", claude.0, claude_limits, claude_note, today),
-            aggregate("codex", codex.0, codex_limits, codex_note, today),
-        ],
+        providers,
     }
+}
+
+// ---- Claude accounts --------------------------------------------------------
+//
+// Claude Code keeps one login per config dir (`CLAUDE_CONFIG_DIR`); people with
+// two subscriptions run `~/.claude` and `~/.claude-<name>`. That directory
+// convention *is* the account list — nothing to configure, and the keychain
+// item follows from the path, so credentials resolve per account too.
+
+/// `~/.claude` first, then every `~/.claude-*` directory, alphabetical.
+/// Overrides (config `agents.claudeAccounts`) rename or drop entries.
+fn discover_claude_accounts(
+    home: &Path,
+    overrides: &[crate::config::ClaudeAccountConfig],
+) -> Vec<ClaudeAccount> {
+    let mut dirs: Vec<PathBuf> = Vec::new();
+    let default_dir = home.join(".claude");
+    if default_dir.is_dir() {
+        dirs.push(default_dir.clone());
+    }
+    let mut extra: Vec<PathBuf> = std::fs::read_dir(home)
+        .map(|rd| {
+            rd.flatten()
+                .map(|e| e.path())
+                .filter(|p| p.is_dir())
+                .filter(|p| {
+                    p.file_name()
+                        .and_then(|n| n.to_str())
+                        .is_some_and(|n| n.starts_with(".claude-"))
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    extra.sort();
+    dirs.extend(extra);
+    dirs.into_iter()
+        .filter_map(|dir| {
+            let is_default = dir == default_dir;
+            let name = dir.file_name()?.to_str()?.to_owned();
+            let id = name.trim_start_matches('.').to_owned();
+            let identity_path = if is_default {
+                home.join(".claude.json")
+            } else {
+                dir.join(".claude.json")
+            };
+            let (org, email) = std::fs::read_to_string(&identity_path)
+                .ok()
+                .map(|raw| account_identity(&raw))
+                .unwrap_or_default();
+            let override_for = overrides.iter().find(|o| {
+                let expanded = o.dir.strip_prefix("~/").map(|rest| home.join(rest));
+                expanded.as_deref() == Some(dir.as_path()) || Path::new(&o.dir) == dir
+            });
+            if override_for.is_some_and(|o| !o.enabled) {
+                return None;
+            }
+            let label = override_for
+                .and_then(|o| o.label.clone())
+                .filter(|l| !l.trim().is_empty())
+                .unwrap_or_else(|| account_label(org.as_deref(), email.as_deref(), &id));
+            Some(ClaudeAccount {
+                id,
+                dir,
+                is_default,
+                label,
+                email,
+            })
+        })
+        .collect()
+}
+
+/// `(organizationName, emailAddress)` from a `.claude.json` `oauthAccount`.
+fn account_identity(raw: &str) -> (Option<String>, Option<String>) {
+    let Ok(v) = serde_json::from_str::<serde_json::Value>(raw) else {
+        return (None, None);
+    };
+    let acct = v.get("oauthAccount");
+    let pick = |key: &str| {
+        acct.and_then(|a| a.get(key))
+            .and_then(|s| s.as_str())
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(str::to_owned)
+    };
+    (pick("organizationName"), pick("emailAddress"))
+}
+
+/// The organisation when it's a real one; a personal plan's auto-named
+/// "<email>'s Organization" reads as "Personal"; no login → the dir name.
+fn account_label(org: Option<&str>, email: Option<&str>, id: &str) -> String {
+    match (org, email) {
+        (Some(o), Some(e)) if o == format!("{e}'s Organization") => "Personal".into(),
+        (Some(o), _) => o.into(),
+        (None, Some(_)) => "Personal".into(),
+        (None, None) => id.strip_prefix("claude-").unwrap_or(id).into(),
+    }
+}
+
+/// Claude Code's keychain service name: bare for the default config dir,
+/// `-<first 8 hex of sha256(dir)>` for any other (verified 2026-08-27 against
+/// the live keychain: `/Users/mitch/.claude-psyke` → `4051cf21`).
+fn keychain_service(dir: &Path, is_default: bool) -> String {
+    if is_default {
+        return "Claude Code-credentials".into();
+    }
+    let digest = Sha256::digest(dir.to_string_lossy().as_bytes());
+    let hex: String = digest.iter().take(4).map(|b| format!("{b:02x}")).collect();
+    format!("Claude Code-credentials-{hex}")
 }
 
 /// Walk a provider root, reusing per-file results keyed by (len, mtime) —
@@ -346,8 +555,12 @@ fn parse_codex_line(line: &str, offset: i32, state: &mut ParseState) -> Option<E
 
 /// Fold entries into the 7-day view. Dedup by id where present — Claude
 /// session forks replay history into new files.
+#[allow(clippy::too_many_arguments)] // one flat call per account; a builder would be ceremony
 fn aggregate(
+    id: &str,
     provider: &str,
+    label: &str,
+    account: Option<String>,
     entries: Vec<Entry>,
     limits: Vec<LimitWindow>,
     limits_note: Option<String>,
@@ -386,7 +599,10 @@ fn aggregate(
     models.sort_by(|a, b| b.tokens.cmp(&a.tokens).then(a.model.cmp(&b.model)));
     models.truncate(MAX_MODELS);
     ProviderUsage {
+        id: id.into(),
         provider: provider.into(),
+        label: label.into(),
+        account,
         days,
         models,
         limits,
@@ -462,27 +678,29 @@ fn fmt_ago(secs: u64) -> String {
     }
 }
 
-fn claude_account_limits(home: &Path) -> (Vec<LimitWindow>, Option<String>) {
+fn claude_account_limits(account: &ClaudeAccount) -> (Vec<LimitWindow>, Option<String>) {
     if !CLAUDE_CREDS.load(Ordering::Relaxed) {
         return (Vec::new(), Some(SETTINGS_HINT.into()));
     }
-    let fetched = claude_token(home).and_then(|t| claude_fetch(&t));
+    let fetched = claude_token(account).and_then(|t| claude_fetch(&t));
     let mut guard = LAST_GOOD.lock().unwrap();
     let cache = guard.get_or_insert_with(HashMap::new);
-    resolve_limits(cache, "claude", fetched, now_secs())
+    resolve_limits(cache, &account.id, fetched, now_secs())
 }
 
 /// Source order is ours, not the user's (consent capability, not a picker):
 /// the credentials file first when its token is unexpired — a silent read —
 /// else the keychain, whose macOS prompt would re-fire on every scan if it
 /// were first and denied. Failure reasons join so the note explains the chain.
-fn claude_token(home: &Path) -> Result<String, String> {
-    match claude_token_from_file(&home.join(".claude/.credentials.json")) {
+fn claude_token(account: &ClaudeAccount) -> Result<String, String> {
+    match claude_token_from_file(&account.dir.join(".credentials.json")) {
         Ok(token) => Ok(token),
-        Err(file_err) => match claude_token_from_keychain() {
-            Ok(token) => Ok(token),
-            Err(kc_err) => Err(format!("{file_err}; {kc_err}")),
-        },
+        Err(file_err) => {
+            match claude_token_from_keychain(&keychain_service(&account.dir, account.is_default)) {
+                Ok(token) => Ok(token),
+                Err(kc_err) => Err(format!("{file_err}; {kc_err}")),
+            }
+        }
     }
 }
 
@@ -512,14 +730,9 @@ fn claude_token_from_file(path: &Path) -> Result<String, String> {
 
 /// Claude Code's keychain item, read via the system CLI so macOS runs its
 /// standard consent prompt — launcharr never links Security.framework for this.
-fn claude_token_from_keychain() -> Result<String, String> {
+fn claude_token_from_keychain(service: &str) -> Result<String, String> {
     let out = std::process::Command::new("/usr/bin/security")
-        .args([
-            "find-generic-password",
-            "-s",
-            "Claude Code-credentials",
-            "-w",
-        ])
+        .args(["find-generic-password", "-s", service, "-w"])
         .output()
         .map_err(|_| "keychain read failed".to_string())?;
     if !out.status.success() {
@@ -988,6 +1201,121 @@ mod tests {
     }
 
     #[test]
+    fn discovers_claude_accounts_by_dir_convention() {
+        let home =
+            std::env::temp_dir().join(format!("launcharr-usage-home-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&home);
+        std::fs::create_dir_all(home.join(".claude/projects")).expect("mk");
+        std::fs::create_dir_all(home.join(".claude-work")).expect("mk");
+        std::fs::create_dir_all(home.join(".claude-zzz")).expect("mk");
+        std::fs::create_dir_all(home.join(".claudette")).expect("mk"); // not an account
+        std::fs::write(
+            home.join(".claude.json"),
+            r#"{"oauthAccount":{"emailAddress":"me@x.io","organizationName":"me@x.io's Organization"}}"#,
+        )
+        .expect("write");
+        std::fs::write(
+            home.join(".claude-work/.claude.json"),
+            r#"{"oauthAccount":{"emailAddress":"me@corp.com","organizationName":"Corp"}}"#,
+        )
+        .expect("write");
+        let accounts = discover_claude_accounts(&home, &[]);
+        let ids: Vec<&str> = accounts.iter().map(|a| a.id.as_str()).collect();
+        assert_eq!(ids, vec!["claude", "claude-work", "claude-zzz"]);
+        assert_eq!(accounts[0].label, "Personal");
+        assert_eq!(accounts[0].email.as_deref(), Some("me@x.io"));
+        assert!(accounts[0].is_default);
+        assert_eq!(accounts[1].label, "Corp");
+        assert!(!accounts[1].is_default);
+        assert_eq!(accounts[2].label, "zzz");
+        // Overrides by absolute dir: rename one, drop another.
+        let overrides = vec![
+            crate::config::ClaudeAccountConfig {
+                dir: home.join(".claude-work").to_string_lossy().into_owned(),
+                label: Some("Psyke".into()),
+                enabled: true,
+            },
+            crate::config::ClaudeAccountConfig {
+                dir: home.join(".claude-zzz").to_string_lossy().into_owned(),
+                label: None,
+                enabled: false,
+            },
+        ];
+        let accounts = discover_claude_accounts(&home, &overrides);
+        let ids: Vec<&str> = accounts.iter().map(|a| a.id.as_str()).collect();
+        assert_eq!(ids, vec!["claude", "claude-work"]);
+        assert_eq!(accounts[1].label, "Psyke");
+        let _ = std::fs::remove_dir_all(&home);
+    }
+
+    #[test]
+    fn labels_accounts() {
+        assert_eq!(
+            account_label(Some("a@b.c's Organization"), Some("a@b.c"), "claude"),
+            "Personal"
+        );
+        assert_eq!(
+            account_label(Some("Psyke"), Some("m@psyke.ai"), "claude-psyke"),
+            "Psyke"
+        );
+        assert_eq!(account_label(None, Some("m@x.io"), "claude"), "Personal");
+        assert_eq!(account_label(None, None, "claude-work"), "work");
+        assert_eq!(account_label(None, None, "claude"), "claude");
+        assert_eq!(
+            account_identity(
+                r#"{"oauthAccount":{"emailAddress":" a@b.c ","organizationName":""}}"#
+            ),
+            (None, Some("a@b.c".into()))
+        );
+        assert_eq!(account_identity("nope"), (None, None));
+    }
+
+    #[test]
+    fn keychain_service_follows_config_dir() {
+        assert_eq!(
+            keychain_service(Path::new("/Users/mitch/.claude"), true),
+            "Claude Code-credentials"
+        );
+        // Verified against the live keychain item, 2026-08-27.
+        assert_eq!(
+            keychain_service(Path::new("/Users/mitch/.claude-psyke"), false),
+            "Claude Code-credentials-4051cf21"
+        );
+    }
+
+    #[test]
+    fn folds_bar_state_to_the_tightest_window() {
+        let window = |name: &str, pct: f64| LimitWindow {
+            name: name.into(),
+            used_percent: pct,
+            resets_at: None,
+        };
+        let provider = |id: &str, limits: Vec<LimitWindow>| ProviderUsage {
+            id: id.into(),
+            provider: "claude".into(),
+            label: id.into(),
+            account: None,
+            days: vec![],
+            models: vec![],
+            limits,
+            limits_note: None,
+        };
+        let report = UsageReport {
+            generated_at: 1,
+            providers: vec![
+                provider("claude", vec![window("5h", 12.0), window("weekly", 41.0)]),
+                provider("claude-psyke", vec![window("5h", 88.5)]),
+                provider("codex", vec![]),
+            ],
+        };
+        let state = fold_bar_state(&report);
+        assert_eq!(state.tightest, Some(88.5));
+        assert_eq!(state.accounts.len(), 3);
+        assert_eq!(state.accounts[1].id, "claude-psyke");
+        assert_eq!(fold_bar_state(&UsageReport::default()).tightest, None);
+    }
+
+    #[test]
     fn formats_ago() {
         assert_eq!(fmt_ago(45), "45s");
         assert_eq!(fmt_ago(840), "14m");
@@ -1075,6 +1403,9 @@ mod tests {
         };
         let usage = aggregate(
             "claude",
+            "claude",
+            "Personal",
+            None,
             vec![
                 entry("a", today, 10),
                 entry("a", today, 10), // forked-session duplicate

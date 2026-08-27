@@ -414,6 +414,132 @@
   color: var(--danger, #f85149);
 }
 
+/* ---- usage ------------------------------------------------------------ */
+
+/* The cell: fg while fine, dim before the first scan, amber/red as the
+ * tightest window fills (same tiers as the panel's meters). */
+.bar-right .bar-usage-off {
+  color: var(--dim, #8b90a5);
+}
+.bar-right .bar-usage-ok {
+  color: var(--fg, #dde1f0);
+}
+.bar-right .bar-usage-warn {
+  color: var(--warn, #d29922);
+}
+.bar-right .bar-usage-danger {
+  color: var(--danger, #f85149);
+}
+
+.bar-usage {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Right-anchored like battery; accounts stack. */
+.bar-usage-card {
+  right: 0;
+  width: 360px;
+  gap: 0;
+}
+
+.bar-usage-account {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 10px;
+}
+
+.bar-usage-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.bar-usage-name {
+  color: var(--fg, #dde1f0);
+  font-weight: 700;
+}
+
+.bar-usage-sub {
+  color: var(--dim, #7f86a5);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-usage-pct {
+  color: var(--fg, #dde1f0);
+}
+
+.bar-usage-row {
+  display: grid;
+  grid-template-columns: minmax(0, 12ch) 1fr 4ch 4ch;
+  align-items: center;
+  gap: 8px;
+  color: var(--dim, #7f86a5);
+  line-height: 16px;
+}
+
+.bar-usage-row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-usage-track {
+  position: relative;
+  height: 3px;
+  background: var(--border, #34364a);
+}
+
+.bar-usage-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--fg, #dde1f0);
+}
+
+.bar-usage-row-pct {
+  text-align: right;
+  color: var(--fg, #dde1f0);
+}
+
+.bar-usage-row-reset {
+  text-align: right;
+}
+
+/* Tone on a row tints its fill and value; the card's own tone classes are
+ * scoped here so the cell rules above (`.bar-right .bar-usage-*`) don't
+ * recolour the whole card. */
+.bar-usage-card .bar-usage-warn .bar-usage-fill,
+.bar-usage-card .bar-usage-warn.bar-usage-pct {
+  background: var(--warn, #d29922);
+  color: var(--warn, #d29922);
+}
+.bar-usage-card .bar-usage-warn .bar-usage-row-pct,
+.bar-usage-card .bar-usage-warn.bar-usage-pct {
+  color: var(--warn, #d29922);
+  background: none;
+}
+.bar-usage-card .bar-usage-danger .bar-usage-fill {
+  background: var(--danger, #f85149);
+}
+.bar-usage-card .bar-usage-danger .bar-usage-row-pct,
+.bar-usage-card .bar-usage-danger.bar-usage-pct {
+  color: var(--danger, #f85149);
+}
+
+.bar-usage-note {
+  color: var(--dim, #7f86a5);
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ---- awake ------------------------------------------------------------ */
 
 /* Dim while sleeping normally — the one cell whose resting state is

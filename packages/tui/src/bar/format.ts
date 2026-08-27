@@ -1,4 +1,9 @@
-import type { AgentSession, BatteryDetail } from './types'
+import type {
+  AgentSession,
+  BatteryDetail,
+  UsageBarAccount,
+  UsageBarState,
+} from './types'
 
 /** Pure formatting and grouping for the bar. No React, no environment. */
 
@@ -224,4 +229,31 @@ export function widgetHealth(
   return lastOk == null
     ? error
     : `${error} · last ok ${agentAge(lastOk, now)} ago`
+}
+
+/* ---- usage ----------------------------------------------------------- */
+
+/** The bar's fold of a usage report (mirrors `fold_bar_state` in usage.rs):
+ * per-account windows, histograms dropped, plus the tightest window overall.
+ * Pure, so a server component (the site) can derive the cell from a fixture. */
+export function foldUsageBarState(report: {
+  generatedAt?: number
+  providers: UsageBarAccount[]
+}): UsageBarState {
+  const accounts = report.providers.map(
+    ({ id, provider, label, account, limits, limitsNote }) => ({
+      id,
+      provider,
+      label,
+      account,
+      limits,
+      limitsNote,
+    }),
+  )
+  let tightest: number | null = null
+  for (const a of accounts)
+    for (const l of a.limits)
+      tightest =
+        tightest == null ? l.usedPercent : Math.max(tightest, l.usedPercent)
+  return { tightest, accounts }
 }

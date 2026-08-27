@@ -68,7 +68,7 @@ const module = (id: string): BarModule => ({ id, enabled: true })
 export const DEFAULT_BAR_LAYOUT: BarZones = {
   left: ['workspaces', 'agents', 'frontApp'].map(module),
   center: [module('clock')],
-  right: ['wifi', 'awake', 'battery'].map(module),
+  right: ['wifi', 'awake', 'usage', 'battery'].map(module),
 }
 
 /** Layout id for a user widget (docs/WIDGETS.md): `widget:<id>`. */
@@ -149,6 +149,16 @@ export type AgentsConfig = {
    * for account-limit fetches; the code owns source selection + fallback. */
   claudeCreds: boolean
   codexCreds: boolean
+  /** Overrides for discovered Claude accounts (`~/.claude`, `~/.claude-*`):
+   * rename or hide one. Discovery itself needs no config. */
+  claudeAccounts: ClaudeAccountConfig[]
+}
+
+/** One `agents.claudeAccounts` entry, keyed by config dir (`~/` allowed). */
+export type ClaudeAccountConfig = {
+  dir: string
+  label: string | null
+  enabled: boolean
 }
 
 /** Every widget the bar knows (TS-only; Rust just stores zones). */
@@ -159,6 +169,7 @@ export const BAR_MODULE_IDS = [
   'clock',
   'wifi',
   'awake',
+  'usage',
   'battery',
 ] as const
 
@@ -171,4 +182,5 @@ export const DEFAULT_AGENTS_CONFIG: AgentsConfig = {
   askProvider: 'claude',
   claudeCreds: false,
   codexCreds: false,
+  claudeAccounts: [],
 }

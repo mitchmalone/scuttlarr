@@ -629,3 +629,32 @@ button {
   user-select: text;
   -webkit-user-select: text;
 }
+
+/* Settings → Agents → Usage: discovered Claude accounts (rename / hide). */
+.accounts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-row code {
+  min-width: 14ch;
+}
+
+.account-label {
+  width: 14ch;
+}
+
+.account-row .dim {
+  color: var(--dim);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

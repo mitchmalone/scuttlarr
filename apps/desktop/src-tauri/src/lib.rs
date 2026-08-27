@@ -157,6 +157,7 @@ pub fn run() {
             commands::delete_clip,
             commands::write_config,
             commands::open_settings,
+            commands::open_panel,
             commands::list_screenshots,
             commands::screenshot_thumb,
             commands::screenshot_action,

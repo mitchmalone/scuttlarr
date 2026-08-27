@@ -6,6 +6,20 @@
 
 ---
 
+### 2026-08-27 · Claude Code's keychain item name follows `CLAUDE_CONFIG_DIR`
+
+A second subscription run via `CLAUDE_CONFIG_DIR=~/.claude-psyke` does **not** share the
+`Claude Code-credentials` keychain item: the CLI creates `Claude Code-credentials-<hash>`,
+where `<hash>` is the first 8 hex chars of `sha256` over the config dir path as given
+(`/Users/mitch/.claude-psyke` → `4051cf21`, verified with `security dump-keychain`). The
+`.credentials.json` file is _not_ written for that dir at all — keychain only. And that
+dir's `.claude.json` (the one at `<dir>/.claude.json`, not `~/.claude.json`) carries the
+`oauthAccount` block naming the login; a personal plan's org is auto-named
+`<email>'s Organization`, which is the tell for labelling it "Personal".
+
+Cold scan with two accounts: ~700 ms for ~700 MB of journals (warm 30 ms) — still on a
+background thread, still under the panel's 2 s first-poll.
+
 ### 2026-08-26 · One empty `list-panes` read deleted every agent on the bar
 
 Field bug: no agent cells at all, `agents.json` permanently `[]` — monitoring on, hooks

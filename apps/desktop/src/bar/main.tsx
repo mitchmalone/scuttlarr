@@ -15,6 +15,7 @@ import {
   BarClock,
   BarFrontApp,
   type BarSnapshot,
+  BarUsageCell,
   BarWidgetCell,
   BarWifiCell,
   BarWorkspaces,
@@ -314,6 +315,20 @@ function BarWindow() {
           />
         )
       }
+      case 'usage':
+        // Absent while the monitor is off (Settings → Agents): no cell.
+        if (!snap!.usage) return null
+        return (
+          <BarUsageCell
+            key={id}
+            usage={snap!.usage}
+            nowSecs={Math.floor(now.getTime() / 1000)}
+            hover={hover}
+            onClick={() =>
+              invoke('open_panel', { id: 'usage' }).catch(console.error)
+            }
+          />
+        )
       case 'battery':
         return (
           <BarBatteryCell

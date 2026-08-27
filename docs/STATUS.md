@@ -3,9 +3,20 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-08-26
+> Last updated: 2026-08-27
 
 ## Where we are
+
+**Usage in the menubar, every account, 2026-08-27 (on main, unreleased — built + running):**
+a `usage` bar cell — CodexBar's tiny meter in our style — showing the tightest window across
+every account (amber ≥70, red ≥90), hover card with one tile per account, click summons
+`usage ⏎` (new `open_panel` command). Claude accounts are discovered from `~/.claude` +
+`~/.claude-*` (one per `CLAUDE_CONFIG_DIR`), labelled from each dir's `oauthAccount`,
+credentials per account via the path-derived keychain item — Personal + Psyke both live.
+`UsagePanel` moved into `@launcharr/tui` with an _All_ tiles view; the site demo renders it.
+DECISIONS + JOURNAL 2026-08-27, `plans/done/usage-accounts-and-bar.md`. **Hands-check
+pending:** limits vs claude.ai/settings/usage for both accounts (first open prompts the
+keychain once per account).
 
 **Agent liveness fix, 2026-08-26 (on main, unreleased — built + running):** the process
 outranks the multiplexer. A pane found in the layout is still proof of life; a pane _missing_
@@ -176,7 +187,8 @@ display. Consider a v0.5.1 for the post-release batch once those pass.
   Go daemon booted out (revert: bootstrap
   `~/Library/LaunchAgents/com.mitchmalone.sketchybar-agent-status.plist` + repoint
   hooks; settings backups at `~/.claude*/settings.json.bak-agent-status`).
-- **`usage ⏎` token monitor** (plans/done/usage-panel.md + agents-settings-and-limits.md):
+- **`usage ⏎` token monitor** (plans/done/usage-panel.md + agents-settings-and-limits.md +
+  usage-accounts-and-bar.md — multi-account + bar cell, 2026-08-27):
   journals parsed in Rust (dedup, per-file cache) for tokens by day/model, **plus opt-in
   account limits** from the providers' own usage endpoints (invariant 2 amended,
   DECISIONS 2026-08-16) — Claude 5h/weekly/model-scoped (Fable window live at 59%),

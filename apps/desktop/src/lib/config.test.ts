@@ -19,6 +19,7 @@ describe('normalizeBarZones with widgets', () => {
     expect(ids(out.right)).toEqual([
       'wifi',
       'awake',
+      'usage',
       'battery',
       'widget:uptime',
       'widget:odd',
@@ -56,6 +57,7 @@ describe('normalizeBarZones with widgets', () => {
       widgetModuleId('gh'),
       'wifi',
       'awake',
+      'usage',
       'battery',
     ])
   })

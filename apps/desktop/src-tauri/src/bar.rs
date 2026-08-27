@@ -438,6 +438,9 @@ pub struct BarSnapshot {
     pub awake: crate::power::AwakeState,
     /// User widgets (widgets.rs) — last view per widget, in-memory read.
     pub widgets: Vec<crate::widgets::WidgetState>,
+    /// Agent usage limits per account (usage.rs) — cached-report fold; None
+    /// while the monitor is off (Settings → Agents).
+    pub usage: Option<crate::usage::UsageBarState>,
 }
 
 pub fn snapshot() -> BarSnapshot {
@@ -472,6 +475,7 @@ pub fn snapshot() -> BarSnapshot {
         agents: crate::agents::list(),
         awake: crate::power::state(),
         widgets: crate::widgets::snapshot(),
+        usage: crate::usage::bar_state(),
     }
 }
 

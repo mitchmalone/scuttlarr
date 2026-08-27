@@ -90,6 +90,39 @@ export interface AwakeHolder {
   display: boolean
 }
 
+/* ---- usage (usage.rs) ------------------------------------------------ */
+
+/** One account rate-limit window as the provider reports it (mirrors
+ * LimitWindow in usage.rs): "5h session", "weekly · opus", … */
+export interface LimitWindow {
+  name: string
+  usedPercent: number
+  /** Unix seconds; null when the provider gave no reset. */
+  resetsAt: number | null
+}
+
+/** Mirrors UsageBarAccount in usage.rs — one account's windows for the bar. */
+export interface UsageBarAccount {
+  /** `claude`, `claude-<suffix>`, `codex` — the panel's selection key. */
+  id: string
+  /** Provider kind: `claude` | `codex`. */
+  provider: string
+  /** "Personal", the organisation, "Codex". */
+  label: string
+  /** Signed-in email when the CLI recorded one. */
+  account: string | null
+  limits: LimitWindow[]
+  /** Source off / token expired / "as of" staleness; null = live. */
+  limitsNote: string | null
+}
+
+/** Mirrors UsageBarState in usage.rs — the cached report, folded for the cell. */
+export interface UsageBarState {
+  /** Highest used-percent across every account's windows. */
+  tightest: number | null
+  accounts: UsageBarAccount[]
+}
+
 /* ---- widgets (docs/WIDGETS.md) --------------------------------------- */
 
 /** The scripts action vocabulary (mirrors ScriptAction in scripts.rs). */
@@ -199,6 +232,8 @@ export interface BarSnapshot {
   awake?: AwakeBarState | null
   /** User widgets (widgets.rs); optional so older fixtures stay valid. */
   widgets?: BarWidget[]
+  /** Agent usage per account (usage.rs); null/absent while the monitor is off. */
+  usage?: UsageBarState | null
 }
 
 /**

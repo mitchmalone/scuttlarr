@@ -2,23 +2,17 @@
 
 import {
   KeyHints,
+  UsagePanel as KitUsagePanel,
   ListRow,
-  MeterRow,
   Panel,
   SectionHeader,
-  SegmentedControl,
   TextPrompt,
+  USAGE_ALL,
   useListNav,
 } from '@launcharr/tui'
 import { useState } from 'react'
 
-import {
-  PANEL_INFO,
-  type PanelId,
-  USAGE,
-  WIFI,
-  fmtTokens,
-} from '@/lib/demo-data'
+import { PANEL_INFO, type PanelId, USAGE_REPORT, WIFI } from '@/lib/demo-data'
 
 /**
  * The demo's TUI panels, rendered from the *shipping* `@launcharr/tui` components
@@ -198,72 +192,17 @@ export function DnsPanel({ onClose }: { onClose: () => void }) {
   )
 }
 
-/** `usage ⏎` — tokens by day and model, plus opt-in account limits. */
+/** `usage ⏎` — the kit's panel over fictional accounts (invariant 10). */
 export function UsagePanel({ onClose }: { onClose: () => void }) {
-  const [provider, setProvider] = useState<'claude' | 'codex'>('claude')
-  const u = USAGE[provider]
-  const peak = Math.max(...u.days.map((d) => d.tokens), 1)
-  const modelPeak = Math.max(...u.models.map((m) => m.tokens), 1)
-
+  const [selected, setSelected] = useState(USAGE_ALL)
   return (
-    <Panel
-      icon="▤"
-      title="Usage"
-      subtitle={hint('usage')}
-      autoFocus
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') onClose()
-        if (e.key === 'ArrowLeft') setProvider('claude')
-        if (e.key === 'ArrowRight') setProvider('codex')
-      }}
-      footer={
-        <KeyHints
-          hints={[
-            { keys: '←→', label: 'provider' },
-            { keys: 'esc', label: 'back' },
-          ]}
-        />
-      }
-    >
-      <SegmentedControl
-        value={provider}
-        onChange={setProvider}
-        options={[
-          { value: 'claude', label: 'Claude Code' },
-          { value: 'codex', label: 'Codex' },
-        ]}
-      />
-      <SectionHeader label="Account limits" right="opt-in" />
-      {u.limits.map((l) => (
-        <MeterRow
-          key={l.name}
-          label={l.name}
-          value={l.pct}
-          max={100}
-          right={`${l.pct}% · ${l.resets}`}
-        />
-      ))}
-      <SectionHeader label="Tokens by day" />
-      {u.days.map((d) => (
-        <MeterRow
-          key={d.label}
-          label={d.label}
-          value={d.tokens}
-          max={peak}
-          right={fmtTokens(d.tokens)}
-        />
-      ))}
-      <SectionHeader label="By model" />
-      {u.models.map((m) => (
-        <MeterRow
-          key={m.model}
-          label={m.model}
-          value={m.tokens}
-          max={modelPeak}
-          right={fmtTokens(m.tokens)}
-        />
-      ))}
-    </Panel>
+    <KitUsagePanel
+      report={USAGE_REPORT}
+      selected={selected}
+      nowSecs={USAGE_REPORT.generatedAt}
+      onSelect={setSelected}
+      onClose={onClose}
+    />
   )
 }
 

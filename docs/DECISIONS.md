@@ -5,6 +5,29 @@
 
 ---
 
+### 2026-08-27 · Claude accounts are a directory convention; usage rides the bar push
+
+- **Decision.** The usage monitor treats every Claude Code config dir as one account:
+  `~/.claude` plus each `~/.claude-*` (how `CLAUDE_CONFIG_DIR` users split a second
+  subscription). Identity comes from that dir's `.claude.json` → `oauthAccount`; credentials
+  from `<dir>/.credentials.json`, else the keychain item Claude Code derives from the path
+  (`Claude Code-credentials-<sha256(dir)[..8]>`, bare for the default dir). No account
+  config — `agents.claudeAccounts` only renames or hides. One consent toggle (`claudeCreds`)
+  covers all Claude accounts. The bar gets a `usage` cell fed by a `UsageBarState` fold on
+  the 1 Hz `BarSnapshot` (no new poll, no new command); the panel moved into
+  `@launcharr/tui` so the site renders the real one. One new IPC command, `open_panel(id)`:
+  the bar's click-through summons the launcher straight into a panel tenant.
+- **Why.** Discovery-by-convention keeps the zero-config promise and matches how the CLI
+  actually stores state — inventing an account registry would drift from it. Deriving the
+  keychain service name means the second account works the day it's logged in, with no
+  launcharr-side setup. Riding the bar push keeps the refresh cadence single-owner (the 60 s
+  report cache) and makes the cell the reason the cache stays warm while the panel is closed.
+  `open_panel` is the first bar → panel path; `panel-shown` still resets the prompt first, so
+  the tenant opens exactly as its trigger word would.
+- **Alternatives.** Per-account cells (rejected: minimal is the theme — one meter, the
+  tightest window, hover for the rest); a `security-framework` keychain read (rejected: the
+  `/usr/bin/security` CLI is what makes macOS show its own consent prompt).
+
 ### 2026-08-26 · Liveness comes from the process; tmux only ever adds evidence
 
 - **Decision.** `reap()` consults the pid before it acts on a missing pane. A pane found in the

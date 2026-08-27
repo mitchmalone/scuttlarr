@@ -11,6 +11,12 @@ import { DynamicIcon, type IconName } from 'lucide-react/dynamic'
 import type { ReactNode } from 'react'
 
 import {
+  fmtResetShort,
+  providerName,
+  tightestWindow,
+  usageTone,
+} from '../components/usage'
+import {
   agentAge,
   agentGlyph,
   agentLocation,
@@ -33,6 +39,8 @@ import type {
   BarSnapshot,
   BarWidget,
   BatteryDetail,
+  UsageBarAccount,
+  UsageBarState,
   WidgetAction,
   WifiDetail,
 } from './types'
@@ -781,6 +789,192 @@ export function BarWifiCell({
           online={online}
           cardRef={hover.cardRef}
         />
+      }
+    >
+      {body}
+    </BarHoverCell>
+  )
+}
+
+/* ---- usage ----------------------------------------------------------- */
+
+/**
+ * CodexBar's "tiny usage meter" as a Lucide-box glyph: a 20×8 rounded track
+ * with a fill for the tightest window. Drawn, not iconed — no lucide glyph
+ * says "how full is the bucket" at 14px.
+ */
+export function UsageMeterIcon({
+  pct,
+  size = ICON_PROPS.size,
+}: {
+  pct: number | null
+  size?: number
+}) {
+  const inner = 16
+  const fill =
+    pct == null ? 0 : Math.max(0, Math.min(inner, (pct / 100) * inner))
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={ICON_PROPS.strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2" y="8" width="20" height="8" rx="2" />
+      {fill > 0 && (
+        <rect
+          x="4"
+          y="10"
+          width={fill}
+          height="4"
+          rx="1"
+          fill="currentColor"
+          stroke="none"
+        />
+      )}
+    </svg>
+  )
+}
+
+/** Card rows per account: head + one line per window (+ a note line). Kept
+ * beside the card so the desktop can size its window before the card mounts. */
+export function usageCardHeight(usage: UsageBarState | null): number {
+  const accounts = usage?.accounts ?? []
+  const rows = accounts.reduce(
+    (n, a) =>
+      n +
+      26 +
+      a.limits.length * 18 +
+      (a.limitsNote || !a.limits.length ? 16 : 0),
+    0,
+  )
+  return 14 + 18 + rows + 34 + 12
+}
+
+function UsageCardAccount({
+  account,
+  nowSecs,
+}: {
+  account: UsageBarAccount
+  nowSecs: number
+}) {
+  const tight = tightestWindow(account.limits)
+  return (
+    <div className="bar-usage-account">
+      <div className="bar-usage-head">
+        <span className="bar-usage-name">{account.label}</span>
+        <span className="bar-usage-sub">{providerName(account.provider)}</span>
+        {tight && (
+          <span
+            className={`bar-usage-pct bar-usage-${usageTone(tight.usedPercent)}`}
+          >
+            {Math.round(tight.usedPercent)}%
+          </span>
+        )}
+      </div>
+      {account.limits.map((l) => (
+        <div
+          key={l.name}
+          className={`bar-usage-row bar-usage-${usageTone(l.usedPercent)}`}
+        >
+          <span className="bar-usage-row-name">{l.name}</span>
+          <span className="bar-usage-track">
+            <span
+              className="bar-usage-fill"
+              style={{ width: `${Math.max(0, Math.min(100, l.usedPercent))}%` }}
+            />
+          </span>
+          <span className="bar-usage-row-pct">
+            {Math.round(l.usedPercent)}%
+          </span>
+          <span className="bar-usage-row-reset">
+            {fmtResetShort(l.resetsAt, nowSecs)}
+          </span>
+        </div>
+      ))}
+      {account.limits.length === 0 && !account.limitsNote && (
+        <div className="bar-usage-note">no limits reported</div>
+      )}
+      {account.limitsNote && (
+        <div className="bar-usage-note" title={account.limitsNote}>
+          {account.limitsNote}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** The usage card: every account's windows at a glance — CodexBar's provider
+ * tiles, stacked. Clicking the cell opens the full panel. */
+export function BarUsageCard({
+  usage,
+  nowSecs,
+  cardRef,
+}: {
+  usage: UsageBarState | null
+  nowSecs: number
+  cardRef?: (el: HTMLElement | null) => void
+}) {
+  const accounts = usage?.accounts ?? []
+  return (
+    <BarCard variant="usage" cardRef={cardRef}>
+      <BarCardTitle>Usage</BarCardTitle>
+      {accounts.length === 0 && <BarCardDim>scanning journals…</BarCardDim>}
+      {accounts.map((a) => (
+        <UsageCardAccount key={a.id} account={a} nowSecs={nowSecs} />
+      ))}
+      <BarCardHint>click cell for usage ⏎</BarCardHint>
+    </BarCard>
+  )
+}
+
+/**
+ * The usage cell: the tiny meter plus the tightest window's percent across
+ * every account — one cell, not one per account (minimal is the theme).
+ * Dim until the first scan lands; amber from 70%, red from 90%.
+ */
+export function BarUsageCell({
+  usage,
+  nowSecs,
+  hover,
+  onClick,
+}: {
+  usage: UsageBarState | null
+  nowSecs: number
+  hover?: BarHoverApi
+  onClick?: () => void
+}) {
+  const pct = usage?.tightest ?? null
+  const tone = pct == null ? 'off' : usageTone(pct)
+  const className = `bar-cell bar-usage-${tone}`
+  const body = (
+    <>
+      <UsageMeterIcon pct={pct} />
+      {pct != null && `${Math.round(pct)}%`}
+    </>
+  )
+  if (!hover) {
+    return (
+      <BarCell className={className} title="Agent usage">
+        {body}
+      </BarCell>
+    )
+  }
+  return (
+    <BarHoverCell
+      id="usage"
+      cardHeight={usageCardHeight(usage)}
+      hover={hover}
+      className={className}
+      wrapperClassName="bar-usage"
+      onClick={onClick}
+      card={
+        <BarUsageCard usage={usage} nowSecs={nowSecs} cardRef={hover.cardRef} />
       }
     >
       {body}

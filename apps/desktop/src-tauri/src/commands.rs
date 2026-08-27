@@ -564,6 +564,17 @@ pub fn open_settings(app: AppHandle, tab: Option<String>) -> CmdResult<()> {
     crate::settings_window::open_tab(&app, tab.as_deref())
 }
 
+/// Summon the launcher straight into a panel (`usage`, `wifi`, …) — the bar's
+/// click-through (DECISIONS 2026-08-27). `panel-shown` resets the prompt first;
+/// `open-panel` then selects the tenant, exactly as typing its trigger would.
+#[tauri::command]
+pub fn open_panel(app: AppHandle, id: String) -> CmdResult<()> {
+    use tauri::Emitter;
+    crate::panel::show(&app);
+    app.emit("open-panel", id)
+        .map_err(|e| CmdError::Internal(e.to_string()))
+}
+
 // ---- Widgets (docs/WIDGETS.md, DECISIONS 2026-08-19) -----------------------
 
 /// Settings → Menubar → Custom widgets → add: a picked file's bytes or a URL.

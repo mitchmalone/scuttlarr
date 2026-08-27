@@ -6,6 +6,7 @@ import {
   BarBatteryCell,
   BarClock,
   BarFrontApp,
+  BarUsageCell,
   BarWifiCell,
   BarWorkspaces,
 } from '@launcharr/tui'
@@ -57,6 +58,12 @@ export function BarStrip() {
             online={snap.wifi.online}
             ssid={snap.wifi.ssid}
             rssi={snap.wifi.rssi}
+          />,
+          <BarUsageCell
+            key="usage"
+            usage={snap.usage ?? null}
+            nowSecs={Math.floor(now.getTime() / 1000)}
+            hover={hover}
           />,
           <BarBatteryCell
             key="battery"

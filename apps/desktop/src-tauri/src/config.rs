@@ -159,6 +159,28 @@ pub struct AgentsConfig {
     pub claude_creds: bool,
     /// May read the Codex CLI's `~/.codex/auth.json` to fetch account limits.
     pub codex_creds: bool,
+    /// Overrides for discovered Claude accounts (`~/.claude`, `~/.claude-*`):
+    /// rename or hide one. Discovery itself needs no config (usage.rs).
+    pub claude_accounts: Vec<ClaudeAccountConfig>,
+}
+
+/// One `agents.claudeAccounts` entry, keyed by config dir (`~/` allowed).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct ClaudeAccountConfig {
+    pub dir: String,
+    pub label: Option<String>,
+    pub enabled: bool,
+}
+
+impl Default for ClaudeAccountConfig {
+    fn default() -> Self {
+        Self {
+            dir: String::new(),
+            label: None,
+            enabled: true,
+        }
+    }
 }
 
 impl Default for AgentsConfig {
@@ -172,6 +194,7 @@ impl Default for AgentsConfig {
             ask_provider: "claude".into(),
             claude_creds: false,
             codex_creds: false,
+            claude_accounts: Vec::new(),
         }
     }
 }

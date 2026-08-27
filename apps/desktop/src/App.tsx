@@ -329,6 +329,13 @@ export default function App() {
         setInputMode('launch')
         setToast(e.payload)
       }),
+      // The bar's click-through into a panel (open_panel): the prompt was
+      // just reset by panel-shown; enter the tenant as its trigger would.
+      listen<string>('open-panel', (e) => {
+        setPanelMode(e.payload)
+        setRaw('')
+        setSelected(0)
+      }),
       listen('index-updated', refetchIndex),
       listen('icons-updated', refetchIndex),
       listen('scripts-updated', refetchScripts),

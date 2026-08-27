@@ -1,7 +1,6 @@
+import { USAGE_ALL, UsagePanel, type UsageReport } from '@launcharr/tui'
 import { invoke } from '@tauri-apps/api/core'
 import { useEffect, useState } from 'react'
-
-import { UsagePanel, type UsageReport } from './UsagePanel'
 
 /** Fast poll: the first usage_status kicks a background journal scan and
  * returns the (possibly empty) cache; polling picks the result up as soon as
@@ -10,7 +9,7 @@ const REFRESH_MS = 2000
 
 export function UsagePanelContainer({ onClose }: { onClose: () => void }) {
   const [report, setReport] = useState<UsageReport | null>(null)
-  const [selected, setSelected] = useState('claude')
+  const [selected, setSelected] = useState(USAGE_ALL)
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000))
 
   useEffect(() => {

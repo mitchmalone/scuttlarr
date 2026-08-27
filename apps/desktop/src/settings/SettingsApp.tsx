@@ -1,5 +1,10 @@
 import type { Link } from '@launcharr/core/types'
-import type { BarSnapshot, BarWidget, WidgetSetting } from '@launcharr/tui'
+import type {
+  BarSnapshot,
+  BarWidget,
+  UsageReport,
+  WidgetSetting,
+} from '@launcharr/tui'
 import { GithubIcon, XIcon } from '@launcharr/tui/icons'
 import { getVersion } from '@tauri-apps/api/app'
 import { invoke } from '@tauri-apps/api/core'
@@ -19,7 +24,9 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
+  type AgentsConfig,
   type BarZones,
+  type ClaudeAccountConfig,
   type Config,
   type ZoneName,
   normalizeBarZones,
@@ -558,8 +565,9 @@ function AgentsTab({ config, set }: { config: Config; set: SetFn }) {
               </label>
               <p className="hint">
                 Credentials file first (silent); keychain when the file is stale
-                — macOS shows its own prompt once.
+                — macOS shows its own prompt once per account.
               </p>
+              <ClaudeAccountsList agents={agents} setAgents={setAgents} />
               <label className="check">
                 <input
                   type="checkbox"
@@ -580,6 +588,108 @@ function AgentsTab({ config, set }: { config: Config; set: SetFn }) {
   )
 }
 
+/**
+ * The Claude accounts usage.rs discovered — `~/.claude` plus every
+ * `~/.claude-*` (one login per `CLAUDE_CONFIG_DIR`). Nothing to add here:
+ * the list *is* the directory convention; a row only renames or hides.
+ */
+function ClaudeAccountsList({
+  agents,
+  setAgents,
+}: {
+  agents: AgentsConfig
+  setAgents: (patch: Partial<AgentsConfig>) => void
+}) {
+  const [report, setReport] = useState<UsageReport | null>(null)
+  useEffect(() => {
+    let live = true
+    const poll = () =>
+      invoke<UsageReport>('usage_status')
+        .then((r) => live && setReport(r))
+        .catch(console.error)
+    poll()
+    // The first call kicks the scan; one retry picks up the result.
+    const id = setTimeout(poll, 2500)
+    return () => {
+      live = false
+      clearTimeout(id)
+    }
+  }, [])
+  const accounts = (report?.providers ?? []).filter(
+    (p) => p.provider === 'claude',
+  )
+  const dirFor = (id: string) => `~/.${id}`
+  const overrideFor = (id: string) =>
+    agents.claudeAccounts.find((a) => a.dir === dirFor(id))
+  const setOverride = (id: string, patch: Partial<ClaudeAccountConfig>) => {
+    const dir = dirFor(id)
+    const rest = agents.claudeAccounts.filter((a) => a.dir !== dir)
+    const merged: ClaudeAccountConfig = {
+      dir,
+      label: null,
+      enabled: true,
+      ...overrideFor(id),
+      ...patch,
+    }
+    // Back to defaults → drop the entry rather than store a no-op.
+    const noop = merged.enabled && !merged.label
+    setAgents({ claudeAccounts: noop ? rest : [...rest, merged] })
+  }
+  // Hidden accounts are absent from the report; keep their rows from config.
+  const hidden = agents.claudeAccounts.filter(
+    (a) => !a.enabled && !accounts.some((p) => dirFor(p.id) === a.dir),
+  )
+  if (accounts.length === 0 && hidden.length === 0) return null
+  return (
+    <div className="accounts">
+      <p className="hint">
+        Accounts found — one per Claude Code config dir (<code>~/.claude</code>,{' '}
+        <code>~/.claude-*</code>):
+      </p>
+      {accounts.map((p) => {
+        const o = overrideFor(p.id)
+        return (
+          <label key={p.id} className="check account-row">
+            <input
+              type="checkbox"
+              checked={o?.enabled ?? true}
+              onChange={(e) => setOverride(p.id, { enabled: e.target.checked })}
+            />
+            <code>{dirFor(p.id)}</code>
+            <input
+              type="text"
+              className="account-label"
+              placeholder={p.label}
+              value={o?.label ?? ''}
+              onChange={(e) =>
+                setOverride(p.id, { label: e.target.value || null })
+              }
+            />
+            {p.account && <span className="dim">{p.account}</span>}
+          </label>
+        )
+      })}
+      {hidden.map((a) => (
+        <label key={a.dir} className="check account-row">
+          <input
+            type="checkbox"
+            checked={false}
+            onChange={() =>
+              setAgents({
+                claudeAccounts: agents.claudeAccounts.filter(
+                  (x) => x.dir !== a.dir,
+                ),
+              })
+            }
+          />
+          <code>{a.dir}</code>
+          <span className="dim">hidden</span>
+        </label>
+      ))}
+    </div>
+  )
+}
+
 const MODULE_LABELS: Record<string, string> = {
   workspaces: 'AeroSpace',
   agents: 'Agent monitors',
@@ -587,6 +697,7 @@ const MODULE_LABELS: Record<string, string> = {
   clock: 'Clock',
   wifi: 'Wi-Fi',
   awake: 'Awake (keep-alive)',
+  usage: 'Agent usage',
   battery: 'Battery',
 }
 

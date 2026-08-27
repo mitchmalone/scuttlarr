@@ -479,6 +479,102 @@
   flex-shrink: 0;
 }
 
+/* Alert tiers: fill and value take the tone; the label stays dim. */
+.tui-meter-warn .tui-meter-fill {
+  background: var(--warn, #d29922);
+}
+.tui-meter-warn .tui-meter-right {
+  color: var(--warn, #d29922);
+}
+.tui-meter-danger .tui-meter-fill {
+  background: var(--danger, #ff6b6b);
+}
+.tui-meter-danger .tui-meter-right {
+  color: var(--danger, #ff6b6b);
+}
+
+/* ---- Usage tiles (components/usage.tsx) ------------------------------ */
+
+/* One tile per account, CodexBar's provider tiles in Omarchy-flat: a hairline
+ * box, a name line, thin meters. Two-up when the panel is wide enough. */
+.tui-usage-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 8px;
+}
+
+.tui-usage-tile {
+  border: 1px solid var(--_border);
+  padding: 8px 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: default;
+}
+
+.tui-usage-tile-selectable:hover {
+  background: var(--_selected);
+}
+
+.tui-usage-tile-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 6px 4px;
+}
+
+.tui-usage-tile-name {
+  color: var(--_fg);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tui-usage-tile-sub {
+  color: var(--_dim);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tui-usage-tile-headline {
+  color: var(--_fg);
+  flex-shrink: 0;
+}
+
+.tui-usage-tile-headline.tui-tone-warn {
+  color: var(--warn, #d29922);
+}
+
+.tui-usage-tile-headline.tui-tone-danger {
+  color: var(--danger, #ff6b6b);
+}
+
+.tui-usage-tile .tui-meter {
+  padding: 2px 6px;
+}
+
+.tui-usage-tile .tui-meter-label {
+  min-width: 10ch;
+  max-width: 16ch;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tui-usage-note {
+  color: var(--_dim);
+  padding: 2px 6px 0;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ---- Calendar -------------------------------------------------------- */
 
 .tui-calendar {

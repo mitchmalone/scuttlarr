@@ -6,6 +6,7 @@ import {
   BarBatteryCell,
   BarClock,
   BarFrontApp,
+  BarUsageCell,
   BarWifiCell,
   BarWorkspaces,
   formatBarClock,
@@ -80,6 +81,12 @@ export function DemoBar({
               router: WIFI.status.router,
               dns: WIFI.status.dns,
             }}
+          />,
+          <BarUsageCell
+            key="usage"
+            usage={snap.usage ?? null}
+            nowSecs={Math.floor((now?.getTime() ?? 0) / 1000)}
+            hover={hover}
           />,
           <BarBatteryCell
             key="battery"

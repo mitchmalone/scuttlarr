@@ -2,7 +2,7 @@
   "name": "@launcharr/www",
   "private": true,
   "type": "module",
-  "description": "Marketing site for launcharr — an app launcher for pirates",
+  "description": "Marketing site for launcharr \u2014 an app launcher for pirates",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@launcharr/core": "workspace:*",
+    "@launcharr/plugins": "workspace:*",
     "@launcharr/tui": "workspace:*",
     "@radix-ui/react-tabs": "^1.1.21",
     "class-variance-authority": "^0.7.1",

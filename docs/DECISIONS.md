@@ -5,6 +5,36 @@
 
 ---
 
+### 2026-08-27 · Plugin host API: four calls, blob-loaded modules, native providers for bundled plugins
+
+- **Decision.** Plugin UI (`cell.tsx`/`panel.tsx`) reaches the app through a `host` of
+  exactly four calls — `open(target)`, `copy(text)`, `send(message)` (a JSON line on the
+  service's stdin), `openPanel(id?)` — each one an existing or new IPC command
+  (`script_action`, `plugin_send`, `open_panel`). No `invoke` from plugin code. New
+  commands (invariant 3, recorded): `plugins_list`, `plugin_state`, `plugin_module`,
+  `plugin_send`, `plugin_install`, `plugin_remove`, `plugin_restart`; `usage_status`
+  retired (the usage plugin's state rides the snapshot). **Loading:** Rust runs
+  `bun build --external react/@launcharr/tui/lucide-react` into
+  `~/.config/launcharr/.build/<id>/`; the webview registers its own module namespaces
+  under `globalThis.__launcharrShared`, generates a per-module ESM shim (`export const
+useState = m.useState…`) as a blob: URL, rewrites the plugin's shared specifiers to
+  those URLs, and `import()`s the plugin as a blob: URL. `builtAt` is the cache key, so
+  an edit hot-swaps. **Bundled plugins** (`packages/plugins/`: usage, calendar) are
+  Vite-bundled and take state from a Rust provider named by `manifest.native` — usage.rs
+  stays Rust; `native` is refused in user plugins. Layout slot `plugin:<id>`; the old
+  `usage` module id migrates in place.
+- **Why.** One React instance is non-negotiable (hooks break across two) and a
+  Vite-bundled app has no bare `react` to hand out; a custom URI scheme + import map
+  would work but adds a protocol handler, CSP work, and an import map that must exist
+  before any module loads. Blob URLs need none of it — plain ESM, provable with unit
+  tests on the two pure halves (shim generation, specifier rewriting). Keeping usage.rs
+  in Rust rather than rewriting 1,400 lines of journal scanning, keychain, and fetch into
+  a Bun service: the plugin _contract_ is proven on the UI side (the same `cell.tsx`
+  props third parties get) and on the service side by the reference plugin; churning a
+  feature Mitch just built for purity would be regression for nothing.
+- **Deviation from the plan.** Slice D said "service.ts (moved out of usage.rs)". Not
+  done — see above; recorded in the plan.
+
 ### 2026-08-27 · Plugins are code: cells and panels as React on `@launcharr/tui`, service in Bun
 
 - **Decision.** "Widgets are data, never code" (2026-08-19) is **superseded**. A plugin is

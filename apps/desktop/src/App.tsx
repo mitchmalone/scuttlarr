@@ -23,7 +23,13 @@ import type {
   ScriptInfo,
   ScriptItem,
 } from '@launcharr/core/types'
-import { AskPinned, AskSurface, type AskTurn } from '@launcharr/tui'
+import {
+  AskPinned,
+  AskSurface,
+  type AskTurn,
+  WidgetGlyph,
+} from '@launcharr/tui'
+import { pluginPanelInfo } from '@launcharr/tui/plugins'
 import '@launcharr/tui/styles.css'
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
@@ -47,15 +53,17 @@ import { AwakePanelContainer } from './panels/AwakePanelContainer'
 import { ClipboardPanelContainer } from './panels/ClipboardPanelContainer'
 import { DnsPanelContainer } from './panels/DnsPanelContainer'
 import { HelpPanelContainer } from './panels/HelpPanelContainer'
+import { PluginsPanelContainer } from './panels/PluginsPanelContainer'
 import { ScreenshotsPanelContainer } from './panels/ScreenshotsPanelContainer'
-import { UsagePanelContainer } from './panels/UsagePanelContainer'
 import { WifiPanelContainer } from './panels/WifiPanelContainer'
 import {
   PANEL_ICONS,
   PANEL_INFO,
-  PANEL_TRIGGERS,
+  PANEL_TRIGGERS as STATIC_PANEL_TRIGGERS,
   panelEnabled,
 } from './panels/registry'
+import { PluginPanelHost } from './plugins/components'
+import { usePlugins } from './plugins/use-plugins'
 
 /** Keep in sync with the CSS: input row + result rows + container border. */
 const INPUT_HEIGHT = 54
@@ -74,7 +82,6 @@ const ASK_ROWS = 9
  * is one entry in panels/registry.ts (metadata) plus its component here. */
 const PANEL_COMPONENTS: Record<string, React.FC<{ onClose: () => void }>> = {
   agents: AgentsPanelContainer,
-  usage: UsagePanelContainer,
   awake: AwakePanelContainer,
   wifi: WifiPanelContainer,
   dns: DnsPanelContainer,
@@ -83,12 +90,20 @@ const PANEL_COMPONENTS: Record<string, React.FC<{ onClose: () => void }>> = {
   clipboard: ClipboardPanelContainer,
   screenshots: ScreenshotsPanelContainer,
   help: HelpPanelContainer,
+  plugins: PluginsPanelContainer,
 }
 
-const PANELS: Record<
-  string,
-  { title: string; hint: string; component: React.FC<{ onClose: () => void }> }
-> = Object.fromEntries(
+type PanelEntry = {
+  title: string
+  hint: string
+  component: React.FC<{ onClose: () => void }>
+  /** Plugin panels carry their manifest icon (lucide name). */
+  icon?: string | null
+  aliases?: string[]
+  triggers?: string[]
+}
+
+const STATIC_PANELS: Record<string, PanelEntry> = Object.fromEntries(
   PANEL_INFO.flatMap((p) => {
     const component = PANEL_COMPONENTS[p.id]
     return component
@@ -130,13 +145,19 @@ const DEFAULT_CONFIG: Config = {
   colorLoupeZoom: 8,
   colorLoupeSize: 264,
   widgets: {},
+  plugins: { disabled: [] },
 }
 
 /** Panel rows draw their lucide icon; everything else keeps its text glyph. */
-function rowGlyph(row: Row): React.ReactNode {
+function rowGlyph(
+  row: Row,
+  panels: Record<string, PanelEntry>,
+): React.ReactNode {
   if (row.enter.kind === 'open-panel') {
     const Icon = PANEL_ICONS[row.enter.panel]
     if (Icon) return <Icon size={16} strokeWidth={2} aria-hidden />
+    const name = panels[row.enter.panel]?.icon
+    if (name) return <WidgetGlyph name={name} size={16} />
   }
   return row.glyph
 }
@@ -151,6 +172,38 @@ export default function App() {
   // and must never drive the desktop layer (it would write a toml for a bar-less setup).
   const [configLoaded, setConfigLoaded] = useState(false)
   const [panelMode, setPanelMode] = useState<string | null>(null)
+  // Plugin panels (docs/PLUGINS.md) join the static tenants at run time —
+  // `usage ⏎` is one. Each renders through PluginPanelHost over live state.
+  const plugins = usePlugins()
+  const PANELS = useMemo<Record<string, PanelEntry>>(() => {
+    const dynamic: Record<string, PanelEntry> = {}
+    for (const p of plugins) {
+      const info = pluginPanelInfo(p)
+      if (!info || !p.enabled || STATIC_PANELS[p.id]) continue
+      const settings = config.widgets?.[p.id] ?? {}
+      dynamic[p.id] = {
+        title: info.title,
+        hint: info.hint,
+        icon: p.icon,
+        aliases: info.aliases,
+        triggers: info.triggers,
+        component: ({ onClose }) => (
+          <PluginPanelHost id={p.id} settings={settings} onClose={onClose} />
+        ),
+      }
+    }
+    return { ...STATIC_PANELS, ...dynamic }
+  }, [plugins, config.widgets])
+  const PANEL_TRIGGERS = useMemo<Record<string, string>>(() => {
+    const out: Record<string, string> = { ...STATIC_PANEL_TRIGGERS }
+    for (const [id, p] of Object.entries(PANELS)) {
+      if (!(id in STATIC_PANELS)) {
+        out[id] = id
+        for (const t of p.triggers ?? []) out[t] ??= id
+      }
+    }
+    return out
+  }, [PANELS])
   // A one-row confirmation ("Copied 2 paragraphs of lorem ipsum") that replaces the
   // results and hides the panel on its own timer. Rust's `panel::flash` lands here
   // too, via the `toast` event, for actions that finish after the panel dismissed.
@@ -230,7 +283,7 @@ export default function App() {
         ...scripts.map((s) => s.trigger),
         ...quicklinks.map((l) => l.trigger as string),
       ]),
-    [scripts, quicklinks, config],
+    [scripts, quicklinks, config, PANELS, PANEL_TRIGGERS],
   )
   // Modes are keystroke-switched state: the prefix key (`!` `?` `:`) flips the
   // mode and is consumed — it never appears in the input. Esc (or Backspace on
@@ -375,7 +428,7 @@ export default function App() {
   const isScript = useCallback(
     (t: string) =>
       t !== 'clip' && !(t in PANELS) && scripts.some((s) => s.trigger === t),
-    [scripts],
+    [scripts, PANELS],
   )
   const scriptTrigger = parsed.mode === 'trigger' && isScript(parsed.trigger)
   const trigger = parsed.mode === 'trigger' ? parsed.trigger : ''
@@ -412,9 +465,10 @@ export default function App() {
           aliases: [
             id,
             ...(PANEL_INFO.find((info) => info.id === id)?.aliases ?? []),
+            ...(p.aliases ?? []),
           ],
         })),
-    [config],
+    [config, PANELS],
   )
 
   // Built-in trigger words fuzzy-match too (`lor` → Lorem ipsum); Enter runs
@@ -491,6 +545,8 @@ export default function App() {
     loremMenu,
     raw,
     browsers,
+    PANELS,
+    PANEL_TRIGGERS,
   ])
 
   const askActive = parsed.mode === 'ask' && askTurns.length > 0
@@ -894,7 +950,7 @@ export default function App() {
               {row.icon ? (
                 <img className="icon" src={convertFileSrc(row.icon)} alt="" />
               ) : (
-                <span className="icon glyph">{rowGlyph(row)}</span>
+                <span className="icon glyph">{rowGlyph(row, PANELS)}</span>
               )}
               <span className="name">
                 {row.title.split('').map((ch, j) => (

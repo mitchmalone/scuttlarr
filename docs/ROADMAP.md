@@ -66,10 +66,15 @@ toggleable. Not a distro — bar + launcher + config only. Record: docs/releases
 
 ## v0.5 — plugins (next; scope talk pending)
 
-**Direction set 2026-08-27** (DECISIONS ×2, `plans/active/plugins-react-cells-and-panels.md`):
-plugins are code — `cell.tsx` / `panel.tsx` on `@launcharr/tui`, `service.ts` in Bun,
-manifest `kinds`; first-party panels migrate onto the API, usage first. Omarchy QML plugins
-on macOS studied and rejected. The widget items below fold into that plan.
+**Plugins landed 2026-08-27** (DECISIONS ×3, `plans/done/plugins-react-cells-and-panels.md`,
+`docs/PLUGINS.md`): plugins are code — `cell.tsx` / `panel.tsx` on `@launcharr/tui`,
+`service.ts` in Bun (stream or tick), manifest `kinds`, `bun build` + blob-URL loading with
+hot-swap, Settings → Menubar → Plugins (git install, on/off, restart), `plugins ⏎` gallery.
+First-party `usage` and `calendar` are plugins (`packages/plugins/`, native state
+providers); the reference `hello` plugin is `apps/desktop/plugins/hello/`. Omarchy QML
+plugins on macOS studied and rejected. **Rolling (slice G):** the remaining first-party
+panels (awake, agents, wifi, audio, battery) move to plugins as they are touched. The
+widget items below are absorbed.
 
 Candidates carried over from v0.4, to be cut down in the 0.5 scope session:
 

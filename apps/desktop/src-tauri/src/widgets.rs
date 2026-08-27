@@ -379,7 +379,7 @@ pub fn resolve_settings(
 }
 
 /// The live resolution: config from AppState, secrets from the Keychain.
-fn settings_for(
+pub(crate) fn settings_for(
     app: &AppHandle,
     id: &str,
     settings: &[WidgetSetting],
@@ -409,7 +409,7 @@ pub fn parse_view(json: &str) -> Result<WidgetView, String> {
 /// non-zero exit (with a stderr tail), timeout, or spawn failure. Both pipes
 /// are drained on their own threads so a chatty child can't wedge on a full
 /// pipe while we poll for exit.
-fn run(cmd: &mut Command, timeout: Duration) -> Result<String, String> {
+pub(crate) fn run(cmd: &mut Command, timeout: Duration) -> Result<String, String> {
     let mut child = cmd
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -672,13 +672,15 @@ pub fn store_auth_settings(
 /// as `widget-auth` events; on exit 0 the widget is ticked. Kills any auth
 /// already running for the same id.
 pub fn auth(app: AppHandle, id: String) -> Result<(), String> {
+    // Plugins (plugins.rs) share the auth protocol: `service.ts auth`.
     let (path, settings) = WIDGETS
         .lock()
         .unwrap()
         .iter()
         .find(|e| e.state.id == id)
         .map(|e| (e.path.clone(), e.manifest.settings.clone()))
-        .ok_or_else(|| format!("no widget {id}"))?;
+        .or_else(|| crate::plugins::service_path(&id))
+        .ok_or_else(|| format!("no widget or plugin {id}"))?;
     auth_cancel(&id);
     std::thread::spawn(move || {
         let outcome = run_auth(&app, &id, &path, &settings);
@@ -687,6 +689,7 @@ pub fn auth(app: AppHandle, id: String) -> Result<(), String> {
             Ok(()) => {
                 auth_emit(&app, AuthEvent::Done { id: id.clone() });
                 poke(&id);
+                crate::plugins::poke(&id);
             }
             Err(error) => {
                 eprintln!("[launcharr widgets] {id} auth: {error}");

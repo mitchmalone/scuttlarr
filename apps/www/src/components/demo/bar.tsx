@@ -1,16 +1,17 @@
 'use client'
 
+import UsageCell from '@launcharr/plugins/usage/cell'
 import {
   Bar,
   BarAgents,
   BarBatteryCell,
   BarClock,
   BarFrontApp,
-  BarUsageCell,
   BarWifiCell,
   BarWorkspaces,
   formatBarClock,
 } from '@launcharr/tui'
+import { NOOP_HOST } from '@launcharr/tui/plugins'
 import { useEffect, useState } from 'react'
 
 import { WIFI, demoSnapshot } from '@/lib/demo-data'
@@ -82,12 +83,19 @@ export function DemoBar({
               dns: WIFI.status.dns,
             }}
           />,
-          <BarUsageCell
-            key="usage"
-            usage={snap.usage ?? null}
-            nowSecs={Math.floor((now?.getTime() ?? 0) / 1000)}
-            hover={hover}
-          />,
+          // The usage cell is the first-party plugin's own `cell.tsx`, over
+          // the snapshot's plugin state — the demo runs plugins too.
+          ...(snap.plugins ?? []).map((p) => (
+            <UsageCell
+              key={`plugin:${p.id}`}
+              plugin={p}
+              state={p.state as never}
+              settings={{}}
+              now={now ?? new Date(0)}
+              hover={hover}
+              host={NOOP_HOST}
+            />
+          )),
           <BarBatteryCell
             key="battery"
             pct={snap.batteryPct}

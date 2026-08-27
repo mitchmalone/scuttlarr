@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "hello",
+  "name": "Hello",
+  "version": "0.1.0",
+  "description": "The reference plugin: a Bun service streaming state, a cell with a card, a panel — copy this directory to start yours.",
+  "kinds": ["bar-widget", "panel"],
+  "zone": "right",
+  "icon": "hand",
+  "panel": { "title": "Hello", "hint": "the reference plugin ▸" },
+  "settings": [
+    { "key": "HELLO_NAME", "label": "Name", "hint": "who the plugin greets" }
+  ]
+}

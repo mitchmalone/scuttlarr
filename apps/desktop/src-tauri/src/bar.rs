@@ -387,15 +387,20 @@ fn watch_triggers(app: AppHandle) {
             while let Ok(ev) = rx.recv_timeout(std::time::Duration::from_millis(30)) {
                 events.push(ev);
             }
-            // `widget.<id>` files ask that widget to tick now (docs/WIDGETS.md).
-            for id in events
+            // `widget.<id>` / `plugin.<id>` files ask that widget or plugin to
+            // refresh now (docs/WIDGETS.md, docs/PLUGINS.md).
+            for name in events
                 .iter()
                 .filter_map(|ev| ev.as_ref().ok())
                 .flat_map(|ev| ev.paths.iter())
                 .filter_map(|p| p.file_name().and_then(|n| n.to_str()))
-                .filter_map(widget_trigger_id)
             {
-                crate::widgets::poke(id);
+                if let Some(id) = widget_trigger_id(name) {
+                    crate::widgets::poke(id);
+                    crate::plugins::poke(id);
+                } else if let Some(id) = name.strip_prefix("plugin.").filter(|id| !id.is_empty()) {
+                    crate::plugins::poke(id);
+                }
             }
             push(&app);
         }
@@ -438,9 +443,9 @@ pub struct BarSnapshot {
     pub awake: crate::power::AwakeState,
     /// User widgets (widgets.rs) — last view per widget, in-memory read.
     pub widgets: Vec<crate::widgets::WidgetState>,
-    /// Agent usage limits per account (usage.rs) — cached-report fold; None
-    /// while the monitor is off (Settings → Agents).
-    pub usage: Option<crate::usage::UsageBarState>,
+    /// Plugins (plugins.rs, docs/PLUGINS.md) — last state per plugin; the
+    /// first-party usage plugin rides here too.
+    pub plugins: Vec<crate::plugins::PluginState>,
 }
 
 pub fn snapshot() -> BarSnapshot {
@@ -475,7 +480,7 @@ pub fn snapshot() -> BarSnapshot {
         agents: crate::agents::list(),
         awake: crate::power::state(),
         widgets: crate::widgets::snapshot(),
-        usage: crate::usage::bar_state(),
+        plugins: crate::plugins::snapshot(),
     }
 }
 

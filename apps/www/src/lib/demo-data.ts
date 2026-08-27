@@ -1,5 +1,5 @@
-import type { AgentSession, BarSnapshot, UsageReport } from '@launcharr/tui'
-import { foldUsageBarState } from '@launcharr/tui/bar'
+import { USAGE_PLUGIN, usageReportAt } from '@launcharr/plugins/usage/fixtures'
+import type { AgentSession, BarSnapshot } from '@launcharr/tui'
 
 /**
  * Mock payloads for the website demo. Shapes mirror what the app's Rust side pushes
@@ -45,84 +45,9 @@ export const WIFI = {
   ],
 }
 
-/**
- * Fictional usage in the shape usage.rs emits (`UsageReport`): two Claude
- * subscriptions plus Codex. The panel, tiles and bar cell are the kit's
- * (AGENTS invariant 10) — only these numbers are made up.
- */
-export const USAGE_REPORT: UsageReport = {
-  generatedAt: 1_800_000_000,
-  providers: [
-    {
-      id: 'claude',
-      provider: 'claude',
-      label: 'Personal',
-      account: 'blackbeard@example.com',
-      limits: [
-        { name: '5h session', usedPercent: 59, resetsAt: null },
-        { name: 'weekly · all models', usedPercent: 34, resetsAt: null },
-        { name: 'weekly · opus', usedPercent: 12, resetsAt: null },
-      ],
-      limitsNote: null,
-      days: [
-        { label: 'Sun', tokens: 61.2e6 },
-        { label: 'Mon', tokens: 148.4e6 },
-        { label: 'Tue', tokens: 94.1e6 },
-        { label: 'Wed', tokens: 212.7e6 },
-        { label: 'Thu', tokens: 176.3e6 },
-        { label: 'Fri', tokens: 118.9e6 },
-        { label: 'Today', tokens: 87.5e6 },
-      ],
-      models: [
-        { model: 'claude-fable-5', tokens: 611.4e6 },
-        { model: 'claude-opus-5', tokens: 236.2e6 },
-        { model: 'claude-haiku-4-5', tokens: 51.5e6 },
-      ],
-    },
-    {
-      id: 'claude-crew',
-      provider: 'claude',
-      label: 'The Crew',
-      account: 'blackbeard@crew.example',
-      limits: [
-        { name: '5h session', usedPercent: 91, resetsAt: null },
-        { name: 'weekly · all models', usedPercent: 27, resetsAt: null },
-      ],
-      limitsNote: null,
-      days: [
-        { label: 'Sun', tokens: 12.4e6 },
-        { label: 'Mon', tokens: 88.1e6 },
-        { label: 'Tue', tokens: 120.0e6 },
-        { label: 'Wed', tokens: 61.3e6 },
-        { label: 'Thu', tokens: 95.0e6 },
-        { label: 'Fri', tokens: 0 },
-        { label: 'Today', tokens: 52.9e6 },
-      ],
-      models: [
-        { model: 'claude-opus-5', tokens: 263.3e6 },
-        { model: 'claude-fable-5', tokens: 166.4e6 },
-      ],
-    },
-    {
-      id: 'codex',
-      provider: 'codex',
-      label: 'Codex',
-      account: null,
-      limits: [{ name: 'weekly', usedPercent: 8, resetsAt: null }],
-      limitsNote: null,
-      days: [
-        { label: 'Sun', tokens: 4.1e6 },
-        { label: 'Mon', tokens: 12.6e6 },
-        { label: 'Tue', tokens: 0 },
-        { label: 'Wed', tokens: 22.9e6 },
-        { label: 'Thu', tokens: 8.3e6 },
-        { label: 'Fri', tokens: 15.2e6 },
-        { label: 'Today', tokens: 3.8e6 },
-      ],
-      models: [{ model: 'gpt-5-codex', tokens: 66.9e6 }],
-    },
-  ],
-}
+/** The fictional usage report the bar and `usage ⏎` share — the fixture the
+ * first-party plugin ships (invariant 10: one copy, imported). */
+export { USAGE_REPORT } from '@launcharr/plugins/usage/fixtures'
 
 /**
  * Fictional agent sessions, in the shape the app's Rust side pushes
@@ -249,7 +174,7 @@ export function demoSnapshot(nowSeconds: number, focused: string): BarSnapshot {
     chargeLimit: null,
     wifi: { online: true, ssid: 'Blackbeard 5G', rssi: -58 },
     agents: demoAgents(nowSeconds),
-    usage: foldUsageBarState(USAGE_REPORT),
+    plugins: [{ ...USAGE_PLUGIN, state: usageReportAt(nowSeconds) }],
   }
 }
 

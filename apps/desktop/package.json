@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@launcharr/core": "workspace:*",
+    "@launcharr/plugins": "workspace:*",
     "@launcharr/tui": "workspace:*",
     "@tauri-apps/api": "^2",
     "lucide-react": "^1.30.0",

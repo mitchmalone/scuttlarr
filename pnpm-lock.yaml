@@ -47,6 +47,9 @@ importers:
       '@launcharr/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@launcharr/plugins':
+        specifier: workspace:*
+        version: link:../../packages/plugins
       '@launcharr/tui':
         specifier: workspace:*
         version: link:../../packages/tui
@@ -93,6 +96,9 @@ importers:
       '@launcharr/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@launcharr/plugins':
+        specifier: workspace:*
+        version: link:../../packages/plugins
       '@launcharr/tui':
         specifier: workspace:*
         version: link:../../packages/tui
@@ -152,6 +158,34 @@ importers:
         specifier: ^4.0.3
         version: 4.0.3
     devDependencies:
+      typescript:
+        specifier: ~5.8.3
+        version: 5.8.3
+      vitest:
+        specifier: ^4
+        version: 4.1.10(@types/node@26.1.2)(vite@7.3.6(@types/node@26.1.2)(jiti@2.7.0)(lightningcss@1.32.0))
+
+  packages/plugins:
+    dependencies:
+      '@launcharr/tui':
+        specifier: workspace:*
+        version: link:../tui
+      lucide-react:
+        specifier: ^1.30.0
+        version: 1.30.0(react@19.2.8)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.1.8
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ^19.1.6
+        version: 19.2.4(@types/react@19.2.18)
+      react:
+        specifier: ^19.1.0
+        version: 19.2.8
+      react-dom:
+        specifier: ^19.1.0
+        version: 19.2.8(react@19.2.8)
       typescript:
         specifier: ~5.8.3
         version: 5.8.3
@@ -1677,6 +1711,7 @@ packages:
   eslint@9.39.5:
     resolution: {integrity: sha512-DgZS62aPLXKlnxILS/AYCoRvHaZeXceIzlXPkkGGzJWSow1aEk0lbTlxUSlyjC8jcaKxAdOnTDz+o1JFSBsyjw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'

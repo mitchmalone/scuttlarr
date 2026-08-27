@@ -5,7 +5,11 @@ const nextConfig = {
   // docs system is single-source-per-fact (AGENTS.md at the root), and a
   // generated nested pair silently competes with it.
   agentRules: false,
-  transpilePackages: ['@launcharr/core', '@launcharr/tui'],
+  transpilePackages: [
+    '@launcharr/core',
+    '@launcharr/tui',
+    '@launcharr/plugins',
+  ],
   typedRoutes: true,
   images: {
     unoptimized: true,

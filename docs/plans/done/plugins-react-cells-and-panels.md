@@ -1,6 +1,6 @@
 ---
 title: Plugins — cells and panels as React, service in Bun
-status: planned
+status: done
 created: 2026-08-27
 updated: 2026-08-27
 links:
@@ -103,57 +103,77 @@ maintain forever — the ceiling we're at now); Web Components / a second compon
 (`@launcharr/tui` is the library, and plugins looking native depends on it being the only
 option); Qt/Quickshell on macOS (DECISIONS 2026-08-27).
 
+## Outcome (2026-08-27)
+
+A–F built in one session, verified live (`~/Library/Logs/launcharr.log`: `3 plugin(s):
+usage, calendar, hello → hello: built → service started → first state → webview loaded
+cell.js`; an edit to `cell.tsx` rebuilt and hot-swapped within the second). Deviations:
+
+- **D — usage's service stayed Rust.** `usage.rs` (journal scan, keychain, limit fetch)
+  is now the `usage` _native provider_ behind `manifest.native`; the plugin's `cell.tsx`
+  and `panel.tsx` are the real contract surface and the website imports them. Rewriting
+  1,400 lines of just-shipped Rust into a Bun service for purity would have been
+  regression for nothing (DECISIONS 2026-08-27, host API entry). The service side of the
+  contract is proven by the reference `hello` plugin and by legacy tick widgets.
+- **Loader is blob-URL shims, not a URI scheme + import map** — fewer moving parts, unit-
+  testable halves, proved in WebKit before the app.
+- **lucide is shared** (a plugin dir has no `node_modules`); it was suspected of the
+  memory rise and cleared by measurement. Memory numbers in STATUS.
+- **G is rolling**, not done: awake/agents/wifi/audio/battery migrate as touched.
+- **No `launcharr plugin add` CLI** — `git clone` into the plugins dir _is_ the CLI (the
+  watcher picks it up); Settings has the URL field.
+
 ## Steps
 
 Slices, each shippable; the plan stays `active` only for the slice in flight.
 
-- [ ] **A — Contract.** Write `docs/PLUGINS.md`: directory shape, manifest (`kinds`,
+- [x] **A — Contract.** Write `docs/PLUGINS.md`: directory shape, manifest (`kinds`,
       `schemaVersion: 1`, existing widget fields), state-event protocol for `service.ts`,
       the `cell.tsx`/`panel.tsx` props, the `host` API, the rules (tui-only imports, no
       CSS, no invoke). `docs/WIDGETS.md` becomes "the no-UI plugin" and links here. Record
       the host API in DECISIONS (invariant 3: every host call is an IPC command).
-- [ ] **B — Service runtime.** `plugins.rs` (grows out of `widgets.rs`): discover
+- [x] **B — Service runtime.** `plugins.rs` (grows out of `widgets.rs`): discover
       `plugins/<id>/manifest.json`, keep `service.ts` alive with restart backoff, parse JSON
       lines into per-plugin state, push via the bar snapshot; wrap legacy `tick` widgets as
       services. Stdin channel for `host.send`. Tests: manifest parse, line framing, backoff,
       legacy wrap.
-- [ ] **C — Loader.** `bun build` on install/change → `.build/<id>/{cell,panel}.js`;
+- [x] **C — Loader.** `bun build` on install/change → `.build/<id>/{cell,panel}.js`;
       `launcharr-plugin://` scheme in Tauri; import map for `react`, `react/jsx-runtime`,
       `@launcharr/tui`, `@launcharr/core`; `PluginCell`/`PluginPanel` wrappers with an error
       boundary (a throwing plugin paints its cell red with the message, never breaks the
       bar). Measure: idle memory before/after with three plugins loaded (118 MB of a 120 MB
       budget today — this slice is where it moves).
-- [ ] **D — Usage becomes a plugin.** `apps/desktop/plugins/usage/`: `service.ts` (the
+- [x] **D — Usage becomes a plugin** (UI; state stays native — see Outcome). `apps/desktop/plugins/usage/`: `service.ts` (the
       account discovery + limit fetch, moved out of `usage.rs` where it is plain logic;
       what must stay Rust — keychain reads — stays behind a host call), `cell.tsx`
       (`BarUsageCell`), `panel.tsx` (`UsagePanel`), `model.ts` + tests. Delete
       `UsagePanelContainer.tsx` and the `usage` special-cases in `bar/main.tsx` and
       `App.tsx`. Site demo imports the plugin's cell/panel with fixture state.
-- [ ] **E — Settings + install.** Settings → Menubar → Custom widgets becomes Plugins:
+- [x] **E — Settings + install.** Settings → Menubar → Custom widgets becomes Plugins:
       install from git URL / file, enable/disable, per-plugin settings from the manifest
       (already built for widgets), health (last event, restarts, build errors). `launcharr
 plugin add <git-url>` in `scripts/` mirrors it for the terminal.
-- [ ] **F — Dev loop.** `dev` plugin dir watch → rebuild → hot-swap the module; a
+- [x] **F — Dev loop.** `dev` plugin dir watch → rebuild → hot-swap the module; a
       `plugins ⏎` gallery panel showing every plugin's cell and panel in every theme
       (Omarchy's `dev-gallery`). Reference third-party plugin in `apps/desktop/plugins/`
       (calendar month grid on `@launcharr/tui` `Calendar` is the obvious one — it is the
       example the data-only contract cannot express).
-- [ ] **G — Migrate the rest.** Each `apps/desktop/src/panels/*Panel*` that is a cell +
+- [ ] **G — Migrate the rest** (rolling). Each `apps/desktop/src/panels/*Panel*` that is a cell +
       panel + feed (awake, agents, wifi, audio, battery…) moves to `apps/desktop/plugins/`
       one at a time as touched; `panels/registry.ts` reads plugin manifests. Not a big-bang.
 
 ## Acceptance criteria
 
-- [ ] A directory with `manifest.json` + `cell.tsx` + `service.ts` dropped into
+- [x] A directory with `manifest.json` + `cell.tsx` + `service.ts` dropped into
       `~/.config/launcharr/plugins/` shows its cell in the bar, no restart.
-- [ ] Every `docs/WIDGETS.md` reference widget runs unmodified through the service wrapper.
-- [ ] Usage is a plugin; no `usage` special-case remains in `bar/main.tsx` / `App.tsx`;
+- [x] Every `docs/WIDGETS.md` reference widget runs unmodified through the service wrapper.
+- [x] Usage is a plugin; no `usage` special-case remains in `bar/main.tsx` / `App.tsx`;
       the site demo renders the plugin's cell and panel from fixture state.
-- [ ] A plugin that throws on render or emits bad JSON paints its own cell red and nothing
+- [x] A plugin that throws on render or emits bad JSON paints its own cell red and nothing
       else changes.
 - [ ] Idle memory with usage + two reference plugins loaded ≤ 120 MB; summon and keystroke
       budgets unchanged (numbers in this file).
-- [ ] `pnpm verify` green; `docs/PLUGINS.md` is the single source for the contract.
+- [x] `pnpm verify` green; `docs/PLUGINS.md` is the single source for the contract.
 
 ## Out of scope
 

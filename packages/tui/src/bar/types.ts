@@ -1,3 +1,5 @@
+import type { PluginState } from '../plugins'
+
 /**
  * The bar's data contract. These shapes mirror what the desktop app's Rust side
  * pushes (agents.rs, battery.rs, bar.rs); the website feeds the same shapes with
@@ -232,8 +234,9 @@ export interface BarSnapshot {
   awake?: AwakeBarState | null
   /** User widgets (widgets.rs); optional so older fixtures stay valid. */
   widgets?: BarWidget[]
-  /** Agent usage per account (usage.rs); null/absent while the monitor is off. */
-  usage?: UsageBarState | null
+  /** Plugins (plugins.rs, docs/PLUGINS.md) — the usage cell rides here as the
+   * first-party `usage` plugin; optional so older fixtures stay valid. */
+  plugins?: PluginState[]
 }
 
 /**

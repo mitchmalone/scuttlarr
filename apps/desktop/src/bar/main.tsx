@@ -15,7 +15,6 @@ import {
   BarClock,
   BarFrontApp,
   type BarSnapshot,
-  BarUsageCell,
   BarWidgetCell,
   BarWifiCell,
   BarWorkspaces,
@@ -25,6 +24,7 @@ import {
   formatBarClock,
 } from '@launcharr/tui'
 import '@launcharr/tui/bar.css'
+import { pluginIdOf } from '@launcharr/tui/plugins'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { useEffect, useRef, useState } from 'react'
@@ -41,6 +41,7 @@ import {
   notchedZones,
 } from '../lib/config'
 import { applyTheme } from '../lib/themes'
+import { PluginCellHost } from '../plugins/components'
 import './bar.css'
 import { useBarHover } from './hover'
 
@@ -315,20 +316,6 @@ function BarWindow() {
           />
         )
       }
-      case 'usage':
-        // Absent while the monitor is off (Settings → Agents): no cell.
-        if (!snap!.usage) return null
-        return (
-          <BarUsageCell
-            key={id}
-            usage={snap!.usage}
-            nowSecs={Math.floor(now.getTime() / 1000)}
-            hover={hover}
-            onClick={() =>
-              invoke('open_panel', { id: 'usage' }).catch(console.error)
-            }
-          />
-        )
       case 'battery':
         return (
           <BarBatteryCell
@@ -349,6 +336,22 @@ function BarWindow() {
       case 'clock':
         return <BarClock key={id}>{formatBarClock(now)}</BarClock>
       default: {
+        // A plugin's cell (docs/PLUGINS.md): its own component, or the
+        // generic widget cell over its state.
+        const pid = pluginIdOf(id)
+        if (pid) {
+          const p = snap!.plugins?.find((p) => p.id === pid)
+          return p?.enabled ? (
+            <PluginCellHost
+              key={id}
+              plugin={p}
+              now={now}
+              hover={hover}
+              settings={cfg?.widgets?.[pid] ?? {}}
+              onAction={runWidgetAction}
+            />
+          ) : null
+        }
         if (!isWidgetModuleId(id)) return null
         const w = snap!.widgets?.find((w) => `widget:${w.id}` === id)
         return w ? (
@@ -366,7 +369,13 @@ function BarWindow() {
 
   // Zones are explicit (Settings → Menubar board); a notched display renders
   // no center zone — the camera housing owns it.
-  const zones = displayZones(cfg, notched, snap?.widgets ?? [])
+  const homes: WidgetHome[] = [
+    ...(snap?.widgets ?? []).map((w) => ({ id: w.id, zone: w.zone })),
+    ...(snap?.plugins ?? [])
+      .filter((p) => p.enabled && p.kinds.includes('bar-widget'))
+      .map((p) => ({ id: p.id, zone: p.zone, kind: 'plugin' as const })),
+  ]
+  const zones = displayZones(cfg, notched, homes)
   const render = (list: { id: string; enabled: boolean }[]) =>
     list.filter((m) => m.enabled).map((m) => moduleNode(m.id))
   return (

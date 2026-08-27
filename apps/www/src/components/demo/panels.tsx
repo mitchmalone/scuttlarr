@@ -1,18 +1,19 @@
 'use client'
 
+import { USAGE_PLUGIN, usageReportAt } from '@launcharr/plugins/usage/fixtures'
+import UsagePanelPlugin from '@launcharr/plugins/usage/panel'
 import {
   KeyHints,
-  UsagePanel as KitUsagePanel,
   ListRow,
   Panel,
   SectionHeader,
   TextPrompt,
-  USAGE_ALL,
   useListNav,
 } from '@launcharr/tui'
+import { NOOP_HOST } from '@launcharr/tui/plugins'
 import { useState } from 'react'
 
-import { PANEL_INFO, type PanelId, USAGE_REPORT, WIFI } from '@/lib/demo-data'
+import { PANEL_INFO, type PanelId, WIFI } from '@/lib/demo-data'
 
 /**
  * The demo's TUI panels, rendered from the *shipping* `@launcharr/tui` components
@@ -192,15 +193,16 @@ export function DnsPanel({ onClose }: { onClose: () => void }) {
   )
 }
 
-/** `usage ⏎` — the kit's panel over fictional accounts (invariant 10). */
+/** `usage ⏎` — the first-party usage *plugin's* panel over its fixture
+ * (invariant 10): the same `panel.tsx` the app bundles, a no-op host. */
 export function UsagePanel({ onClose }: { onClose: () => void }) {
-  const [selected, setSelected] = useState(USAGE_ALL)
+  const [report] = useState(() => usageReportAt(Math.floor(Date.now() / 1000)))
   return (
-    <KitUsagePanel
-      report={USAGE_REPORT}
-      selected={selected}
-      nowSecs={USAGE_REPORT.generatedAt}
-      onSelect={setSelected}
+    <UsagePanelPlugin
+      plugin={USAGE_PLUGIN}
+      state={report}
+      settings={{}}
+      host={NOOP_HOST}
       onClose={onClose}
     />
   )

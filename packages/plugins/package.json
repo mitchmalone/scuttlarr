@@ -1,0 +1,34 @@
+{
+  "name": "@launcharr/plugins",
+  "private": true,
+  "type": "module",
+  "description": "launcharr's first-party plugins — the bundled cells and panels, written to the same contract third-party plugins use (docs/PLUGINS.md). The app bundles them; launcharr.com imports them.",
+  "exports": {
+    ".": "./index.ts",
+    "./usage/cell": "./usage/cell.tsx",
+    "./usage/panel": "./usage/panel.tsx",
+    "./usage/fixtures": "./usage/fixtures.ts",
+    "./calendar/cell": "./calendar/cell.tsx",
+    "./calendar/panel": "./calendar/panel.tsx",
+    "./calendar/model": "./calendar/model.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@launcharr/tui": "workspace:*",
+    "lucide-react": "^1.30.0"
+  },
+  "peerDependencies": {
+    "react": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "typescript": "~5.8.3",
+    "vitest": "^4"
+  }
+}

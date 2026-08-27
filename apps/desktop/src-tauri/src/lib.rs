@@ -37,6 +37,7 @@ mod indexer;
 mod logbook;
 mod loupe;
 mod panel;
+mod plugins;
 mod power;
 mod runtime;
 mod screens;
@@ -117,7 +118,6 @@ pub fn run() {
             commands::awake_release,
             commands::awake_status,
             commands::awake_readings,
-            commands::usage_status,
             ask::ask,
             commands::agent_jump,
             commands::agent_forget,
@@ -168,6 +168,13 @@ pub fn run() {
             commands::widget_secret_keys,
             commands::widget_auth,
             commands::widget_auth_cancel,
+            commands::plugins_list,
+            commands::plugin_state,
+            commands::plugin_module,
+            commands::plugin_send,
+            commands::plugin_install,
+            commands::plugin_remove,
+            commands::plugin_restart,
         ])
         .setup(move |app| {
             // No Dock icon, no menu bar: launcharr is an accessory (PRD §6.2).
@@ -213,6 +220,8 @@ pub fn run() {
             shortcut::sync(app.handle(), &cfg);
             indexer::start(app.handle().clone());
             scripts::start(app.handle().clone());
+            // Plugins run bar or no bar: their panels live in the launcher too.
+            plugins::start(app.handle().clone(), &cfg.plugins.disabled);
             clipboard::watch(app.handle().clone());
             config::watch(app.handle().clone());
             apply_launch_at_login(app.handle(), cfg.launch_at_login);

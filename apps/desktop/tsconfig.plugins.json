@@ -1,5 +1,5 @@
 {
-  "//": "The plugin sources — reference widgets and bundled scripts — run under Bun (DECISIONS 2026-08-19), not in the webview, so they typecheck against bun-types instead of DOM.",
+  "//": "The plugin sources \u2014 reference widgets, bundled scripts, and the reference plugin's service \u2014 run under Bun (DECISIONS 2026-08-19), not in the webview, so they typecheck against bun-types instead of DOM. The reference plugin's cell/panel are webview code and typecheck with the app (tsconfig.json).",
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2022", "DOM"],
@@ -10,5 +10,5 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["widgets", "src-tauri/scripts"]
+  "include": ["widgets", "src-tauri/scripts", "plugins/hello/service.ts"]
 }

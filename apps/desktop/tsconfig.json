@@ -8,6 +8,16 @@
     "noFallthroughCasesInSwitch": true,
     "jsx": "react-jsx"
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "src",
+    "plugins/*/cell.tsx",
+    "plugins/*/panel.tsx",
+    "plugins/*/model.ts",
+    "plugins/*/model.test.ts"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
 }

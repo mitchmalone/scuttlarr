@@ -1,5 +1,11 @@
 # launcharr widgets
 
+> **Widgets are the no-UI plugin.** Since 2026-08-27 a plugin (`docs/PLUGINS.md`) is a
+> directory that may add its own `cell.tsx` / `panel.tsx` in React on the kit; a
+> single-file widget here is the same `tick` contract rendered by the generic cell and
+> card, and keeps working unchanged. Start here for a glyph and a card; move to
+> `PLUGINS.md` when the card isn't enough.
+
 Widgets are the bar's scripts: drop a **TypeScript file** into
 `~/.config/launcharr/widgets/` and it owns a cell in the menubar — a glyph, an optional
 short label, a tone, a click, and a hover card of rows. No build, no shebang, no chmod,

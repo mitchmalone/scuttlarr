@@ -96,29 +96,6 @@ pub struct UsageReport {
     pub providers: Vec<ProviderUsage>,
 }
 
-/// What the bar cell renders (bar.rs `BarSnapshot.usage`): per-account
-/// windows only — the day/model histograms stay in the panel. Folded from
-/// the cached report on every push; `None` in the snapshot when the monitor
-/// is off so the cell renders nothing.
-#[derive(Debug, Clone, Default, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UsageBarState {
-    /// Highest used-percent across every account's windows — the cell's number.
-    pub tightest: Option<f64>,
-    pub accounts: Vec<UsageBarAccount>,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UsageBarAccount {
-    pub id: String,
-    pub provider: String,
-    pub label: String,
-    pub account: Option<String>,
-    pub limits: Vec<LimitWindow>,
-    pub limits_note: Option<String>,
-}
-
 /// A Claude Code config dir treated as one account (see module docs).
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct ClaudeAccount {
@@ -197,36 +174,10 @@ pub fn report() -> UsageReport {
         .unwrap_or_default()
 }
 
-/// The bar's view of the cached report. Calling `report()` here is what keeps
-/// the 60 s refresh alive while the panel is closed — the cell is never stale
-/// for longer than the panel would be.
-pub fn bar_state() -> Option<UsageBarState> {
-    if !ENABLED.load(Ordering::Relaxed) {
-        return None;
-    }
-    Some(fold_bar_state(&report()))
-}
-
-fn fold_bar_state(report: &UsageReport) -> UsageBarState {
-    let accounts: Vec<UsageBarAccount> = report
-        .providers
-        .iter()
-        .map(|p| UsageBarAccount {
-            id: p.id.clone(),
-            provider: p.provider.clone(),
-            label: p.label.clone(),
-            account: p.account.clone(),
-            limits: p.limits.clone(),
-            limits_note: p.limits_note.clone(),
-        })
-        .collect();
-    let tightest = accounts
-        .iter()
-        .flat_map(|a| a.limits.iter().map(|l| l.used_percent))
-        .fold(None, |acc: Option<f64>, pct| {
-            Some(acc.map_or(pct, |a| a.max(pct)))
-        });
-    UsageBarState { tightest, accounts }
+/// Settings → Agents → usage monitor on? The usage plugin's native provider
+/// (plugins.rs) returns no state while it is off, so the cell renders nothing.
+pub fn enabled() -> bool {
+    ENABLED.load(Ordering::Relaxed)
 }
 
 fn scan() -> UsageReport {
@@ -1281,38 +1232,6 @@ mod tests {
             keychain_service(Path::new("/Users/mitch/.claude-psyke"), false),
             "Claude Code-credentials-4051cf21"
         );
-    }
-
-    #[test]
-    fn folds_bar_state_to_the_tightest_window() {
-        let window = |name: &str, pct: f64| LimitWindow {
-            name: name.into(),
-            used_percent: pct,
-            resets_at: None,
-        };
-        let provider = |id: &str, limits: Vec<LimitWindow>| ProviderUsage {
-            id: id.into(),
-            provider: "claude".into(),
-            label: id.into(),
-            account: None,
-            days: vec![],
-            models: vec![],
-            limits,
-            limits_note: None,
-        };
-        let report = UsageReport {
-            generated_at: 1,
-            providers: vec![
-                provider("claude", vec![window("5h", 12.0), window("weekly", 41.0)]),
-                provider("claude-psyke", vec![window("5h", 88.5)]),
-                provider("codex", vec![]),
-            ],
-        };
-        let state = fold_bar_state(&report);
-        assert_eq!(state.tightest, Some(88.5));
-        assert_eq!(state.accounts.len(), 3);
-        assert_eq!(state.accounts[1].id, "claude-psyke");
-        assert_eq!(fold_bar_state(&UsageReport::default()).tightest, None);
     }
 
     #[test]

@@ -6,6 +6,34 @@
 
 ---
 
+### 2026-08-27 · Plugins: blob-URL module loading works in WebKit; sharing lucide costs ~20 MB; pnpm lives behind corepack
+
+Three things learned building the plugin runtime (`plans/done/plugins-react-cells-and-panels.md`).
+
+- **Loading third-party ESM into a Vite-bundled webview without a protocol or import map.**
+  A plugin built with `bun build --external react --external @launcharr/tui` still says
+  `from "react"`. The app registers its own namespaces on `globalThis.__launcharrShared`,
+  generates a shim module per name (`export const useState = m.useState; …`) as a blob:
+  URL, rewrites the plugin's shared specifiers to those URLs, and `import()`s the plugin as
+  a blob: URL. Proved in Safari's WebKit with a throwaway harness (default + named + kit
+  imports all resolved), then in the app: `~/Library/Logs/launcharr.log` shows
+  `hello: built → service started → first state → webview loaded cell.js`, and an edit to
+  `cell.tsx` rebuilt and reloaded within the same second. Gotcha: `bun build` emits
+  `react/jsx-runtime` imports with `NODE_ENV=production` — shim that name too, and
+  `jsx-dev-runtime` for safety.
+- **`lucide-react` must be shared, and it isn't the memory.** A plugin directory has no
+  `node_modules`, so `bun build` can't resolve `lucide-react` unless it's `--external`
+  and provided by the app. Suspected `import * as Lucide` of bloating the bar (idle RSS
+  142 MB against the 120 MB budget); un-sharing it measured 148 MB — noise, not the
+  cause. The bar already carries lucide's dynamic-icon set for widgets. Where the
+  resident memory went is in STATUS.
+- **A cell edit must not restart the service.** The first watcher treated any mtime change
+  in the plugin dir as "sources changed" and bounced the Bun process; now only the service
+  file's own mtime (or the manifest) restarts it, UI edits rebuild only.
+- **Agent shells: `pnpm` is not on disk.** Node comes from mise, pnpm from corepack via
+  `packageManager`; nested `pnpm` calls in scripts need a shim on PATH
+  (`exec corepack pnpm "$@"`) and `pnpm install` wants `CI=true`. Recorded in memory.
+
 ### 2026-08-27 · Claude Code's keychain item name follows `CLAUDE_CONFIG_DIR`
 
 A second subscription run via `CLAUDE_CONFIG_DIR=~/.claude-psyke` does **not** share the

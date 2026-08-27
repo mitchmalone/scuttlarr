@@ -1,15 +1,16 @@
 'use client'
 
+import UsageCell from '@launcharr/plugins/usage/cell'
 import {
   Bar,
   BarAgents,
   BarBatteryCell,
   BarClock,
   BarFrontApp,
-  BarUsageCell,
   BarWifiCell,
   BarWorkspaces,
 } from '@launcharr/tui'
+import { NOOP_HOST } from '@launcharr/tui/plugins'
 import { useMemo, useState } from 'react'
 
 import { useWebBarHover } from '@/components/demo/bar-hover'
@@ -59,12 +60,17 @@ export function BarStrip() {
             ssid={snap.wifi.ssid}
             rssi={snap.wifi.rssi}
           />,
-          <BarUsageCell
-            key="usage"
-            usage={snap.usage ?? null}
-            nowSecs={Math.floor(now.getTime() / 1000)}
-            hover={hover}
-          />,
+          ...(snap.plugins ?? []).map((p) => (
+            <UsageCell
+              key={`plugin:${p.id}`}
+              plugin={p}
+              state={p.state as never}
+              settings={{}}
+              now={now}
+              hover={hover}
+              host={NOOP_HOST}
+            />
+          )),
           <BarBatteryCell
             key="battery"
             pct={snap.batteryPct}

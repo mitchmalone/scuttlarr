@@ -1,6 +1,7 @@
 import type { DesktopConfig } from '@launcharr/core/desktop'
 import type { Link } from '@launcharr/core/types'
 import type { BarModule, BarZones } from '@launcharr/tui'
+import { isPluginModuleId, pluginModuleId } from '@launcharr/tui/plugins'
 
 import type { ThemeTokens } from './themes'
 
@@ -38,9 +39,12 @@ export type Config = {
   colorLoupeZoom: number
   /** Loupe diameter in points (default 264). */
   colorLoupeSize: number
-  /** Plain widget settings: widget id → KEY → value (manifest `settings`,
-   * docs/WIDGETS.md). Secrets are Keychain-only and never appear here. */
+  /** Plain widget/plugin settings: id → KEY → value (manifest `settings`,
+   * docs/WIDGETS.md, docs/PLUGINS.md). Secrets are Keychain-only and never
+   * appear here. */
   widgets: Record<string, Record<string, string>>
+  /** Plugins (docs/PLUGINS.md): which are switched off. */
+  plugins: { disabled: string[] }
 }
 
 export type BarConfig = {
@@ -68,15 +72,32 @@ const module = (id: string): BarModule => ({ id, enabled: true })
 export const DEFAULT_BAR_LAYOUT: BarZones = {
   left: ['workspaces', 'agents', 'frontApp'].map(module),
   center: [module('clock')],
-  right: ['wifi', 'awake', 'usage', 'battery'].map(module),
+  right: ['wifi', 'awake', 'plugin:usage', 'battery'].map(module),
 }
+
+/** Module ids that became plugins: an old layout keeps its place. */
+const LEGACY_MODULE_IDS: Record<string, string> = { usage: 'plugin:usage' }
 
 /** Layout id for a user widget (docs/WIDGETS.md): `widget:<id>`. */
 export const widgetModuleId = (id: string) => `widget:${id}`
 export const isWidgetModuleId = (id: string) => id.startsWith('widget:')
 
-/** What normalization needs to know about a discovered widget. */
-export type WidgetHome = { id: string; zone: string }
+/** Layout id for a plugin's cell (docs/PLUGINS.md): `plugin:<id>`. */
+export {
+  isPluginModuleId,
+  pluginIdOf,
+  pluginModuleId,
+} from '@launcharr/tui/plugins'
+
+/** What normalization needs to know about a discovered widget or plugin:
+ * its id, the zone its manifest asks for, and which of the two it is. */
+export type WidgetHome = {
+  id: string
+  zone: string
+  kind?: 'widget' | 'plugin'
+}
+const homeModuleId = (h: WidgetHome) =>
+  h.kind === 'plugin' ? pluginModuleId(h.id) : widgetModuleId(h.id)
 
 /** Same normalization everywhere (bar renderer + settings): drop unknown ids,
  * append known-but-missing ids enabled into their default zone (falling back
@@ -91,8 +112,14 @@ export function normalizeBarZones(
   const seen = new Set<string>()
   const out: BarZones = { left: [], center: [], right: [] }
   for (const zone of ZONE_NAMES) {
-    for (const m of zones[zone]) {
-      if ((known.has(m.id) || isWidgetModuleId(m.id)) && !seen.has(m.id)) {
+    for (const raw of zones[zone]) {
+      const m = LEGACY_MODULE_IDS[raw.id]
+        ? { ...raw, id: LEGACY_MODULE_IDS[raw.id]! }
+        : raw
+      if (
+        (known.has(m.id) || isWidgetModuleId(m.id) || isPluginModuleId(m.id)) &&
+        !seen.has(m.id)
+      ) {
         seen.add(m.id)
         out[zone].push(m)
       }
@@ -106,7 +133,7 @@ export function normalizeBarZones(
     out[home].push(module(id))
   }
   for (const w of widgets) {
-    const id = widgetModuleId(w.id)
+    const id = homeModuleId(w)
     if (seen.has(id)) continue
     seen.add(id)
     const home = (ZONE_NAMES as string[]).includes(w.zone)
@@ -169,7 +196,6 @@ export const BAR_MODULE_IDS = [
   'clock',
   'wifi',
   'awake',
-  'usage',
   'battery',
 ] as const
 

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "calendar",
+  "name": "Calendar",
+  "version": "1.0.0",
+  "description": "The date in the bar, a month grid in the panel — the kit's Calendar, the reference for a plugin that is more than a cell.",
+  "kinds": ["bar-widget", "panel"],
+  "zone": "center",
+  "icon": "calendar-days",
+  "native": "clock",
+  "panel": {
+    "title": "Calendar",
+    "hint": "month grid ▸",
+    "aliases": ["cal", "date", "month"],
+    "triggers": ["cal"]
+  }
+}

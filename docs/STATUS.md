@@ -3,9 +3,30 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-08-27
+> Last updated: 2026-08-27 (plugins)
 
 ## Where we are
+
+**Plugins, 2026-08-27 (on main, unreleased — built + running):** "widgets are data, never
+code" superseded (DECISIONS 2026-08-27 ×3). A plugin is a directory in
+`~/.config/launcharr/plugins/<id>/`: `manifest.json` (+ `kinds`), `service.ts` under Bun
+(stream = JSON lines kept alive with backoff; `interval` = the old tick contract),
+`cell.tsx` / `panel.tsx` in React on `@launcharr/tui`, built by Rust with `bun build` and
+loaded into the webview through blob-URL shims (one React, one kit, lucide shared) with
+hot-swap on edit. `plugins.rs` + 7 commands; `BarSnapshot.plugins`; layout slot
+`plugin:<id>` (old `usage` id migrates). **First-party `usage` and `calendar` are plugins**
+(`packages/plugins/`, state from Rust native providers; the website imports the same
+`cell.tsx`/`panel.tsx` — invariant 10 kept). Settings → Menubar → Plugins (git-URL install,
+on/off, restart, settings/prereqs), `plugins ⏎` gallery, reference `hello` plugin
+(`apps/desktop/plugins/hello/`, installed locally for the proof). Contract: `docs/PLUGINS.md`.
+**Proved live** (`~/Library/Logs/launcharr.log`): `3 plugin(s) → hello: built → service
+started → first state → webview loaded cell.js`; edit → rebuilt + reloaded same second.
+**Memory:** 114 MB idle with all three plugins on, steady state (149 MB in the first
+minutes after a relaunch, dropping once WebKit collects; plugins on↔off delta ≈ 9 MB).
+**Hands-check pending (Mitch):** the hello cell + card + `hello ⏎` panel (`r` resets via
+`host.send`), `cal ⏎`, `usage` cell/panel unchanged, Settings → Plugins, `plugins ⏎`.
+Plan: `plans/done/plugins-react-cells-and-panels.md`; slice G (awake/agents/wifi/audio/
+battery → plugins) is rolling.
 
 **Usage in the menubar, every account, 2026-08-27 (on main, unreleased — built + running):**
 a `usage` bar cell — CodexBar's tiny meter in our style — showing the tightest window across
@@ -262,12 +283,11 @@ display. Consider a v0.5.1 for the post-release batch once those pass.
 
 ## In progress / next (ROADMAP B2–B4, P1)
 
-- **Plugins — direction set 2026-08-27, planned** (`plans/active/plugins-react-cells-and-panels.md`,
-  DECISIONS 2026-08-27 ×2): "widgets are data, never code" superseded — plugins own
-  `cell.tsx` / `panel.tsx` on `@launcharr/tui` with a Bun `service.ts`; legacy `tick`
-  widgets wrap unchanged; usage is the first first-party panel to migrate. Omarchy QML
-  plugins on macOS studied and rejected (a Quickshell backend, not a shim). Slice A
-  (`docs/PLUGINS.md` contract) is next.
+- **Plugins — slice G rolling** (`plans/done/plugins-react-cells-and-panels.md`): awake,
+  agents, wifi, audio, battery move from `src/panels/*Container` to `packages/plugins/`
+  as touched. Also open: merge `widgets.rs` into `plugins.rs` (single-file widgets are
+  tick plugins without UI), a curated static plugin index on launcharr.com, per-plugin
+  `stderr` in `logbook`, and the hello plugin's `import.meta.main` guard under Node.
 - **`awake` keep-alive sessions** (plans/active/awake.md — retire Amphetamine +
   Caffeinated): **slices A–D shipped** — in-process assertions (`power.rs`, release on
   drop/quit/crash), `awake ⏎` panel (form: what stays on / until / rails, two-keystroke

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "usage",
+  "name": "Usage",
+  "version": "1.0.0",
+  "description": "Agent usage limits across every Claude Code and Codex account — the tightest window in the bar, per-account tiles in the card, histograms in the panel.",
+  "kinds": ["bar-widget", "panel"],
+  "zone": "right",
+  "icon": "gauge",
+  "native": "usage",
+  "panel": {
+    "title": "Usage",
+    "hint": "token monitor ▸",
+    "aliases": ["tokens", "limits"]
+  }
+}

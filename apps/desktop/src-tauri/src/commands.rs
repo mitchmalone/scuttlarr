@@ -150,13 +150,6 @@ pub struct AwakeReadings {
     reading: AwakeReading,
 }
 
-/// Usage panel: cached local token aggregates; kicks a background rescan when
-/// stale, never blocks (DECISIONS 2026-08-16).
-#[tauri::command]
-pub fn usage_status() -> crate::usage::UsageReport {
-    crate::usage::report()
-}
-
 /// Jump to an agent session's tmux pane and bring the terminal frontmost;
 /// visiting marks a `done` session read. async: spawns tmux and `open`.
 #[tauri::command]
@@ -538,6 +531,11 @@ pub fn open_path(target: String) -> CmdResult<()> {
             std::fs::create_dir_all(&dir)?;
             dir
         }
+        "plugins" => {
+            let dir = crate::plugins::plugins_dir();
+            std::fs::create_dir_all(&dir)?;
+            dir
+        }
         // The same curated pane table the launcher indexes — one source of truth
         // for deep links, even for a one-off caller like the bar.
         "battery-settings" | "wifi-settings" => {
@@ -608,18 +606,22 @@ pub fn widget_secret_set(id: String, key: String, value: Option<String>) -> CmdR
     if !crate::widgets::valid_id(&id) || !crate::widgets::valid_setting_key(&key) {
         return Err(CmdError::Internal(format!("bad widget secret {id}/{key}")));
     }
-    if !crate::widgets::declares_secret(&id, &key) {
+    if !crate::widgets::declares_secret(&id, &key) && !crate::plugins::declares_secret(&id, &key) {
         return Err(CmdError::Internal(format!("{id} declares no secret {key}")));
     }
     crate::widget_secrets::set(&id, &key, value.as_deref().unwrap_or(""))
         .map_err(CmdError::Internal)?;
     crate::widgets::poke(&id);
+    crate::plugins::poke(&id);
     Ok(())
 }
 
 /// Which of a widget's secret settings are set — never the values.
 #[tauri::command]
 pub fn widget_secret_keys(id: String) -> Vec<String> {
+    if crate::plugins::has(&id) {
+        return crate::plugins::secret_keys_present(&id);
+    }
     crate::widgets::secret_keys_present(&id)
 }
 
@@ -695,4 +697,55 @@ pub fn screenshot_action(
         crate::screenshots::ScreenshotAction::Copy => crate::screenshots::copy_to_pasteboard(&path),
         crate::screenshots::ScreenshotAction::Open => crate::screenshots::open(&path),
     }
+}
+
+// ---- Plugins (docs/PLUGINS.md, DECISIONS 2026-08-27) -----------------------
+
+/// Every plugin as the launcher and settings see it (in-memory read).
+#[tauri::command]
+pub fn plugins_list() -> Vec<crate::plugins::PluginState> {
+    crate::plugins::snapshot()
+}
+
+/// One plugin's current state — the launcher's panel host polls this while a
+/// plugin panel is open (the bar gets the same via the 1 Hz push).
+#[tauri::command]
+pub fn plugin_state(id: String) -> Option<crate::plugins::PluginState> {
+    crate::plugins::get(&id)
+}
+
+/// The built `cell.js` / `panel.js` source for the webview loader
+/// (src/plugins/loader.ts). Built by Rust with `bun build` on install/change.
+#[tauri::command]
+pub fn plugin_module(id: String, file: String) -> CmdResult<String> {
+    crate::plugins::module_source(&id, &file).map_err(CmdError::Internal)
+}
+
+/// `host.send(message)` from a plugin's cell or panel: one JSON line on the
+/// service's stdin.
+#[tauri::command]
+pub fn plugin_send(id: String, message: serde_json::Value) -> CmdResult<()> {
+    crate::plugins::send(&id, &message).map_err(CmdError::Internal)
+}
+
+/// Settings → Plugins → install: `git clone` into the plugins dir. Async: a
+/// network round-trip, user-initiated. Returns the plugin id.
+#[tauri::command]
+pub async fn plugin_install(url: String) -> CmdResult<String> {
+    tauri::async_runtime::spawn_blocking(move || crate::plugins::install(&url))
+        .await
+        .map_err(|e| CmdError::Internal(e.to_string()))?
+        .map_err(CmdError::Internal)
+}
+
+/// Settings → Plugins → remove: deletes a user plugin's directory.
+#[tauri::command]
+pub fn plugin_remove(id: String) -> CmdResult<()> {
+    crate::plugins::remove(&id).map_err(CmdError::Internal)
+}
+
+/// Restart a plugin: service respawned, tick run now, UI rebuilt.
+#[tauri::command]
+pub fn plugin_restart(app: AppHandle, id: String) -> CmdResult<()> {
+    crate::plugins::restart(&app, &id).map_err(CmdError::Internal)
 }

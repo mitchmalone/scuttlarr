@@ -19,7 +19,7 @@ describe('normalizeBarZones with widgets', () => {
     expect(ids(out.right)).toEqual([
       'wifi',
       'awake',
-      'usage',
+      'plugin:usage',
       'battery',
       'widget:uptime',
       'widget:odd',
@@ -57,8 +57,29 @@ describe('normalizeBarZones with widgets', () => {
       widgetModuleId('gh'),
       'wifi',
       'awake',
-      'usage',
+      'plugin:usage',
       'battery',
     ])
+  })
+
+  it('migrates the pre-plugin usage module id in place', () => {
+    const layout = {
+      left: [{ id: 'usage', enabled: false }],
+      center: [{ id: 'clock', enabled: true }],
+      right: [{ id: 'battery', enabled: true }],
+    }
+    const out = normalizeBarZones(layout)
+    expect(out.left[0]).toEqual({ id: 'plugin:usage', enabled: false })
+    expect(ids(out.left)).not.toContain('usage')
+    expect(ids(out.right)).not.toContain('plugin:usage')
+  })
+
+  it('appends a discovered plugin cell to its manifest zone', () => {
+    const out = normalizeBarZones(DEFAULT_BAR_LAYOUT, [
+      { id: 'calendar', zone: 'center', kind: 'plugin' },
+      { id: 'hello', zone: 'right', kind: 'plugin' },
+    ])
+    expect(ids(out.center)).toEqual(['clock', 'plugin:calendar'])
+    expect(ids(out.right).at(-1)).toBe('plugin:hello')
   })
 })

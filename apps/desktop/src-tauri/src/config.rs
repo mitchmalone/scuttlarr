@@ -130,6 +130,14 @@ impl Default for BarConfig {
     }
 }
 
+/// Plugins (docs/PLUGINS.md): which are switched off. Settings are shared with
+/// widgets (`Config.widgets`, keyed by id) — one store for one contract.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct PluginsConfig {
+    pub disabled: Vec<String>,
+}
+
 /// Agent integrations: local session monitoring and the usage monitor. All
 /// off by default — a fresh install watches nothing and fetches nothing.
 ///
@@ -249,6 +257,8 @@ pub struct Config {
     /// each widget's manifest `settings` (docs/WIDGETS.md). Secrets never land here —
     /// they're in the Keychain (widget_secrets.rs). Delivered to the widget as env.
     pub widgets: std::collections::HashMap<String, std::collections::HashMap<String, String>>,
+    /// Plugins: disabled ids (docs/PLUGINS.md).
+    pub plugins: PluginsConfig,
 }
 
 impl Default for Config {
@@ -273,6 +283,7 @@ impl Default for Config {
             color_loupe_zoom: 8,
             color_loupe_size: 264,
             widgets: std::collections::HashMap::new(),
+            plugins: PluginsConfig::default(),
         }
     }
 }
@@ -378,6 +389,7 @@ pub fn watch(app: AppHandle) {
                     }
                     crate::agents::configure(&new_config.agents);
                     crate::usage::configure(&new_config.agents);
+                    crate::plugins::configure(&app, &new_config.plugins.disabled);
                     if old.bar.enabled != new_config.bar.enabled {
                         crate::bar::set_enabled(&app, new_config.bar.enabled);
                     }

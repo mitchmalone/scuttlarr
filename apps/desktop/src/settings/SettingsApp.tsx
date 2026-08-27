@@ -28,14 +28,17 @@ import {
   type BarZones,
   type ClaudeAccountConfig,
   type Config,
+  type WidgetHome,
   type ZoneName,
   normalizeBarZones,
   notchedZones,
   widgetModuleId,
 } from '../lib/config'
 import { applyTheme, themeNames } from '../lib/themes'
+import { usePlugins } from '../plugins/use-plugins'
 import DesktopTab from './DesktopTab'
 import HotkeyRecorder from './HotkeyRecorder'
+import { PluginsSection } from './PluginsSection'
 import SubTabs from './SubTabs'
 import iconUrl from './launcharr.svg'
 
@@ -705,6 +708,7 @@ const MODULE_LABELS: Record<string, string> = {
  * its manifest name when the live set knows it, else its id. */
 const moduleLabel = (id: string, widgets: BarWidget[]) => {
   if (MODULE_LABELS[id]) return MODULE_LABELS[id]
+  if (id.startsWith('plugin:')) return `${id.slice('plugin:'.length)} · plugin`
   if (!id.startsWith('widget:')) return id
   const wid = id.slice('widget:'.length)
   const w = widgets.find((w) => w.id === wid)
@@ -1341,6 +1345,7 @@ function WidgetsSection({
 
 const MENUBAR_SUBTABS = [
   { id: 'layout', label: 'Layout' },
+  { id: 'plugins', label: 'Plugins' },
   { id: 'widgets', label: 'Custom widgets' },
 ] as const
 type MenubarSubTab = (typeof MENUBAR_SUBTABS)[number]['id']
@@ -1350,7 +1355,13 @@ type MenubarSubTab = (typeof MENUBAR_SUBTABS)[number]['id']
 function MenubarTab({ config, set }: { config: Config; set: SetFn }) {
   const [sub, setSub] = useState<MenubarSubTab>('layout')
   const widgets = useWidgets()
-  const homes = widgets.map((w) => ({ id: w.id, zone: w.zone }))
+  const plugins = usePlugins(2000)
+  const homes: WidgetHome[] = [
+    ...widgets.map((w) => ({ id: w.id, zone: w.zone })),
+    ...plugins
+      .filter((p) => p.enabled && p.kinds.includes('bar-widget'))
+      .map((p) => ({ id: p.id, zone: p.zone, kind: 'plugin' as const })),
+  ]
   const layout = normalizeBarZones(config.bar.layout, homes)
   // Normalized + center-folded, so every module stays reachable on a board
   // that has no center column.
@@ -1360,6 +1371,14 @@ function MenubarTab({ config, set }: { config: Config; set: SetFn }) {
   return (
     <>
       <SubTabs tabs={MENUBAR_SUBTABS} value={sub} onChange={setSub} />
+      {sub === 'plugins' && (
+        <PluginsSection
+          config={config}
+          set={set}
+          WidgetSettings={WidgetSettings}
+          WidgetPrereqs={WidgetPrereqs}
+        />
+      )}
       {sub === 'widgets' && (
         <WidgetsSection widgets={widgets} config={config} set={set} />
       )}

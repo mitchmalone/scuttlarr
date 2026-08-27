@@ -6,6 +6,15 @@
 
 ---
 
+### 2026-08-28 · A plugin card with no variant class hung off the display
+
+The hello plugin's hover card ran off the right edge of the screen (Mitch, 2026-08-28:
+"not a great reference"). Every built-in card carries its own class with `right: 0`;
+`.bar-card` itself had no horizontal anchor, so an unclassed card sat at its cell's left
+edge and grew rightwards. Fix in the kit, not the plugin: `.bar-right .bar-card {right:0}`,
+`.bar-left .bar-card {left:0}`, `.bar-center .bar-card` centred — zone-aware defaults, so
+no plugin needs to know which zone it lives in.
+
 ### 2026-08-27 · Plugins: blob-URL module loading works in WebKit; sharing lucide costs ~20 MB; pnpm lives behind corepack
 
 Three things learned building the plugin runtime (`plans/done/plugins-react-cells-and-panels.md`).

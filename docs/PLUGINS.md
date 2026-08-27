@@ -119,7 +119,8 @@ Props (`@launcharr/tui/plugins`):
 | `host`     | ✓    | ✓     | `open(url)` · `copy(text)` · `send(message)` · `openPanel(id?)`    |
 | `onClose`  |      | ✓     | close the panel (Esc)                                              |
 
-Use `BarHoverCell` with `id={`plugin:${plugin.id}`}` for a cell with a card; the kit's
+Use `BarHoverCell` with `id={`plugin:${plugin.id}`}` for a cell with a card (cards anchor
+to their zone's edge automatically, so they stay on screen wherever the cell sits); the kit's
 `Panel`, `ListRow`, `KeyHints`, `Calendar`, `MeterRow`… for panels. A component that
 throws paints its own cell red (the message is in the card and in Settings) and nothing
 else in the bar changes.

@@ -170,6 +170,21 @@
   border: 1px solid var(--dim, #7f86a5);
 }
 
+/* Zone-aware anchoring: a card hangs off its zone's edge — right zone from
+ * the right, left zone from the left, center centred — so a plugin's card
+ * (docs/PLUGINS.md) stays on screen with no per-card class. The built-in
+ * cards' own rules below agree with this; they predate it. */
+.bar-right .bar-card {
+  right: 0;
+}
+.bar-left .bar-card {
+  left: 0;
+}
+.bar-center .bar-card {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .bar-card-title {
   color: var(--fg, #dde1f0);
   overflow: hidden;

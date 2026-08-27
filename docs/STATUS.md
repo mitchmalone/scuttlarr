@@ -21,8 +21,12 @@ on/off, restart, settings/prereqs), `plugins ⏎` gallery, reference `hello` plu
 (`apps/desktop/plugins/hello/`, installed locally for the proof). Contract: `docs/PLUGINS.md`.
 **Proved live** (`~/Library/Logs/launcharr.log`): `3 plugin(s) → hello: built → service
 started → first state → webview loaded cell.js`; edit → rebuilt + reloaded same second.
-**Memory:** 114 MB idle with all three plugins on, steady state (149 MB in the first
-minutes after a relaunch, dropping once WebKit collects; plugins on↔off delta ≈ 9 MB).
+**Memory — watch item:** with all three plugins on, RSS reads 161 MB right after
+relaunch, 132 MB at six minutes, 114 MB after plugins were toggled off/on (forced
+re-render + collection); plugins on↔off delta ≈ 9 MB. Against a 120 MB budget (118 at
+v0.6.0) that is over until WebKit settles — measure again at the next release and, if
+it holds above 120, lazy-load plugin panels (cell resident, panel on demand) per the
+plan's risk note.
 **Hands-check pending (Mitch):** the hello cell + card + `hello ⏎` panel (`r` resets via
 `host.send`), `cal ⏎`, `usage` cell/panel unchanged, Settings → Plugins, `plugins ⏎`.
 Plan: `plans/done/plugins-react-cells-and-panels.md`; slice G (awake/agents/wifi/audio/

@@ -10,9 +10,13 @@ Inside a herdr pane it does the opposite: herdr already owns that pane's agent
 state and launcharr reads it from there, so the hook enriches herdr's record
 with the user's prompt instead of emitting a second, competing cell.
 
-Install: point every Claude hook group (SessionStart, UserPromptSubmit,
-PreToolUse, PostToolUse, PermissionRequest, Notification, Stop, SessionEnd,
-SubagentStart, SubagentStop) at this script in ~/.claude/settings.json.
+Install: launcharr owns this. The bundled copy is written to
+~/.config/launcharr/hooks/claude-status.py and registered for every event
+(SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PermissionRequest,
+Notification, Stop, SessionEnd, SubagentStart, SubagentStop) in each Claude
+config dir's settings.json from Settings → Agents (hooks.rs). Point hooks at
+the installed path, never at a checkout — launcharr repairs stale paths on
+launch, but only ones it recognises.
 """
 
 import json

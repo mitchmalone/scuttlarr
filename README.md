@@ -81,6 +81,10 @@ rm -rf /Applications/launcharr.app \
        ~/Library/LaunchAgents/launcharr.plist
 ```
 
+If you enabled agent monitoring, the hook entries in `~/.claude*/settings.json` still
+point at `~/.config/launcharr/hooks/claude-status.py`; they're inert once it's gone —
+delete them if you want a clean file.
+
 ---
 
 _launcharr: because the apps won't launch themselves. Yarr._

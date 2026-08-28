@@ -37,6 +37,7 @@ import {
 import { applyTheme, themeNames } from '../lib/themes'
 import { usePlugins } from '../plugins/use-plugins'
 import DesktopTab from './DesktopTab'
+import { HooksRow } from './HooksRow'
 import HotkeyRecorder from './HotkeyRecorder'
 import { PluginsSection } from './PluginsSection'
 import SubTabs from './SubTabs'
@@ -501,11 +502,12 @@ function AgentsTab({ config, set }: { config: Config; set: SetFn }) {
           </label>
           <p className="hint">
             Live session states in the bar and the <code>agents ⏎</code> panel.
-            Agents report in over a local socket (Claude Code hooks →{' '}
-            <code>agents.sock</code>); nothing leaves this machine.
+            Agents report in over a local socket (<code>agents.sock</code>);
+            nothing leaves this machine.
           </p>
           {agents.monitor && (
             <>
+              <HooksRow />
               <label className="check">
                 <input
                   type="checkbox"

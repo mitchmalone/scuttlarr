@@ -658,3 +658,33 @@ button {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Settings → Agents: Claude Code hook adapter per account (HooksRow). */
+.hookslist {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.hookslist li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.hookstate {
+  color: var(--dim);
+}
+.hookstate-registered {
+  color: var(--fg);
+}
+.hookstate-stale,
+.hookstate-partial,
+.hookstate-missing {
+  color: var(--warn, var(--bang));
+}
+.hint.error {
+  color: var(--danger);
+}

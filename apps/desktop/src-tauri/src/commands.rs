@@ -242,6 +242,19 @@ pub async fn desktop_toml(action: crate::desktop::TomlAction) -> CmdResult<Optio
     crate::desktop::toml_action(action)
 }
 
+/// Settings → Agents: where the Claude hook adapter stands per account (hooks.rs).
+#[tauri::command]
+pub fn hooks_status() -> crate::hooks::HooksStatus {
+    crate::hooks::status()
+}
+
+/// Install the adapter to its stable path and register it in every Claude
+/// config dir's settings.json (idempotent; one-time `.bak-launcharr`).
+#[tauri::command]
+pub async fn hooks_install() -> CmdResult<crate::hooks::HooksStatus> {
+    crate::hooks::install()
+}
+
 #[tauri::command]
 pub async fn desktop_install(app: AppHandle, dep: crate::deps::Dep) -> CmdResult<()> {
     crate::deps::install(app, dep)

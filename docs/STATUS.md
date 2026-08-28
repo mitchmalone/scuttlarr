@@ -3,9 +3,19 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-08-27 (plugins)
+> Last updated: 2026-08-28 (hooks owned by launcharr)
 
 ## Where we are
+
+**Claude hooks owned by launcharr, 2026-08-28 (on main, unreleased):** the adapter is
+bundled and installed to `~/.config/launcharr/hooks/claude-status.py`; `hooks.rs`
+registers it per Claude account from Settings → Agents and repairs stale paths at
+launch (DECISIONS 2026-08-28, `plans/done/hooks-owned-by-launcharr.md`). Prompted by
+the repo move to `stackarr/launcharr` breaking every hand-pointed hook. **Proved live
+2026-08-28 11:01:** first launch of the new build installed the script and repaired all
+16 entries across `~/.claude` + `~/.claude-psyke` to the stable path (backups
+`settings.json.bak-launcharr`; diff = paths only). **Hands-check pending (Mitch):**
+Settings → Agents shows both accounts registered; a Claude turn paints a cell.
 
 **Plugins, 2026-08-27 (on main, unreleased — built + running):** "widgets are data, never
 code" superseded (DECISIONS 2026-08-27 ×3). A plugin is a directory in
@@ -213,7 +223,7 @@ display. Consider a v0.5.1 for the post-release batch once those pass.
   blocked red breathing, working accent, **done-unread blue** (Stop → `done`, read on
   jump), idle/unknown green. Cells grouped in bordered boxes by tmux session, ordered by
   tab (`list-panes` enrichment, 2s cache); hover opens a dropdown card — the bar window
-  grows downward (`bar_set_dropdown`) since the 30px strip can't host a popover. Claude hooks → in-repo `apps/desktop/hooks/claude-status.py`;
+  grows downward (`bar_set_dropdown`) since the 30px strip can't host a popover. Claude hooks → `~/.config/launcharr/hooks/claude-status.py`, installed by launcharr (2026-08-28);
   Go daemon booted out (revert: bootstrap
   `~/Library/LaunchAgents/com.mitchmalone.sketchybar-agent-status.plist` + repoint
   hooks; settings backups at `~/.claude*/settings.json.bak-agent-status`).

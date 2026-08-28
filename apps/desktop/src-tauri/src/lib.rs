@@ -32,6 +32,7 @@ mod error;
 mod favicon;
 mod frecency;
 mod herdr;
+mod hooks;
 mod icons;
 mod indexer;
 mod logbook;
@@ -121,6 +122,8 @@ pub fn run() {
             ask::ask,
             commands::agent_jump,
             commands::agent_forget,
+            commands::hooks_status,
+            commands::hooks_install,
             commands::desktop_status,
             commands::desktop_apply,
             commands::desktop_adopt,
@@ -216,6 +219,11 @@ pub fn run() {
             agents::configure(&cfg.agents);
             usage::configure(&cfg.agents);
             agents::start(app.handle().clone());
+            if cfg.agents.monitor {
+                // Keep the Claude hook adapter installed at its stable path and
+                // mend our own stale registrations (hooks.rs); adds nothing.
+                std::thread::spawn(hooks::boot);
+            }
             tray::init(app.handle())?;
             shortcut::sync(app.handle(), &cfg);
             indexer::start(app.handle().clone());

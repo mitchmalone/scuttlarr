@@ -1036,6 +1036,7 @@ fn upgrade_in_terminal(source: &str, config: &crate::config::Config) -> Result<(
         crate::config::Terminal::TerminalApp => "Terminal",
     };
     crate::logbook::breadcrumb("updates", &format!("upgrade {source} → {terminal}"));
+    crate::updates::refresh_after_upgrade();
     Ok(())
 }
 

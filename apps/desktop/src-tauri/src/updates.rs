@@ -85,6 +85,19 @@ pub fn refresh() {
     kick();
 }
 
+/// After an upgrade is handed to the terminal the report is stale but we
+/// can't see when the upgrade finishes — so re-check a couple of times on a
+/// short fuse (brew takes a minute or two; a long cask install, longer)
+/// instead of leaving the old count in the bar for the rest of the TTL.
+pub fn refresh_after_upgrade() {
+    std::thread::spawn(|| {
+        for secs in [90, 300, 900] {
+            std::thread::sleep(Duration::from_secs(secs));
+            kick();
+        }
+    });
+}
+
 /// The shell command that upgrades one source (`SOURCES`' `upgrade_command`),
 /// or — for `"all"` — every *present* source's command (binary locates, via
 /// `locate`) joined with ` && ` in table order, so a failure stops the chain

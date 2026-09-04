@@ -4,7 +4,7 @@
 
 A macOS app launcher that dresses up as a shell prompt: global hotkey summons a floating
 REPL-looking panel; type to fuzzy-launch apps and System Settings panes, or `!command` to fling
-a command at iTerm2. Full product truth lives in `docs/PRD.md`. Two values govern every
+a command at Ghostty. Full product truth lives in `docs/PRD.md`. Two values govern every
 decision: **lightweight** (idle invisibly, summon instantly) and **hackable** (extending it
 feels like scripting). When a feature and the weight budget conflict, the feature loses.
 
@@ -48,21 +48,23 @@ it in `docs/DECISIONS.md`.
 
 ## Stack
 
-| Layer            | Choice                                                          | Notes                                                            |
-| ---------------- | --------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Shell            | **Tauri 2** (Rust)                                              | Window mgmt, global shortcut plugin, accessory app (LSUIElement) |
-| Panel            | **tauri-nspanel** (community plugin)                            | Non-activating `NSPanel`, Spotlight-style floating window        |
-| UI               | **TypeScript + React** (WKWebView)                              | Vite; 8-row flat list, terminal-prompt visual identity           |
-| Matching/ranking | **`packages/core`** (pure TypeScript)                           | The most unit-tested code in the repo                            |
-| Indexing/launch  | **Rust commands**                                               | FS scan, FSEvents watch, icon cache, launch, AppleScript→iTerm2  |
-| Persistence      | **SQLite** (rusqlite)                                           | Frecency events + icon cache metadata; config is plain JSON      |
-| Site             | **Next.js** static export + Tailwind 4                          | Deploys to Vercel on push to main                                |
-| Tooling          | pnpm · Vitest · ESLint · Prettier · Lefthook · cargo fmt/clippy | One gate: `pnpm verify`                                          |
+| Layer            | Choice                                                          | Notes                                                                                                                    |
+| ---------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Shell            | **Tauri 2** (Rust)                                              | Window mgmt, global shortcut plugin, accessory app (LSUIElement)                                                         |
+| Panel            | **tauri-nspanel** (community plugin)                            | Non-activating `NSPanel`, Spotlight-style floating window                                                                |
+| UI               | **TypeScript + React** (WKWebView)                              | Vite; 8-row flat list, terminal-prompt visual identity                                                                   |
+| Matching/ranking | **`packages/core`** (pure TypeScript)                           | The most unit-tested code in the repo                                                                                    |
+| Indexing/launch  | **Rust commands**                                               | FS scan, FSEvents watch, icon cache, launch, terminal hand-off (Ghostty via herdr/tmux, AppleScript→iTerm2/Terminal.app) |
+| Persistence      | **SQLite** (rusqlite)                                           | Frecency events + icon cache metadata; config is plain JSON                                                              |
+| Site             | **Next.js** static export + Tailwind 4                          | Deploys to Vercel on push to main                                                                                        |
+| Tooling          | pnpm · Vitest · ESLint · Prettier · Lefthook · cargo fmt/clippy | One gate: `pnpm verify`                                                                                                  |
 
 ## Invariants
 
 1. **Zero required permissions.** The app runs with none (sole exception: the standard
-   Automation consent prompt on first iTerm2 hand-off). Nothing requiring Accessibility.
+   Automation consent prompt, and only if the effective terminal falls back to iTerm2 —
+   Ghostty, the default, has no AppleScript dictionary and needs no consent). Nothing
+   requiring Accessibility.
    One opt-in, off by default: Settings → General → "Use the launcharr loupe" makes
    `colorpicker` ask for **Screen Recording** once (2× magnifier, DECISIONS 2026-08-17);
    off — and until granted — it's Apple's `NSColorSampler`, which needs nothing. Nothing

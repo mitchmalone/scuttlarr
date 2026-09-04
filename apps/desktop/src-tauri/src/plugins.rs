@@ -1032,6 +1032,7 @@ fn upgrade_in_terminal(source: &str, config: &crate::config::Config) -> Result<(
     crate::terminal::run(config.terminal, &command, config.bang_new_window)
         .map_err(|e| e.to_string())?;
     let terminal = match crate::terminal::effective_terminal(config.terminal) {
+        crate::config::Terminal::Ghostty => "Ghostty",
         crate::config::Terminal::ITerm2 => "iTerm2",
         crate::config::Terminal::TerminalApp => "Terminal",
     };

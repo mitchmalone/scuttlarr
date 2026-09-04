@@ -127,7 +127,7 @@ const KNOWN_BROWSERS = [
 
 const DEFAULT_CONFIG: Config = {
   hotkey: 'Alt+Space',
-  terminal: 'iTerm2',
+  terminal: 'Ghostty',
   bangNewWindow: true,
   sigil: '❯',
   bangSigil: '$',

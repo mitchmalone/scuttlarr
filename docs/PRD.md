@@ -105,7 +105,7 @@ The panel is a terminal prompt cosplay, not an Alfred knock-off:
 
 - If the **first character** of the input is `!`, launcharr switches to bang mode for the rest of that invocation. The prompt sigil changes (e.g. `❯` → `$`) and the results list is replaced by a single action line: `run in iTerm2 ▸ <command>` — an unambiguous visual signal that Enter will not launch an app.
 - **Enter** hands everything after the `!` to **iTerm2**: launcharr opens a new iTerm2 window (default profile) — or reuses the current session if a setting says so — and runs the command there. Output, interactivity, and lifetime all belong to iTerm2; launcharr dismisses immediately after hand-off.
-- Implementation: iTerm2's AppleScript API (`create window with default profile` / `write text`). If iTerm2 isn't installed, fall back to Terminal.app; the target is a setting, but iTerm2 is the blessed default.
+- Implementation: iTerm2's AppleScript API (`create window with default profile` / `write text`). If iTerm2 isn't installed, fall back to Terminal.app; the target is a setting, but Ghostty is the blessed default (reached through herdr or tmux — Ghostty has no AppleScript dictionary — falling back to iTerm2, then Terminal.app, if it isn't installed).
 - The command string is passed through verbatim — no shell parsing, no quoting games, no environment munging by launcharr. What you typed is what runs.
 - `!` alone (empty command) opens a new iTerm2 window and nothing else. Free feature, feels right.
 - **Grammar note:** `!` is the first-char entry in the dispatch table; v1.1 added first-token entries — script trigger words and the built-in `clip` — to the same table, as this note always intended.

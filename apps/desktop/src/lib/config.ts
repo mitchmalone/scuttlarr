@@ -11,7 +11,7 @@ import type { ThemeTokens } from './themes'
  */
 export type Config = {
   hotkey: string
-  terminal: 'iTerm2' | 'Terminal'
+  terminal: 'Ghostty' | 'iTerm2' | 'Terminal'
   bangNewWindow: boolean
   sigil: string
   bangSigil: string

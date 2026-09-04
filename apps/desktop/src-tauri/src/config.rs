@@ -6,7 +6,12 @@ use tauri::{AppHandle, Emitter, Manager};
 use crate::error::CmdResult;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+// `TerminalApp` names Terminal.app; renaming it to dodge the lint would be more
+// confusing than the lint itself (it only fires now that a 3rd variant joined).
+#[allow(clippy::enum_variant_names)]
 pub enum Terminal {
+    #[serde(rename = "Ghostty")]
+    Ghostty,
     #[serde(rename = "iTerm2")]
     ITerm2,
     #[serde(rename = "Terminal")]
@@ -265,7 +270,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             hotkey: "Alt+Space".into(),
-            terminal: Terminal::ITerm2,
+            terminal: Terminal::Ghostty,
             bang_new_window: true,
             sigil: "❯".into(),
             bang_sigil: "$".into(),
@@ -410,7 +415,7 @@ mod tests {
         let json = serde_json::to_string(&Config::default()).unwrap();
         let back: Config = serde_json::from_str(&json).unwrap();
         assert_eq!(back.hotkey, "Alt+Space");
-        assert_eq!(back.terminal, Terminal::ITerm2);
+        assert_eq!(back.terminal, Terminal::Ghostty);
         assert!(back.bang_new_window);
     }
 
@@ -419,7 +424,7 @@ mod tests {
         let cfg: Config = serde_json::from_str(r#"{"hotkey":"Cmd+Space"}"#).unwrap();
         assert_eq!(cfg.hotkey, "Cmd+Space");
         assert_eq!(cfg.sigil, "❯");
-        assert_eq!(cfg.terminal, Terminal::ITerm2);
+        assert_eq!(cfg.terminal, Terminal::Ghostty);
     }
 
     #[test]
@@ -486,6 +491,10 @@ mod tests {
 
     #[test]
     fn terminal_serializes_as_product_names() {
+        assert_eq!(
+            serde_json::to_string(&Terminal::Ghostty).unwrap(),
+            r#""Ghostty""#
+        );
         assert_eq!(
             serde_json::to_string(&Terminal::ITerm2).unwrap(),
             r#""iTerm2""#

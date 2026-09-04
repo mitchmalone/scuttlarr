@@ -19,7 +19,7 @@ Two values govern every decision:
 - **⌥Space** — non-activating floating panel; Esc returns focus exactly where it was
 - **Launch** apps and System Settings panes, fuzzy-matched (fzf-family scoring),
   frecency-ranked from your actual usage
-- **`!git status ⏎`** — bang mode hands the command to iTerm2 (or Terminal.app), verbatim
+- **`!git status ⏎`** — bang mode hands the command to Ghostty (or iTerm2/Terminal.app), verbatim
 - **[Scripts](docs/SCRIPTS.md)** — executables in `~/.config/launcharr/scripts/` join the
   grammar with their own trigger words; bundled: `lorem`, `json`, `ip`
 - **`clip`** — clipboard history (text, 200 items, concealed types never recorded);

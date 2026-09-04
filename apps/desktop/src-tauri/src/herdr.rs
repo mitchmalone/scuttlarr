@@ -214,6 +214,109 @@ fn focus_request(pane_id: &str) -> String {
     .to_string()
 }
 
+/// Whether herdr's default-session socket is up and answering. Used to route
+/// Ghostty hand-offs (`terminal.rs`) — a stale socket file left behind by a
+/// killed server must not read as "running".
+pub fn running() -> bool {
+    let path = config_dir().join("herdr.sock");
+    request(&path, &ping_request()).is_some_and(|r| r.contains(r#""pong""#))
+}
+
+fn ping_request() -> String {
+    serde_json::json!({
+        "id": "launcharr-ping",
+        "method": "ping",
+        "params": {},
+    })
+    .to_string()
+}
+
+/// Create a focused tab in herdr's default workspace and, if `command` is
+/// given, run it there. This is what the `herdr tab create` / `herdr pane
+/// run` CLI subcommands do, but over the socket directly: herdr.rs already
+/// owns this protocol (`request`, above), and the CLI's `pane run` is itself
+/// just `pane.send_text` followed by an Enter key — there is no single
+/// `pane.run` RPC (read from the bundled schema, `herdr api schema --json`,
+/// 2026-09-04; ghostty-handoff plan).
+pub fn ghostty_handoff(command: Option<&str>) -> Result<(), String> {
+    let path = config_dir().join("herdr.sock");
+    ok_response(request(&path, &tab_create_request())).ok_or("herdr: tab.create failed")?;
+    let Some(command) = command else {
+        return Ok(());
+    };
+    let pane_id = request(&path, &pane_current_request())
+        .as_deref()
+        .and_then(parse_current_pane_id)
+        .ok_or("herdr: could not find the new pane (pane.current)")?;
+    ok_response(request(&path, &send_text_request(&pane_id, command)))
+        .ok_or("herdr: pane.send_text failed")?;
+    ok_response(request(&path, &send_enter_request(&pane_id)))
+        .ok_or("herdr: pane.send_keys failed")?;
+    Ok(())
+}
+
+/// A response is trusted when the server answered and it isn't an error
+/// envelope — the same check `focus` uses above.
+fn ok_response(response: Option<String>) -> Option<String> {
+    response.filter(|r| !r.contains(r#""error""#))
+}
+
+fn tab_create_request() -> String {
+    serde_json::json!({
+        "id": "launcharr-tab-create",
+        "method": "tab.create",
+        "params": { "focus": true },
+    })
+    .to_string()
+}
+
+fn pane_current_request() -> String {
+    serde_json::json!({
+        "id": "launcharr-pane-current",
+        "method": "pane.current",
+        "params": {},
+    })
+    .to_string()
+}
+
+fn parse_current_pane_id(response: &str) -> Option<String> {
+    #[derive(Deserialize)]
+    struct Envelope {
+        result: Option<ResultBody>,
+    }
+    #[derive(Deserialize)]
+    struct ResultBody {
+        pane: Option<PaneIdOnly>,
+    }
+    #[derive(Deserialize)]
+    struct PaneIdOnly {
+        pane_id: String,
+    }
+    serde_json::from_str::<Envelope>(response)
+        .ok()?
+        .result?
+        .pane
+        .map(|p| p.pane_id)
+}
+
+fn send_text_request(pane_id: &str, text: &str) -> String {
+    serde_json::json!({
+        "id": "launcharr-pane-send-text",
+        "method": "pane.send_text",
+        "params": { "pane_id": pane_id, "text": text },
+    })
+    .to_string()
+}
+
+fn send_enter_request(pane_id: &str) -> String {
+    serde_json::json!({
+        "id": "launcharr-pane-send-keys",
+        "method": "pane.send_keys",
+        "params": { "pane_id": pane_id, "keys": ["Enter"] },
+    })
+    .to_string()
+}
+
 /// The tty of herdr's attached client — the terminal window to raise after
 /// focusing one of its panes. herdr's API describes panes inside its own world
 /// and says nothing about the terminal hosting it, so we ask the OS: the client
@@ -444,5 +547,61 @@ ttys000  /bin/zsh
     #[test]
     fn missing_herdr_is_silent() {
         assert!(request_snapshot(std::path::Path::new("/nonexistent/herdr.sock")).is_none());
+    }
+
+    #[test]
+    fn tab_create_asks_for_a_focused_tab_in_the_default_workspace() {
+        let req: serde_json::Value =
+            serde_json::from_str(&tab_create_request()).expect("valid json");
+        assert_eq!(req["method"], "tab.create");
+        assert_eq!(req["params"]["focus"], true);
+        // No workspace_id: the default/current workspace, not a named one.
+        assert!(req["params"].get("workspace_id").is_none());
+    }
+
+    #[test]
+    fn pane_current_takes_no_target() {
+        let req: serde_json::Value =
+            serde_json::from_str(&pane_current_request()).expect("valid json");
+        assert_eq!(req["method"], "pane.current");
+    }
+
+    #[test]
+    fn send_text_and_enter_address_the_given_pane() {
+        let text: serde_json::Value =
+            serde_json::from_str(&send_text_request("w2:p3", "echo hi")).expect("valid json");
+        assert_eq!(text["method"], "pane.send_text");
+        assert_eq!(text["params"]["pane_id"], "w2:p3");
+        assert_eq!(text["params"]["text"], "echo hi");
+
+        let enter: serde_json::Value =
+            serde_json::from_str(&send_enter_request("w2:p3")).expect("valid json");
+        assert_eq!(enter["method"], "pane.send_keys");
+        assert_eq!(enter["params"]["pane_id"], "w2:p3");
+        assert_eq!(enter["params"]["keys"], serde_json::json!(["Enter"]));
+    }
+
+    /// Shape confirmed against the bundled schema (`herdr api schema --json`,
+    /// `success_response.$defs.ResponseResult`, the `pane_current` variant),
+    /// not a live server — herdr wasn't running on this machine, 2026-09-04.
+    #[test]
+    fn parses_the_new_panes_id_from_a_pane_current_response() {
+        let response = r#"{"id":"launcharr-pane-current","result":{"type":"pane_current","pane":{"pane_id":"w1:p2","tab_id":"w1:t2","workspace_id":"w1","focused":true}}}"#;
+        assert_eq!(parse_current_pane_id(response).as_deref(), Some("w1:p2"));
+        assert_eq!(parse_current_pane_id(r#"{"error":{}}"#), None);
+        assert_eq!(parse_current_pane_id("not json"), None);
+    }
+
+    #[test]
+    fn ok_response_rejects_error_envelopes() {
+        assert_eq!(
+            ok_response(Some(r#"{"result":{"type":"ok"}}"#.to_string())).as_deref(),
+            Some(r#"{"result":{"type":"ok"}}"#)
+        );
+        assert_eq!(
+            ok_response(Some(r#"{"error":{"message":"nope"}}"#.to_string())),
+            None
+        );
+        assert_eq!(ok_response(None), None);
     }
 }

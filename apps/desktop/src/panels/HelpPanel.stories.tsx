@@ -10,7 +10,7 @@ const SECTIONS: HelpSection[] = [
         left: '❯',
         right: 'type to launch — apps, panes, quicklinks, math, URLs',
       },
-      { left: '!', right: 'run command in iTerm2' },
+      { left: '!', right: 'run command in Ghostty' },
       { left: ':', right: 'emoji picker' },
       { left: '?', right: 'ask claude' },
     ],

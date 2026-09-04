@@ -5,6 +5,32 @@
 
 ---
 
+### 2026-09-04 · Ghostty is the default terminal, reached through its multiplexer (herdr/tmux), never AppleScript
+
+- **Decision.** `Terminal::Ghostty` (`"Ghostty"` on the wire) is a new bang-mode/agent-jump
+  target and the new default (`config.rs`), ahead of `iTerm2`/`Terminal`.
+  `effective_terminal` falls back Ghostty → iTerm2 → Terminal.app when Ghostty isn't
+  installed. Ghostty is never addressed directly — it has no AppleScript dictionary and no
+  working `+new-window` on macOS (JOURNAL 2026-09-04), so `terminal.rs` picks a route in
+  this order: (1) herdr's socket, if its default-session server is running — create+focus
+  a tab, then `pane.send_text` + Enter; (2) the most recently active tmux client's
+  session — `tmux new-window -t <session> "<cmd>; exec $SHELL -l"`; (3) `open -na Ghostty`
+  when no Ghostty process exists yet (the first launch is the one case `-na` is safe); (4)
+  otherwise raise Ghostty and copy the command to the pasteboard, failing visibly — there
+  is genuinely no way in. `plan_ghostty` is this decision as a pure, fully unit-tested
+  function; the executor around it is thin I/O.
+- **Why.** scuttlarr's stack declares Ghostty its only terminal (DECISIONS 2026-08-25); the
+  contract item was still unimplemented and Mitch's own config still pointed at iTerm2.
+  Losing AppleScript access is a net win for invariant 1: the Automation consent prompt now
+  only fires if Ghostty falls back to iTerm2, not on Ghostty's own default path.
+- **Mechanics.** `config.rs` (`Terminal::Ghostty`, new default), `terminal.rs`
+  (`GhosttyProbe`, `plan_ghostty`, `HandOff`, the executor, `effective_terminal`,
+  `raise_tty`), `herdr.rs` (`running`, `ghostty_handoff` — `tab.create` / `pane.current` /
+  `pane.send_text` / `pane.send_keys` over the socket, shapes read from the bundled schema
+  rather than guessed), `plugins.rs` (`upgrade_in_terminal` breadcrumb). TS: `config.ts`
+  union, `SettingsApp.tsx` picker (Ghostty first), `App.tsx` default, `HelpPanel.stories`,
+  `apps/www` copy + demo. Plan: `plans/active/ghostty-handoff.md`.
+
 ### 2026-09-04 · Zero-network retired: the network is allowed, telemetry is not
 
 - **Decision.** Invariant 2 no longer says "no network requests". The desktop app may use

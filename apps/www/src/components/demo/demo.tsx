@@ -24,7 +24,7 @@ import {
   WifiPanel,
 } from './panels'
 
-const TERMINAL = 'iTerm2'
+const TERMINAL = 'Ghostty'
 const SIGIL = '❯'
 const BANG_SIGIL = '$'
 const TOAST_MS = 2600

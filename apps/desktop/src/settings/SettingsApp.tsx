@@ -264,6 +264,7 @@ function GeneralBasics({ config, set }: { config: Config; set: SetFn }) {
             set('terminal', e.target.value as Config['terminal'])
           }
         >
+          <option value="Ghostty">Ghostty</option>
           <option value="iTerm2">iTerm2</option>
           <option value="Terminal">Terminal.app</option>
         </select>

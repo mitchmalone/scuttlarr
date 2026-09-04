@@ -69,7 +69,7 @@ const FEATURES = [
     body: (
       <>
         <code className={MONO_CODE}>!git status ⏎</code> hands the command to
-        iTerm2 or Terminal.app, verbatim. No wrapper, no escaping surprises.
+        Ghostty, verbatim. No wrapper, no escaping surprises.
       </>
     ),
   },

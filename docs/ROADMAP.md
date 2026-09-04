@@ -108,7 +108,11 @@ What launcharr owes its distro sibling, so scuttlarr can render themes and deskt
 through `config.json` alone. Trigger for each: scuttlarr's theme/desktop rendering reaches it.
 
 - **Light mode** — lift the non-goal; make the token model render a light palette (Solarized Light is the test).
-- **Ghostty hand-off** — bang mode target beside iTerm2/Terminal.app, auto-detected.
+- **Ghostty hand-off** — ✅ default bang-mode/agent-jump target (2026-09-04, DECISIONS,
+  `plans/active/ghostty-handoff.md`): reached through herdr's socket or tmux (no
+  AppleScript dictionary, no safe `open -na` once a window exists), iTerm2/Terminal.app
+  the fallback chain if it isn't installed. Left: live-prove `!echo hi ⏎` and the updates
+  `a` upgrade path against a running herdr server, then move the plan to `done/` (Mitch).
 - **Typed `desktop` schema** — replace the `serde_json::Value` block with a documented struct; document `themes.<name>` tokens as the theme contract.
 - **Dark-mode delegation** — the `dark mode` system command calls `scuttlarr theme` when present.
 

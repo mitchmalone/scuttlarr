@@ -6,6 +6,19 @@
 
 ---
 
+### 2026-09-04 · `open -na Ghostty --args -e …` while one is already running starts a second, unusable instance
+
+Ghostty has no AppleScript dictionary and `ghostty +new-window` prints "not supported on
+this platform" on macOS, so the obvious next thing to try — `open -na Ghostty.app --args
+-e $SHELL -lic "…"` — looked like the general hand-off. It isn't: with a Ghostty already
+running, `-na` spawns a _second_ process (two menu bars, two icons in the dock) instead of
+opening a window in the first. `open -a Ghostty.app --args …` (no `-n`) avoids the second
+instance but delivers nothing to the running one either — Ghostty ignores `--args` on an
+activate-only open. The only way into a running Ghostty without Accessibility is through
+whatever multiplexer its window is already showing: herdr's socket API or `tmux
+new-window`. `-na` is safe only as the very first launch, when no Ghostty process exists
+yet at all (`terminal.rs::plan_ghostty`, `HandOff::OpenNewInstance`).
+
 ### 2026-08-28 · A plugin card with no variant class hung off the display
 
 The hello plugin's hover card ran off the right edge of the screen (Mitch, 2026-08-28:

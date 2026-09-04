@@ -166,3 +166,32 @@ interface UpdateItem {
   nothing resident between refreshes.
 - Kit gap: `ListRow` has no danger tone — error rows in `updates ⏎` are plain text.
 - Hands-check pending: hover card, `updates ⏎` keys (`r`, `c`), "hidden when clean".
+
+## Follow-up 2026-09-04
+
+Added the missing "actually run the upgrade" action, keeping the IPC surface unchanged
+(no new Tauri commands — `host.send` → `plugins.rs::native_send`, same route as `refresh`):
+
+- `updates.rs::upgrade_command(source)`: looks up a source's `upgrade_command` from
+  `SOURCES`, or for `"all"` joins every _present_ source's command (binary locates) with
+  `&&` in table order; `None` for an unknown id. Unit-tested (known id, unknown id,
+  and the `all` join mirrored against `locate`).
+- `plugins.rs::native_send` gained `{"upgrade":"<sourceId>|all"}`: resolves the command,
+  hands it to `terminal::run` exactly like `commands.rs::run_bang` does (same
+  `effective_terminal` + `bang_new_window` new-window/tab behaviour), and drops a
+  `updates: upgrade <id> → <terminal>` logbook breadcrumb. `send`/`plugin_send` now
+  thread `Config` through so the native handler can reach `terminal`/`bang_new_window`
+  without a new command. Unknown source → `Err`.
+- `updates ⏎`: Enter on any row (item/clean/error) sends `{upgrade: row.sourceId}` and
+  closes the panel; `a` sends `{upgrade: 'all'}` and closes; `c` still copies the
+  upgrade command; footer hints updated (`↵ upgrade`, `a upgrade all`, `c copy command`,
+  `r refresh`, `esc back`). `model.ts`'s `PanelRow` already carried `sourceId` on every
+  row kind, so no model change was needed.
+- Diagnosis aid: `commands.rs::open_panel` now drops a
+  `panel: open_panel <id>` breadcrumb so a bar-cell click is visible in
+  `~/Library/Logs/launcharr.log` even when nothing visibly happens. Investigated the
+  full click path (bar's `BarHoverCell` → `host.openPanel()` → `open_panel` →
+  `panel::show` + `open-panel` emit → `App.tsx`'s `panel-shown`/`open-panel` listeners)
+  against the working battery/wifi cells (`invoke('open_path', …)` — a single in-window
+  command, no cross-webview event hand-off) — no definite bug found, so no behaviour
+  change beyond the breadcrumb; see the session notes for the full citation trail.

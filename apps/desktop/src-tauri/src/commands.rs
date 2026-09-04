@@ -581,6 +581,7 @@ pub fn open_settings(app: AppHandle, tab: Option<String>) -> CmdResult<()> {
 #[tauri::command]
 pub fn open_panel(app: AppHandle, id: String) -> CmdResult<()> {
     use tauri::Emitter;
+    crate::logbook::breadcrumb("panel", &format!("open_panel {id}"));
     crate::panel::show(&app);
     app.emit("open-panel", id)
         .map_err(|e| CmdError::Internal(e.to_string()))
@@ -735,10 +736,16 @@ pub fn plugin_module(id: String, file: String) -> CmdResult<String> {
 }
 
 /// `host.send(message)` from a plugin's cell or panel: one JSON line on the
-/// service's stdin.
+/// service's stdin, or a native provider's own handler (e.g. `updates`'
+/// upgrade action, which needs the configured terminal).
 #[tauri::command]
-pub fn plugin_send(id: String, message: serde_json::Value) -> CmdResult<()> {
-    crate::plugins::send(&id, &message).map_err(CmdError::Internal)
+pub fn plugin_send(
+    state: State<'_, AppState>,
+    id: String,
+    message: serde_json::Value,
+) -> CmdResult<()> {
+    let config = state.config.read().unwrap().clone();
+    crate::plugins::send(&id, &message, &config).map_err(CmdError::Internal)
 }
 
 /// Settings → Plugins → install: `git clone` into the plugins dir. Async: a

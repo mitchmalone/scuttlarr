@@ -163,7 +163,8 @@ files runs under either.
 `packages/plugins/` holds the plugins launcharr ships — `usage` (the agent usage cell +
 `usage ⏎`), `calendar` (`cal ⏎`), and `updates` (app updates across brew, the App Store,
 pnpm, npm and mise — a count in the bar, `updates ⏎` for the list; its `updates` provider
-shells out every 6 h, `touch triggers/plugin.updates` or `r` in the panel for now). Same contract, two differences: their UI is
+shells out every 6 h, `touch triggers/plugin.updates` or `r` in the panel for now; `↵` on a
+row upgrades that source in your terminal, `a` upgrades everything). Same contract, two differences: their UI is
 Vite-bundled with the app, and their state comes from a Rust provider named in the
 manifest (`"native": "usage"`) instead of a Bun service, so the app never depends on Bun
 for its own panels. `native` is refused in user plugins. launcharr.com imports these

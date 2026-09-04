@@ -85,6 +85,26 @@ pub fn refresh() {
     kick();
 }
 
+/// The shell command that upgrades one source (`SOURCES`' `upgrade_command`),
+/// or — for `"all"` — every *present* source's command (binary locates, via
+/// `locate`) joined with ` && ` in table order, so a failure stops the chain
+/// rather than silently skipping ahead. `None` for an unknown source id.
+pub fn upgrade_command(source: &str) -> Option<String> {
+    if source == "all" {
+        let joined = SOURCES
+            .iter()
+            .filter(|def| locate(def.binary).is_some())
+            .map(|def| def.upgrade_command)
+            .collect::<Vec<_>>()
+            .join(" && ");
+        return Some(joined);
+    }
+    SOURCES
+        .iter()
+        .find(|def| def.id == source)
+        .map(|def| def.upgrade_command.to_string())
+}
+
 /// Kick the first scan at launch (lib.rs setup) so the cache is warm by the
 /// time anything reads it.
 pub fn start() {
@@ -573,5 +593,32 @@ mod tests {
     fn locate_finds_a_system_binary_and_not_nonsense() {
         assert!(locate("ls").is_some());
         assert!(locate("definitely-not-a-real-binary-launcharr").is_none());
+    }
+
+    #[test]
+    fn upgrade_command_looks_up_a_known_source_regardless_of_presence() {
+        assert_eq!(upgrade_command("brew"), Some("brew upgrade".to_string()));
+        assert_eq!(upgrade_command("mas"), Some("mas upgrade".to_string()));
+        assert_eq!(upgrade_command("mise"), Some("mise upgrade".to_string()));
+    }
+
+    #[test]
+    fn upgrade_command_unknown_source_is_none() {
+        assert_eq!(upgrade_command("definitely-not-a-source"), None);
+        assert_eq!(upgrade_command(""), None);
+    }
+
+    #[test]
+    fn upgrade_command_all_joins_present_sources_in_table_order() {
+        // Presence is machine-dependent, so mirror the function's own
+        // `locate` filter rather than hardcoding a list of installed tools —
+        // this still pins the join separator and the table-order guarantee.
+        let expected = SOURCES
+            .iter()
+            .filter(|def| locate(def.binary).is_some())
+            .map(|def| def.upgrade_command)
+            .collect::<Vec<_>>()
+            .join(" && ");
+        assert_eq!(upgrade_command("all"), Some(expected));
     }
 }

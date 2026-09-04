@@ -51,8 +51,15 @@ export default function UpdatesPanel({
     if (row) host.copy(row.upgradeCommand)
   }
 
+  const upgradeSelected = (selIndex: number) => {
+    const row = rows[selectableIndexes[selIndex] ?? -1]
+    if (!row) return
+    host.send({ upgrade: row.sourceId })
+    onClose()
+  }
+
   const nav = useListNav(selectableIndexes.length, {
-    onActivate: copySelected,
+    onActivate: upgradeSelected,
     onBack: onClose,
   })
 
@@ -88,6 +95,10 @@ export default function UpdatesPanel({
         } else if (e.key === 'c') {
           e.preventDefault()
           copySelected(nav.index)
+        } else if (e.key === 'a') {
+          e.preventDefault()
+          host.send({ upgrade: 'all' })
+          onClose()
         } else {
           nav.onKeyDown(e)
         }
@@ -95,8 +106,10 @@ export default function UpdatesPanel({
       footer={
         <KeyHints
           hints={[
+            { keys: '↵', label: 'upgrade' },
+            { keys: 'a', label: 'upgrade all' },
+            { keys: 'c', label: 'copy command' },
             { keys: 'r', label: 'refresh' },
-            { keys: 'c', label: 'copy upgrade cmd' },
             { keys: 'esc', label: 'back' },
           ]}
         />

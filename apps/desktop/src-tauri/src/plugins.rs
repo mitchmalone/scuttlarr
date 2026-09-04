@@ -1001,21 +1001,51 @@ fn record_error(id: &str, generation: u64, err: &str) {
 }
 
 /// A native provider's own message handling — currently just `updates`,
-/// whose panel refreshes on `{"refresh":true}` instead of talking to a
+/// whose panel refreshes on `{"refresh":true}` or runs a source's upgrade
+/// command on `{"upgrade":"<sourceId>|all"}` instead of talking to a
 /// service's stdin. `None` = this native id has no handler for `message`.
-fn native_send(name: &str, message: &serde_json::Value) -> Option<Result<(), String>> {
+fn native_send(
+    name: &str,
+    message: &serde_json::Value,
+    config: &crate::config::Config,
+) -> Option<Result<(), String>> {
     match name {
         "updates" if message.get("refresh").and_then(|r| r.as_bool()) == Some(true) => {
             crate::updates::refresh();
             Some(Ok(()))
         }
+        "updates" if message.get("upgrade").and_then(|u| u.as_str()).is_some() => {
+            // infallible: guarded by is_some() above
+            let source = message.get("upgrade").unwrap().as_str().unwrap();
+            Some(upgrade_in_terminal(source, config))
+        }
         _ => None,
     }
 }
 
+/// Run a source's upgrade command in the user's configured terminal — same
+/// hand-off as bang mode (`commands.rs::run_bang`): resolve the effective
+/// terminal, open a new window/tab per `bang_new_window`, fire-and-forget.
+fn upgrade_in_terminal(source: &str, config: &crate::config::Config) -> Result<(), String> {
+    let command = crate::updates::upgrade_command(source)
+        .ok_or_else(|| format!("unknown update source: {source}"))?;
+    crate::terminal::run(config.terminal, &command, config.bang_new_window)
+        .map_err(|e| e.to_string())?;
+    let terminal = match crate::terminal::effective_terminal(config.terminal) {
+        crate::config::Terminal::ITerm2 => "iTerm2",
+        crate::config::Terminal::TerminalApp => "Terminal",
+    };
+    crate::logbook::breadcrumb("updates", &format!("upgrade {source} → {terminal}"));
+    Ok(())
+}
+
 /// `host.send(message)`: one JSON line on the service's stdin, or a native
 /// provider's own handler when the plugin has no service (Mode::Native).
-pub fn send(id: &str, message: &serde_json::Value) -> Result<(), String> {
+pub fn send(
+    id: &str,
+    message: &serde_json::Value,
+    config: &crate::config::Config,
+) -> Result<(), String> {
     let native = {
         let reg = PLUGINS.lock().unwrap();
         let e = reg
@@ -1026,7 +1056,7 @@ pub fn send(id: &str, message: &serde_json::Value) -> Result<(), String> {
     };
     if let Some(name) = native {
         let name = name.unwrap_or_default();
-        return native_send(&name, message)
+        return native_send(&name, message, config)
             .unwrap_or_else(|| Err(format!("{id} has no message handler")));
     }
     let mut reg = PLUGINS.lock().unwrap();

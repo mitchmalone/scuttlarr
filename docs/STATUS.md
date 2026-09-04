@@ -14,7 +14,9 @@ timeout each, fail-visible per source, sources without a binary omitted), cached
 usage.rs so the 1 Hz snapshot never blocks. Cell hidden while everything is clean,
 `package` glyph + count otherwise, `warn` on a source error; hover card per source;
 `updates ⏎` lists `installed → available` with `r` refresh (`host.send` grew a Native
-arm — no new commands) and `c` copies the upgrade command. Fixture drives the site demo.
+arm — no new commands) `↵` runs a source's upgrade in your terminal (bang-mode hand-off), `a` all of them,
+`c` copies the command. Fixture drives the site demo. Cell click → panel is reported
+dead by Mitch; `open_panel` now logs `panel: open_panel <id>` so the next click tells.
 Kit gap noted: `ListRow` has no danger tone, so error rows are plain text (card + cell
 still warn). **Same day: zero-network retired** (DECISIONS 2026-09-04, invariant 2
 rewritten: network allowed, telemetry banned). Plan: `plans/done/app-updates-plugin.md`.

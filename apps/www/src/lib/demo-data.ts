@@ -1,3 +1,7 @@
+import {
+  UPDATES_PLUGIN,
+  updatesReportAt,
+} from '@launcharr/plugins/updates/fixtures'
 import { USAGE_PLUGIN, usageReportAt } from '@launcharr/plugins/usage/fixtures'
 import type { AgentSession, BarSnapshot } from '@launcharr/tui'
 
@@ -14,6 +18,7 @@ import type { AgentSession, BarSnapshot } from '@launcharr/tui'
 export const PANEL_INFO = [
   { id: 'agents', title: 'Agents', hint: 'coding agent sessions ▸' },
   { id: 'usage', title: 'Usage', hint: 'token monitor ▸' },
+  { id: 'updates', title: 'Updates', hint: 'app updates ▸' },
   { id: 'awake', title: 'Awake', hint: 'keep-alive sessions ▸' },
   { id: 'wifi', title: 'Wi-Fi', hint: 'networks & power ▸' },
   { id: 'dns', title: 'DNS', hint: 'network info ▸' },
@@ -27,7 +32,7 @@ export const PANEL_INFO = [
 export type PanelId = (typeof PANEL_INFO)[number]['id']
 
 /** Panels the demo actually drives; the rest explain themselves and point at the app. */
-export const INTERACTIVE_PANELS: PanelId[] = ['wifi', 'dns', 'usage']
+export const INTERACTIVE_PANELS: PanelId[] = ['wifi', 'dns', 'usage', 'updates']
 
 export const WIFI = {
   status: {
@@ -48,6 +53,9 @@ export const WIFI = {
 /** The fictional usage report the bar and `usage ⏎` share — the fixture the
  * first-party plugin ships (invariant 10: one copy, imported). */
 export { USAGE_REPORT } from '@launcharr/plugins/usage/fixtures'
+
+/** Same story for the updates plugin's fixture. */
+export { UPDATES_REPORT } from '@launcharr/plugins/updates/fixtures'
 
 /**
  * Fictional agent sessions, in the shape the app's Rust side pushes
@@ -174,7 +182,10 @@ export function demoSnapshot(nowSeconds: number, focused: string): BarSnapshot {
     chargeLimit: null,
     wifi: { online: true, ssid: 'Blackbeard 5G', rssi: -58 },
     agents: demoAgents(nowSeconds),
-    plugins: [{ ...USAGE_PLUGIN, state: usageReportAt(nowSeconds) }],
+    plugins: [
+      { ...USAGE_PLUGIN, state: usageReportAt(nowSeconds) },
+      { ...UPDATES_PLUGIN, state: updatesReportAt(nowSeconds) },
+    ],
   }
 }
 

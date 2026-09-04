@@ -67,13 +67,13 @@ it in `docs/DECISIONS.md`.
    `colorpicker` ask for **Screen Recording** once (2× magnifier, DECISIONS 2026-08-17);
    off — and until granted — it's Apple's `NSColorSampler`, which needs nothing. Nothing
    ever prompts unless that toggle is flipped.
-2. **Zero network.** The desktop app makes no network requests, ever. Two carve-outs,
-   both user-initiated: a favicon fetch at quicklink-add time (DECISIONS 2026-08-09), and
-   the usage monitor's account-limit fetches to the agent providers' own usage endpoints —
-   strictly opt-in per provider in Settings → Agents, off by default, using credentials
-   the provider CLIs already store, never refreshed or written by launcharr (DECISIONS
-   2026-08-16). No background fetches, no update pings, no telemetry. `apps/www` is
-   obviously networked — web-side convenience never leaks into the app.
+2. **Network is allowed; telemetry is not.** The desktop app may talk to the network
+   wherever a feature needs it (retired the zero-network invariant, DECISIONS
+   2026-09-04). Fetches are fail-visible, cached, and off the hot path. What stays
+   banned: analytics, crash reporting, update pings, any request that exists to tell
+   someone about the user rather than to serve them. Credentials the app uses are the
+   user's own (the CLIs' stores, the Keychain), read with consent where a provider's
+   settings say so, never written or refreshed by launcharr.
 3. **Tiny IPC surface.** A handful of typed Tauri commands; every command is a future
    plugin-API liability.
 4. **Prefix dispatch is general.** `!` is mode dispatch via first-char lookup, not a special

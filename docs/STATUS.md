@@ -3,9 +3,23 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-08-28 (hooks owned by launcharr)
+> Last updated: 2026-09-04 (app updates plugin; zero-network retired)
 
 ## Where we are
+
+**App updates in the menubar, 2026-09-04 (on main, unreleased — built + running):** the
+third bundled plugin, `updates` (`packages/plugins/updates/`, provider `updates.rs`):
+brew / App Store / pnpm -g / npm -g / mise checked in parallel threads every 6 h (60 s
+timeout each, fail-visible per source, sources without a binary omitted), cached like
+usage.rs so the 1 Hz snapshot never blocks. Cell hidden while everything is clean,
+`package` glyph + count otherwise, `warn` on a source error; hover card per source;
+`updates ⏎` lists `installed → available` with `r` refresh (`host.send` grew a Native
+arm — no new commands) and `c` copies the upgrade command. Fixture drives the site demo.
+Kit gap noted: `ListRow` has no danger tone, so error rows are plain text (card + cell
+still warn). **Same day: zero-network retired** (DECISIONS 2026-09-04, invariant 2
+rewritten: network allowed, telemetry banned). Plan: `plans/done/app-updates-plugin.md`.
+**Hands-check pending (Mitch):** the cell's count against `brew outdated`, the card,
+`updates ⏎` keys, and whether "hidden when clean" is the right call for the strip.
 
 **Claude hooks owned by launcharr, 2026-08-28 (on main, unreleased):** the adapter is
 bundled and installed to `~/.config/launcharr/hooks/claude-status.py`; `hooks.rs`

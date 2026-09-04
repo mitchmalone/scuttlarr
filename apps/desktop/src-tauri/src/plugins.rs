@@ -226,6 +226,7 @@ static DISABLED: Mutex<Vec<String>> = Mutex::new(Vec::new());
 const FIRST_PARTY: &[&str] = &[
     include_str!("../../../../packages/plugins/usage/manifest.json"),
     include_str!("../../../../packages/plugins/calendar/manifest.json"),
+    include_str!("../../../../packages/plugins/updates/manifest.json"),
 ];
 
 pub fn plugins_dir() -> PathBuf {
@@ -266,6 +267,7 @@ fn native_state(name: &str) -> Option<serde_json::Value> {
         }
         // The calendar needs nothing but the clock the bar already carries.
         "clock" => Some(serde_json::json!({ "epoch": now_epoch() })),
+        "updates" => serde_json::to_value(crate::updates::report()).ok(),
         _ => None,
     }
 }
@@ -998,8 +1000,35 @@ fn record_error(id: &str, generation: u64, err: &str) {
     }
 }
 
-/// `host.send(message)`: one JSON line on the service's stdin.
+/// A native provider's own message handling — currently just `updates`,
+/// whose panel refreshes on `{"refresh":true}` instead of talking to a
+/// service's stdin. `None` = this native id has no handler for `message`.
+fn native_send(name: &str, message: &serde_json::Value) -> Option<Result<(), String>> {
+    match name {
+        "updates" if message.get("refresh").and_then(|r| r.as_bool()) == Some(true) => {
+            crate::updates::refresh();
+            Some(Ok(()))
+        }
+        _ => None,
+    }
+}
+
+/// `host.send(message)`: one JSON line on the service's stdin, or a native
+/// provider's own handler when the plugin has no service (Mode::Native).
 pub fn send(id: &str, message: &serde_json::Value) -> Result<(), String> {
+    let native = {
+        let reg = PLUGINS.lock().unwrap();
+        let e = reg
+            .iter()
+            .find(|e| e.state.id == id)
+            .ok_or_else(|| format!("no plugin {id}"))?;
+        (e.mode == Mode::Native).then(|| e.manifest.native.clone())
+    };
+    if let Some(name) = native {
+        let name = name.unwrap_or_default();
+        return native_send(&name, message)
+            .unwrap_or_else(|| Err(format!("{id} has no message handler")));
+    }
     let mut reg = PLUGINS.lock().unwrap();
     let e = reg
         .iter_mut()
@@ -1021,21 +1050,31 @@ pub fn send(id: &str, message: &serde_json::Value) -> Result<(), String> {
 // ---- tick services ------------------------------------------------------
 
 /// Ask for a tick now (trigger file, settings change). Stream services get a
-/// `{"poke":true}` line instead. Unknown ids are ignored.
+/// `{"poke":true}` line instead; a native provider with its own refresh
+/// (`updates`) is kicked directly. Unknown ids are ignored.
 pub fn poke(id: &str) {
-    let mut reg = PLUGINS.lock().unwrap();
-    if let Some(e) = reg.iter_mut().find(|e| e.state.id == id) {
-        match e.mode {
-            Mode::Tick => e.next_due = Instant::now(),
-            Mode::Stream => {
-                if let Some(stdin) = e.stdin.as_mut() {
-                    let _ = stdin
-                        .write_all(b"{\"poke\":true}\n")
-                        .and_then(|_| stdin.flush());
+    let mut refresh_updates = false;
+    {
+        let mut reg = PLUGINS.lock().unwrap();
+        if let Some(e) = reg.iter_mut().find(|e| e.state.id == id) {
+            match e.mode {
+                Mode::Tick => e.next_due = Instant::now(),
+                Mode::Stream => {
+                    if let Some(stdin) = e.stdin.as_mut() {
+                        let _ = stdin
+                            .write_all(b"{\"poke\":true}\n")
+                            .and_then(|_| stdin.flush());
+                    }
                 }
+                Mode::Native => {
+                    refresh_updates = e.manifest.native.as_deref() == Some("updates");
+                }
+                Mode::Static => {}
             }
-            _ => {}
         }
+    }
+    if refresh_updates {
+        crate::updates::refresh();
     }
 }
 

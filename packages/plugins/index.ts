@@ -7,6 +7,9 @@ import type {
 import CalendarCell from './calendar/cell'
 import calendarManifest from './calendar/manifest.json'
 import CalendarPanel from './calendar/panel'
+import UpdatesCell from './updates/cell'
+import updatesManifest from './updates/manifest.json'
+import UpdatesPanel from './updates/panel'
 import UsageCell from './usage/cell'
 import usageManifest from './usage/manifest.json'
 import UsagePanel from './usage/panel'
@@ -36,5 +39,10 @@ export const FIRST_PARTY: Record<string, FirstPartyPlugin> = {
     manifest: calendarManifest as PluginManifest,
     cell: CalendarCell as PluginCellComponent<never>,
     panel: CalendarPanel as PluginPanelComponent<never>,
+  },
+  updates: {
+    manifest: updatesManifest as PluginManifest,
+    cell: UpdatesCell as PluginCellComponent<never>,
+    panel: UpdatesPanel as PluginPanelComponent<never>,
   },
 }

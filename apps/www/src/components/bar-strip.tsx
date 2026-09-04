@@ -1,5 +1,6 @@
 'use client'
 
+import UpdatesCell from '@launcharr/plugins/updates/cell'
 import UsageCell from '@launcharr/plugins/usage/cell'
 import {
   Bar,
@@ -10,13 +11,19 @@ import {
   BarWifiCell,
   BarWorkspaces,
 } from '@launcharr/tui'
-import { NOOP_HOST } from '@launcharr/tui/plugins'
+import { NOOP_HOST, type PluginCellComponent } from '@launcharr/tui/plugins'
 import { useMemo, useState } from 'react'
 
 import { useWebBarHover } from '@/components/demo/bar-hover'
 import { demoSnapshot } from '@/lib/demo-data'
 
 import { BarThemeScope } from './bar-theme-scope'
+
+/** Each first-party plugin's own `cell.tsx`, keyed by id (invariant 10). */
+const PLUGIN_CELLS: Record<string, PluginCellComponent<never>> = {
+  usage: UsageCell as PluginCellComponent<never>,
+  updates: UpdatesCell as PluginCellComponent<never>,
+}
 
 /**
  * A still of the bar for the explainer section — the real components from
@@ -60,17 +67,21 @@ export function BarStrip() {
             ssid={snap.wifi.ssid}
             rssi={snap.wifi.rssi}
           />,
-          ...(snap.plugins ?? []).map((p) => (
-            <UsageCell
-              key={`plugin:${p.id}`}
-              plugin={p}
-              state={p.state as never}
-              settings={{}}
-              now={now}
-              hover={hover}
-              host={NOOP_HOST}
-            />
-          )),
+          ...(snap.plugins ?? []).map((p) => {
+            const Cell = PLUGIN_CELLS[p.id]
+            if (!Cell) return null
+            return (
+              <Cell
+                key={`plugin:${p.id}`}
+                plugin={p}
+                state={p.state as never}
+                settings={{}}
+                now={now}
+                hover={hover}
+                host={NOOP_HOST}
+              />
+            )
+          }),
           <BarBatteryCell
             key="battery"
             pct={snap.batteryPct}

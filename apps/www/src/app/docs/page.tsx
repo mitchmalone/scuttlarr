@@ -146,9 +146,8 @@ export default function Docs() {
         </div>
 
         <p className={`m-0 mt-6 max-w-[70ch] ${PROSE}`}>
-          Zero-network is culture, not enforcement, for scripts: the launcher
-          core never touches the network; what your own scripts do is your
-          business.
+          Network is your business for scripts: fetch what you like, and mind
+          the timeouts above.
         </p>
       </section>
 

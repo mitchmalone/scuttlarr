@@ -51,6 +51,7 @@ mod sysread;
 mod system_commands;
 mod terminal;
 mod tray;
+mod updates;
 mod usage;
 mod widget_secrets;
 mod widgets;
@@ -230,6 +231,9 @@ pub fn run() {
             scripts::start(app.handle().clone());
             // Plugins run bar or no bar: their panels live in the launcher too.
             plugins::start(app.handle().clone(), &cfg.plugins.disabled);
+            // Warms the updates cache; the `updates` plugin ships on
+            // (DECISIONS 2026-09-04), so the panel isn't empty on first open.
+            updates::start();
             clipboard::watch(app.handle().clone());
             config::watch(app.handle().clone());
             apply_launch_at_login(app.handle(), cfg.launch_at_login);

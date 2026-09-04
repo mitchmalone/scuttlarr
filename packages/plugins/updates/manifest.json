@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "updates",
+  "name": "Updates",
+  "version": "1.0.0",
+  "description": "App updates across every package manager on this Mac — Homebrew, the App Store, pnpm, npm, mise — a count in the bar, the list in the panel.",
+  "kinds": ["bar-widget", "panel"],
+  "zone": "right",
+  "icon": "package",
+  "native": "updates",
+  "panel": {
+    "title": "Updates",
+    "hint": "app updates ▸",
+    "aliases": ["outdated", "upgrade", "brew"]
+  }
+}

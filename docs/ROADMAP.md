@@ -127,8 +127,8 @@ through `config.json` alone. Trigger for each: scuttlarr's theme/desktop renderi
 File search, snippets, Windows/Linux, **anything distro-shaped** (that's
 [scuttlarr](https://github.com/mitchmalone/scuttlarr) — DECISIONS 2026-08-25; light mode
 left this list the same day, as a palette scuttlarr supplies, not a second look). Still true
-for the **launcher core**: zero network, zero permissions. Amended by DECISIONS
-2026-08-15/16 for v0.4: window management arrives _wrapped_ (Aerospace, which brings its
+for the **launcher core**: zero permissions (zero network was retired 2026-09-04 — DECISIONS).
+Amended by DECISIONS 2026-08-15/16 for v0.4: window management arrives _wrapped_ (Aerospace, which brings its
 own Accessibility grant — launcharr itself still requests nothing), and bar **modules**
 may be credentialed + networked per-module, fail-visible (TRMNL was the first; pulled 2026-08-17 pending the plugin API). The PRD predates
 v0.4 and needs a revision pass — until then DECISIONS 2026-08-15 is the scope source for

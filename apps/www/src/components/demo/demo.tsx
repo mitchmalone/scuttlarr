@@ -16,7 +16,13 @@ import { type DemoRow, computeDemoRows } from '@/lib/demo-rows'
 import { SEED_FRECENCY, TRIGGERS } from '@/lib/launch-index'
 
 import { DemoBar } from './bar'
-import { DnsPanel, StubPanel, UsagePanel, WifiPanel } from './panels'
+import {
+  DnsPanel,
+  StubPanel,
+  UpdatesPanel,
+  UsagePanel,
+  WifiPanel,
+} from './panels'
 
 const TERMINAL = 'iTerm2'
 const SIGIL = '❯'
@@ -198,6 +204,7 @@ export function Demo() {
       return <WifiPanel onClose={closePanel} onToast={showToast} />
     if (panel === 'dns') return <DnsPanel onClose={closePanel} />
     if (panel === 'usage') return <UsagePanel onClose={closePanel} />
+    if (panel === 'updates') return <UpdatesPanel onClose={closePanel} />
     if (panel) return <StubPanel id={panel} onClose={closePanel} />
     return null
   }

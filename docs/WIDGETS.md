@@ -181,8 +181,8 @@ app being approved. When a token expires the widget answers `setup`, not `error`
   silently. Debug by running `<widget> tick` by hand.
 - **Off the hot path:** ticks run on their own thread and are stateless child processes —
   nothing resident between ticks, nothing on the 1 Hz push.
-- **Network is the widget's business.** launcharr core is zero-network; what your widget
-  fetches, and with which credential, is yours (DECISIONS 2026-08-15). Credentials come
+- **Network is the widget's business.** What your widget fetches, and with which
+  credential, is yours (DECISIONS 2026-08-15). Credentials come
   from declared **settings** (above) or wherever you like (env, the CLI's own store,
   `secret`); launcharr stores only what a manifest declares, and never calls a provider.
 - **Layout:** the widget appears in `bar.layout` as `widget:<id>`; toggle or move it in

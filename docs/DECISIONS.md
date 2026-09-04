@@ -5,6 +5,23 @@
 
 ---
 
+### 2026-09-04 · Zero-network retired: the network is allowed, telemetry is not
+
+- **Decision.** Invariant 2 no longer says "no network requests". The desktop app may use
+  the network wherever a feature needs it — fail-visible, cached, off the hot path. The
+  carve-out ledger (favicon 2026-08-09, usage limits 2026-08-16, widgets/plugins
+  2026-08-15/27) is closed; those entries stand as history. What remains banned is
+  telemetry in any form: analytics, crash reporting, update pings, anything whose purpose
+  is reporting on the user. Credential rules are unchanged (the user's own stores, consent
+  where a provider's settings say so, never written by launcharr).
+- **Why.** Mitch, 2026-09-04: "This is no longer a goal. Many upcoming features will touch
+  the network." The invariant had already been amended three times; the first feature of
+  the day (app-update checks across brew/mas/pnpm/npm/mise) would have been a fourth.
+  A rule with four exceptions is not a rule.
+- **Mechanics.** AGENTS invariant 2 rewritten in place (numbering kept — invariant 10 is
+  cited everywhere). DEVIATIONS row removed. README, PRD, ROADMAP, PLUGINS/WIDGETS/SCRIPTS
+  docs and the site docs page reworded. JOURNAL/DECISIONS/plans-done untouched (append-only).
+
 ### 2026-08-28 · Boundary amendment: scuttlarr ships desktop files; the managed toggle is the handshake
 
 - **Decision.** Amends 2026-08-25 ("scuttlarr never writes `aerospace.toml`"). scuttlarr

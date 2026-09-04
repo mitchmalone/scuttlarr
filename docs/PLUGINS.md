@@ -5,7 +5,7 @@ the bar, a panel in the launcher, or a background service — or all three. Its 
 in a Bun process; its UI is React on the launcharr kit. Drop the directory in and it's
 live: no build step of your own, no restart. The reference plugin is
 [`apps/desktop/plugins/hello/`](../apps/desktop/plugins/hello/) — copy it to start.
-Bundled plugins (`packages/plugins/`: `usage`, `calendar`) are written to the same
+Bundled plugins (`packages/plugins/`: `usage`, `calendar`, `updates`) are written to the same
 contract, so what launcharr ships is what you get (DECISIONS 2026-08-27).
 
 ```
@@ -161,7 +161,9 @@ files runs under either.
 ## Bundled plugins
 
 `packages/plugins/` holds the plugins launcharr ships — `usage` (the agent usage cell +
-`usage ⏎`) and `calendar` (`cal ⏎`). Same contract, two differences: their UI is
+`usage ⏎`), `calendar` (`cal ⏎`), and `updates` (app updates across brew, the App Store,
+pnpm, npm and mise — a count in the bar, `updates ⏎` for the list; its `updates` provider
+shells out every 6 h, `touch triggers/plugin.updates` or `r` in the panel for now). Same contract, two differences: their UI is
 Vite-bundled with the app, and their state comes from a Rust provider named in the
 manifest (`"native": "usage"`) instead of a Bun service, so the app never depends on Bun
 for its own panels. `native` is refused in user plugins. launcharr.com imports these
@@ -173,8 +175,7 @@ fixture isn't finished.
 - **State is data, UI is code.** Put opinion in the cell; put the world in the service.
 - **Kit only.** If the kit lacks a component you need, that's a kit change — a plugin
   reaching for raw HTML and CSS is the thing this design exists to avoid.
-- **Zero-network is culture, not enforcement,** as for scripts: launcharr core never
-  touches the network; what your service does is your business, and it says so in
-  Settings through `requires`/`settings`.
+- **Network is your business,** and it says so in Settings through `requires`/`settings`.
+  Be fail-visible and cache: a plugin that blocks or blanks when a host is down is a bug.
 - **Trust.** Installing a plugin runs its code, like an editor extension. Read what you
   install.

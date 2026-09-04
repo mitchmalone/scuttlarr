@@ -39,8 +39,8 @@ Two values govern every decision:
 - **Zero granted permissions.** No Accessibility, no Full Disk Access. The only prompts
   you'll ever see are macOS's standard Automation consents (first terminal hand-off,
   first Finder/System Events command).
-- **Zero network.** Core makes no requests, with one user-initiated exception: fetching a
-  site's favicon at the moment you add it as a quicklink. No telemetry, no phoning home.
+- **No telemetry.** launcharr talks to the network only to do what you asked — fetch a
+  favicon, read your usage limits, check for app updates. Nothing phones home about you.
 - **The prompt is the product.** The menubar icon is a courtesy; everything it does, the
   panel does too (type `launcharr`).
 

@@ -68,9 +68,9 @@ appears), window management, snippets, theming beyond the built-in look, Windows
 anything requiring Accessibility permissions
 (this is why clipboard "paste" is copy-on-Enter: auto-⌘V needs Accessibility). launcharr runs
 with **zero granted permissions** (the one exception: sending to iTerm2 triggers macOS's
-standard Automation consent prompt on first use) and **makes zero network requests**, with
-one deliberate carve-out (decided 9 Aug 2026): a single user-initiated favicon fetch when a
-quicklink is added through the panel. Nothing runs in the background; core never phones out.
+standard Automation consent prompt on first use) and **sends no telemetry**. (The v1 "zero network requests" rule was retired 4 Sep 2026 —
+DECISIONS — once usage limits, plugins, and app-update checks made it a fiction; the
+surviving rule is that no request exists to report on the user.)
 
 **Deferred, not rejected** (triggers in `docs/DECISIONS.md`): Google Translate and public-IP
 lookup (need network), Calendar (needs EventKit consent).
@@ -171,7 +171,7 @@ Guiding split: **Rust owns the OS, TypeScript owns the experience.** Anything to
 - **Focus discipline** is the hardest native problem: non-activating panel that still receives keystrokes, and reliable focus restore on dismiss. Prove this in week one (see §9) before building anything else on top.
 - **`LSUIElement` / accessory activation policy**: no Dock icon. A single `NSStatusItem` (template icon) is the only menubar presence.
 - **IPC**: a handful of typed Tauri commands (`get_index`, `record_launch`, `launch(item)`, `run_in_terminal(cmd)`, `read_config`). Keep the surface tiny; every command is a future plugin-API liability.
-- **Zero network**: v1 makes no network requests. This is a feature; say so in the README someday.
+- **No telemetry**: nothing phones home about the user. (v1's zero-network rule retired 2026-09-04.)
 
 ## 7. Performance budgets (requirements, not aspirations)
 

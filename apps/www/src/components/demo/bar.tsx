@@ -1,5 +1,6 @@
 'use client'
 
+import UpdatesCell from '@launcharr/plugins/updates/cell'
 import UsageCell from '@launcharr/plugins/usage/cell'
 import {
   Bar,
@@ -11,12 +12,18 @@ import {
   BarWorkspaces,
   formatBarClock,
 } from '@launcharr/tui'
-import { NOOP_HOST } from '@launcharr/tui/plugins'
+import { NOOP_HOST, type PluginCellComponent } from '@launcharr/tui/plugins'
 import { useEffect, useState } from 'react'
 
 import { WIFI, demoSnapshot } from '@/lib/demo-data'
 
 import { useWebBarHover } from './bar-hover'
+
+/** Each first-party plugin's own `cell.tsx`, keyed by id (invariant 10). */
+const PLUGIN_CELLS: Record<string, PluginCellComponent<never>> = {
+  usage: UsageCell as PluginCellComponent<never>,
+  updates: UpdatesCell as PluginCellComponent<never>,
+}
 
 /**
  * The bar across the top of the demo desktop — the *actual* bar components from
@@ -83,19 +90,23 @@ export function DemoBar({
               dns: WIFI.status.dns,
             }}
           />,
-          // The usage cell is the first-party plugin's own `cell.tsx`, over
+          // Each plugin cell is the first-party plugin's own `cell.tsx`, over
           // the snapshot's plugin state — the demo runs plugins too.
-          ...(snap.plugins ?? []).map((p) => (
-            <UsageCell
-              key={`plugin:${p.id}`}
-              plugin={p}
-              state={p.state as never}
-              settings={{}}
-              now={now ?? new Date(0)}
-              hover={hover}
-              host={NOOP_HOST}
-            />
-          )),
+          ...(snap.plugins ?? []).map((p) => {
+            const Cell = PLUGIN_CELLS[p.id]
+            if (!Cell) return null
+            return (
+              <Cell
+                key={`plugin:${p.id}`}
+                plugin={p}
+                state={p.state as never}
+                settings={{}}
+                now={now ?? new Date(0)}
+                hover={hover}
+                host={NOOP_HOST}
+              />
+            )
+          }),
           <BarBatteryCell
             key="battery"
             pct={snap.batteryPct}

@@ -10,7 +10,11 @@
     "./usage/fixtures": "./usage/fixtures.ts",
     "./calendar/cell": "./calendar/cell.tsx",
     "./calendar/panel": "./calendar/panel.tsx",
-    "./calendar/model": "./calendar/model.ts"
+    "./calendar/model": "./calendar/model.ts",
+    "./updates/cell": "./updates/cell.tsx",
+    "./updates/panel": "./updates/panel.tsx",
+    "./updates/model": "./updates/model.ts",
+    "./updates/fixtures": "./updates/fixtures.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

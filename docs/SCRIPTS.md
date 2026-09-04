@@ -54,8 +54,7 @@ Called on every keystroke (debounced ~120ms). Print results to stdout and exit 0
 
 - **Timeouts:** manifest 1.5s, query 3s. A slow script gets killed, not waited for.
 - **stderr is ignored**, exit non-zero = no results. Debug by running the script by hand.
-- **Zero-network is culture, not enforcement** for scripts: launcharr core never touches the
-  network; what your own scripts do is your business.
+- **Network is your business** for scripts: fetch what you like, mind the timeouts.
 - **TypeScript:** guard the entry point with `if (import.meta.main)` (see the bundled
   scripts) so the file also imports cleanly into a test; type-only imports from
   `@launcharr/core/types` are erased at run time. No Bun or Node on the machine → the

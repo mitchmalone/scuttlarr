@@ -1,5 +1,10 @@
 'use client'
 
+import {
+  UPDATES_PLUGIN,
+  updatesReportAt,
+} from '@launcharr/plugins/updates/fixtures'
+import UpdatesPanelPlugin from '@launcharr/plugins/updates/panel'
 import { USAGE_PLUGIN, usageReportAt } from '@launcharr/plugins/usage/fixtures'
 import UsagePanelPlugin from '@launcharr/plugins/usage/panel'
 import {
@@ -200,6 +205,23 @@ export function UsagePanel({ onClose }: { onClose: () => void }) {
   return (
     <UsagePanelPlugin
       plugin={USAGE_PLUGIN}
+      state={report}
+      settings={{}}
+      host={NOOP_HOST}
+      onClose={onClose}
+    />
+  )
+}
+
+/** `updates ⏎` — same story as `usage ⏎`: the shipping plugin panel, a
+ * fictional report, a no-op host. */
+export function UpdatesPanel({ onClose }: { onClose: () => void }) {
+  const [report] = useState(() =>
+    updatesReportAt(Math.floor(Date.now() / 1000)),
+  )
+  return (
+    <UpdatesPanelPlugin
+      plugin={UPDATES_PLUGIN}
       state={report}
       settings={{}}
       host={NOOP_HOST}

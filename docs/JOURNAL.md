@@ -6,6 +6,54 @@
 
 ---
 
+### 2026-09-10 · A plugin panel lagged its own toggle by up to a second — the panel polled, the bar was pushed
+
+The amaran panel's switch felt broken from the launcher and instant from the bar
+(Mitch, 2026-09-10). Every service state line called `bar::push`, so the cell repainted at
+once; the panel read state through `useLivePlugin`'s 1 s `plugin_state` poll and showed
+the old value until the next tick. Now each state line also emits `plugin-state` with the
+id and the panel re-pulls on it (poll kept as the floor for health fields). Rule: anything
+a plugin UI can change must be pushed, never only polled — a control that answers a
+second late reads as not working.
+
+### 2026-09-10 · TCC kills a plugin's Bluetooth child with no prompt when the bundle lacks the usage string
+
+The amaran plugin's Swift bridge (`plans/done/amaran-plugin-bluetooth.md`) worked from a
+terminal and died silently under launcharr: no `.unauthorized` state, no prompt, just a
+`ble-helper-*.ips` in `~/Library/Logs/DiagnosticReports` every 30 s with `namespace:
+"TCC"` — "attempted to access privacy-sensitive data without a usage description".
+macOS holds the _responsible_ app (launcharr.app) accountable for a child's privacy access
+and reads the usage string from _its_ Info.plist; a CLI child has none. Fix in core:
+`src-tauri/Info.plist` with `NSBluetoothAlwaysUsageDescription` (Tauri merges it; DECISIONS
+2026-09-10). Two rules for services that spawn hardware helpers: treat a signal death as
+"the app can't", not "retry" (the service now stops and waits for a poke), and look in
+DiagnosticReports before looking in the code.
+
+### 2026-09-10 · Bun has no `aes-128-ccm`; `@abandonware/noble` will not load under Bun
+
+Two Bun-vs-Node gaps met porting a Bluetooth Mesh stack into a plugin service. Bun's
+`node:crypto` `createCipheriv` throws `Unknown cipher` for `aes-128-ccm` (AES-ECB, CMAC
+inputs, is fine) — CCM is CBC-MAC + CTR over ECB, ~60 lines, verified against Node's CCM
+on 50 random cases and the Mesh spec §8 vectors. `noble` is a node-gyp addon: `bun install`
+blocks its postinstall, and even built it looks for a Node-ABI binary. A plugin directory
+has no `node_modules` anyway; the answer for hardware is a tiny compiled helper the service
+spawns (Swift + CoreBluetooth, JSON lines), keeping the protocol in TypeScript where it is
+testable.
+
+### 2026-09-10 · The light's status replies reach the proxy client — sometimes; not yet understood
+
+Telink fixtures answer a `0x26` status request with a reply addressed to the provisioner
+(0x0001 — which a proxy client claiming that address _is_). The reference TS code never
+read it (its ESP32 firmware patches the mesh core to snoop instead). Our client decodes
+inbound network PDUs (deobfuscate → CCM with the net key → CCM with the app key) and got
+`on=true intensity=120` from the 60d S in the service's first live run — but three earlier
+probe runs with the same PDUs received nothing at all, not even the Secure Network Beacon
+the very first connection delivered. Differences suspected, none proven: the proxy-config
+PDUs use an 8-byte NetMIC here (CTL=1 per spec; the reference used 4) and the whitelist
+includes the light's own unicast; timing between subscribe and the filter handshake. The
+plugin treats status as a bonus (`synced`), never a requirement. Chase it if the cell ever
+drifts from the dial.
+
 ### 2026-09-04 · `open -na Ghostty --args -e …` while one is already running starts a second, unusable instance
 
 Ghostty has no AppleScript dictionary and `ghostty +new-window` prints "not supported on
@@ -696,3 +744,31 @@ beat Safari's clean prefix run. Near-tie flips still work at 1.5.
 `pnpm install` hard-fails on ignored build scripts (esbuild, lefthook). The fix is
 `allowBuilds:` in `pnpm-workspace.yaml` — pnpm 11 writes the stanza template for you on
 failure; `onlyBuiltDependencies` in package.json is no longer enough.
+
+### 2026-09-10 · updates checks die on the LaunchAgent's bare PATH
+
+The installed app (launched by `~/Library/LaunchAgents/launcharr.plist`) inherits the bare
+macOS PATH. `updates::locate` still found pnpm/npm via its known-dirs fallback — but both
+are `#!/usr/bin/env node` scripts, so the child died with `env: node: No such file or
+directory`. Dev-mode runs inherit the terminal's PATH, which is why the bug hid. Fix:
+`run_check` now sets the child's PATH (app PATH + the binary's dir + Homebrew + `~/.local/bin`
+
+- mise shims + `$PNPM_HOME/bin`). Second trap: pnpm's global store is purely env-driven —
+  without `PNPM_HOME` it reads an empty default store and reports `{}` as if nothing were
+  installed, and refuses `-g` commands unless `$PNPM_HOME/bin` is on PATH. `pnpm_home()`
+  infers it from pnpm's own conventions when the app wasn't handed one. A login shell
+  (`zsh -lc`) is no help here: Mitch's `PNPM_HOME` export lives in `.zshrc`, which
+  non-interactive shells never read. npm was dropped as a source at the same time: its only
+  globals are node's bundled `npm`/`corepack`, which mise owns.
+
+### 2026-09-10 · tmux hand-off: bare PATH again, and the wrong session
+
+`tmux new-window -t <session> '<cmd>; exec zsh -l'` runs `<cmd>` with the _caller's_
+environment — launcharr's bare PATH — so `brew upgrade` printed `brew: not found`, then the
+`exec zsh -l` gave a clean prompt and the theme wiped the evidence: "a terminal opens and
+nothing happens". Same as the checks bug above, different door; bang mode had it too. Fix:
+the argv is now `exec $SHELL -lic '<cmd>; exec $SHELL -l'` (the shape the fresh-instance
+path already used). Second half: the window went to the tmux client with the latest
+`client_activity`, which with two Ghostty windows is a coin flip. `#{client_focused}` (tmux
+≥ 3.2, `focus-events on`) is preferred now, activity as the fallback — the flag is empty
+when the terminal isn't reporting focus, so treat empty as unknown, not unfocused.

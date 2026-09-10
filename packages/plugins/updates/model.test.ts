@@ -2,13 +2,19 @@ import { describe, expect, it } from 'vitest'
 
 import {
   type UpdatesReport,
+  type UpgradeRun,
   cellTone,
   cellVisible,
   checkedAgo,
+  duration,
   hasErrors,
   panelRows,
   sourceLine,
   totalUpdates,
+  upgradeFailed,
+  upgradeLine,
+  upgradeRunning,
+  upgradeTarget,
 } from './model'
 
 const cleanSource = {
@@ -47,10 +53,10 @@ const masSource = {
   items: [{ name: 'Xcode', installed: '26.0', available: '26.1' }],
 }
 
-const npmSource = {
-  id: 'npm' as const,
-  label: 'npm',
-  upgradeCommand: 'npm update -g',
+const miseSource = {
+  id: 'mise' as const,
+  label: 'mise',
+  upgradeCommand: 'mise upgrade',
   checkedAt: 1_800_000_000,
   error: 'registry timed out',
   items: [],
@@ -60,7 +66,7 @@ function report(overrides: Partial<UpdatesReport> = {}): UpdatesReport {
   return {
     generatedAt: 1_800_000_000,
     refreshing: false,
-    sources: [brewSource, masSource, cleanSource, npmSource],
+    sources: [brewSource, masSource, cleanSource, miseSource],
     ...overrides,
   }
 }
@@ -106,7 +112,7 @@ describe('updates model', () => {
     })
 
     it('is visible when a source errored, even with no updates', () => {
-      expect(cellVisible(report({ sources: [npmSource] }))).toBe(true)
+      expect(cellVisible(report({ sources: [miseSource] }))).toBe(true)
     })
   })
 
@@ -130,7 +136,7 @@ describe('updates model', () => {
     })
 
     it('shows the error when a source errored', () => {
-      expect(sourceLine(npmSource)).toBe('npm · error: registry timed out')
+      expect(sourceLine(miseSource)).toBe('mise · error: registry timed out')
     })
   })
 
@@ -174,12 +180,12 @@ describe('updates model', () => {
     })
 
     it('yields one danger row for an errored source', () => {
-      const rows = panelRows(report({ sources: [npmSource] }))
+      const rows = panelRows(report({ sources: [miseSource] }))
       expect(rows).toHaveLength(2)
       expect(rows[1]).toMatchObject({
         kind: 'error',
         error: 'registry timed out',
-        upgradeCommand: 'npm update -g',
+        upgradeCommand: 'mise upgrade',
       })
     })
 
@@ -194,6 +200,66 @@ describe('updates model', () => {
       for (const row of rows) {
         expect(row.selectable).toBe(row.kind !== 'header')
       }
+    })
+  })
+
+  describe('upgrade run', () => {
+    const run = (overrides: Partial<UpgradeRun> = {}): UpgradeRun => ({
+      source: 'brew',
+      command: 'brew upgrade',
+      startedAt: 1_800_000_000,
+      finishedAt: 0,
+      exitCode: null,
+      cancelled: false,
+      tail: [],
+      ...overrides,
+    })
+
+    it('knows when a run is in flight', () => {
+      expect(upgradeRunning(null)).toBe(false)
+      expect(upgradeRunning(report())).toBe(false)
+      expect(upgradeRunning(report({ upgrade: run() }))).toBe(true)
+      expect(
+        upgradeRunning(report({ upgrade: run({ finishedAt: 1_800_000_010 }) })),
+      ).toBe(false)
+    })
+
+    it('names the target by source label, or "everything"', () => {
+      expect(upgradeTarget(report(), run())).toBe('Homebrew')
+      expect(upgradeTarget(report(), run({ source: 'all' }))).toBe('everything')
+    })
+
+    it('formats durations tersely', () => {
+      expect(duration(3)).toBe('3s')
+      expect(duration(72)).toBe('1 min 12s')
+      expect(duration(7500)).toBe('2 h 5 min')
+      expect(duration(-4)).toBe('0s')
+    })
+
+    it('headlines running, succeeded, failed, killed and cancelled runs', () => {
+      const r = report()
+      expect(upgradeLine(r, run(), 1_800_000_012)).toBe(
+        'upgrading Homebrew · 12s',
+      )
+      expect(
+        upgradeLine(r, run({ finishedAt: 1_800_000_063, exitCode: 0 }), 0),
+      ).toBe('Homebrew upgraded · 1 min 3s')
+      expect(
+        upgradeLine(r, run({ finishedAt: 1_800_000_001, exitCode: 1 }), 0),
+      ).toBe('Homebrew upgrade failed · exit 1')
+      expect(upgradeLine(r, run({ finishedAt: 1_800_000_001 }), 0)).toBe(
+        'Homebrew upgrade failed · killed',
+      )
+      expect(
+        upgradeLine(r, run({ finishedAt: 1_800_000_001, cancelled: true }), 0),
+      ).toBe('Homebrew upgrade cancelled')
+    })
+
+    it('flags failures but not cancels or running', () => {
+      expect(upgradeFailed(run())).toBe(false)
+      expect(upgradeFailed(run({ finishedAt: 1, exitCode: 0 }))).toBe(false)
+      expect(upgradeFailed(run({ finishedAt: 1, exitCode: 2 }))).toBe(true)
+      expect(upgradeFailed(run({ finishedAt: 1, cancelled: true }))).toBe(false)
     })
   })
 })

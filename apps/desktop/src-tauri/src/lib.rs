@@ -38,6 +38,7 @@ mod indexer;
 mod logbook;
 mod loupe;
 mod panel;
+mod permissions;
 mod plugins;
 mod power;
 mod runtime;
@@ -179,6 +180,7 @@ pub fn run() {
             commands::plugin_install,
             commands::plugin_remove,
             commands::plugin_restart,
+            commands::plugin_permission_fix,
         ])
         .setup(move |app| {
             // No Dock icon, no menu bar: launcharr is an accessory (PRD §6.2).

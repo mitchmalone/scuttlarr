@@ -98,6 +98,11 @@ pub struct PluginManifest {
     pub auth: Option<WidgetAuth>,
     #[serde(default)]
     pub requires: Vec<WidgetRequire>,
+    /// Privacy classes the service touches (`bluetooth`, `camera`, …; see
+    /// permissions.rs). Shown before enabling; checked and asked for before
+    /// the service runs; a stale bundle without the usage string blocks it.
+    #[serde(default)]
+    pub permissions: Vec<String>,
     #[serde(default)]
     pub panel: Option<PanelMeta>,
     /// First-party only: the Rust state provider (`usage`).
@@ -179,6 +184,10 @@ pub struct PluginState {
     pub requires: Vec<WidgetRequire>,
     /// Required settings currently unset; non-empty = not run, "needs setup".
     pub needs: Vec<String>,
+    /// Declared privacy permissions with what macOS says about each; one not
+    /// granted (and not merely unasked) keeps the service from running.
+    #[serde(default)]
+    pub permissions: Vec<crate::permissions::PluginPermission>,
     pub panel: Option<PanelMeta>,
 }
 
@@ -352,6 +361,7 @@ pub fn parse_manifest(json: &str) -> Result<PluginManifest, String> {
     if m.settings.len() > MAX_SETTINGS {
         return Err(format!("too many settings (max {MAX_SETTINGS})"));
     }
+    crate::permissions::parse_list(&m.permissions)?;
     for s in &m.settings {
         if !crate::widgets::valid_setting_key(&s.key) {
             return Err(format!("bad setting key {:?}", s.key));
@@ -505,8 +515,41 @@ fn fresh_state(m: &PluginManifest, first_party: bool, dir: &Path) -> PluginState
         auth: m.auth.clone(),
         requires: m.requires.clone(),
         needs: Vec::new(),
+        permissions: declared_permissions(m)
+            .into_iter()
+            .map(crate::permissions::describe)
+            .collect(),
         panel: m.panel.clone(),
     }
+}
+
+/// The manifest's permissions, already validated by `parse_manifest`.
+fn declared_permissions(m: &PluginManifest) -> Vec<crate::permissions::Permission> {
+    crate::permissions::parse_list(&m.permissions).unwrap_or_default()
+}
+
+/// Refresh a plugin's permission picture. Returns the ones that block the
+/// service: denied, or a bundle that cannot even ask. `NotDetermined` does
+/// not block — `request` makes macOS ask and the answer lands on a re-check.
+fn refresh_permissions(
+    id: &str,
+    declared: &[crate::permissions::Permission],
+) -> Vec<crate::permissions::PluginPermission> {
+    use crate::permissions::Status;
+    let described: Vec<_> = declared
+        .iter()
+        .map(|p| crate::permissions::describe(*p))
+        .collect();
+    let blocking: Vec<_> = described
+        .iter()
+        .filter(|p| matches!(p.status, Status::Denied | Status::MissingUsageString))
+        .cloned()
+        .collect();
+    let mut reg = PLUGINS.lock().unwrap();
+    if let Some(e) = reg.iter_mut().find(|e| e.state.id == id) {
+        e.state.permissions = described;
+    }
+    blocking
 }
 
 /// Rebuild the registry from disk. A plugin whose id and dir survive keeps
@@ -755,19 +798,39 @@ pub fn module_source(id: &str, file: &str) -> Result<String, String> {
 fn supervise(app: AppHandle, id: String, generation: u64) {
     let mut backoff: u64 = 1;
     loop {
-        let Some((service, settings, timeout)) = ({
+        let Some((service, settings, timeout, declared)) = ({
             let reg = PLUGINS.lock().unwrap();
             reg.iter()
                 .find(|e| e.state.id == id && e.generation == generation)
                 .and_then(|e| {
-                    e.service
-                        .clone()
-                        .map(|s| (s, e.manifest.settings.clone(), e.manifest.timeout))
+                    e.service.clone().map(|s| {
+                        (
+                            s,
+                            e.manifest.settings.clone(),
+                            e.manifest.timeout,
+                            declared_permissions(&e.manifest),
+                        )
+                    })
                 })
         }) else {
             return;
         };
-        let (env, needs) = crate::widgets::settings_for(&app, &id, &settings);
+        let (env, mut needs) = crate::widgets::settings_for(&app, &id, &settings);
+        // Permissions: ask now for anything macOS has not decided (one
+        // predictable prompt, in launcharr's name, before the service exists),
+        // and do not run while one is denied or this bundle cannot ask —
+        // the service would be killed with no prompt (JOURNAL 2026-09-10).
+        for p in &declared {
+            if crate::permissions::request(*p) {
+                crate::logbook::breadcrumb(
+                    "plugins",
+                    &format!("{id}: asked macOS for {}", p.label()),
+                );
+            }
+        }
+        for blocked in refresh_permissions(&id, &declared) {
+            needs.push(format!("{} permission", blocked.label));
+        }
         if !needs.is_empty() {
             set_needs(&id, needs);
             crate::bar::push(&app);
@@ -806,9 +869,21 @@ fn supervise(app: AppHandle, id: String, generation: u64) {
             e.state.restarts = e.state.restarts.saturating_add(1);
         }
         crate::bar::push(&app);
-        // A service that lived a while earned a fresh backoff.
+        // A service that lived a while earned a fresh backoff. One the OS
+        // killed (a signal, not an exit) is not going to do better in a
+        // second: wait the full backoff — that is usually TCC or a crash.
         if started.elapsed() > Duration::from_secs(60) {
             backoff = 1;
+        }
+        let killed = PLUGINS
+            .lock()
+            .unwrap()
+            .iter()
+            .find(|e| e.state.id == id && e.generation == generation)
+            .and_then(|e| e.state.error.as_deref())
+            .is_some_and(|e| e.starts_with("service killed"));
+        if killed {
+            backoff = MAX_BACKOFF_SECS;
         }
         let _ = timeout;
         if !sleep_unless_stale(&id, generation, Duration::from_secs(backoff)) {
@@ -817,6 +892,10 @@ fn supervise(app: AppHandle, id: String, generation: u64) {
         backoff = next_backoff(backoff);
     }
 }
+
+/// Emitted with the plugin id each time a service's state changes; the
+/// panel loader (src/plugins/components.tsx) pulls on it.
+pub const STATE_EVENT: &str = "plugin-state";
 
 /// Exponential, capped: 1, 2, 4, … 60.
 pub fn next_backoff(current: u64) -> u64 {
@@ -957,6 +1036,9 @@ fn run_stream(
                 }
                 drop(reg);
                 crate::bar::push(app);
+                // An open panel re-pulls on this instead of waiting for its
+                // 1 s poll — a toggle must answer at the speed of the light.
+                let _ = app.emit(STATE_EVENT, id);
             }
             Err(e) => record_error(id, generation, &format!("bad state line: {e}")),
         }
@@ -978,14 +1060,37 @@ fn run_stream(
     } else {
         tail
     };
-    let code = status
-        .code()
-        .map_or("signal".to_string(), |c| c.to_string());
-    Err(if tail.is_empty() {
-        format!("service exited ({code})")
+    let killed = signal_name(&status);
+    let code = status.code().map_or_else(
+        || killed.clone().unwrap_or_else(|| "signal".into()),
+        |c| c.to_string(),
+    );
+    let head = if let Some(sig) = killed {
+        // macOS, not the plugin, ended it: TCC (a privacy API without a usage
+        // string), a crash. The report says which.
+        format!("service killed ({sig}) — see ~/Library/Logs/DiagnosticReports")
     } else {
-        format!("service exited ({code}): {tail}")
+        format!("service exited ({code})")
+    };
+    Err(if tail.is_empty() {
+        head
+    } else {
+        format!("{head}: {tail}")
     })
+}
+
+/// `SIGABRT`-style name when a child died by signal, else None.
+fn signal_name(status: &std::process::ExitStatus) -> Option<String> {
+    use std::os::unix::process::ExitStatusExt;
+    let sig = status.signal()?;
+    let name = match sig {
+        6 => "SIGABRT",
+        9 => "SIGKILL",
+        11 => "SIGSEGV",
+        15 => "SIGTERM",
+        _ => return Some(format!("signal {sig}")),
+    };
+    Some(name.into())
 }
 
 fn record_error(id: &str, generation: u64, err: &str) {
@@ -1017,13 +1122,29 @@ fn native_send(
         "updates" if message.get("upgrade").and_then(|u| u.as_str()).is_some() => {
             // infallible: guarded by is_some() above
             let source = message.get("upgrade").unwrap().as_str().unwrap();
+            Some(crate::updates::upgrade(source))
+        }
+        "updates"
+            if message
+                .get("upgradeInTerminal")
+                .and_then(|u| u.as_str())
+                .is_some() =>
+        {
+            // infallible: guarded by is_some() above
+            let source = message.get("upgradeInTerminal").unwrap().as_str().unwrap();
             Some(upgrade_in_terminal(source, config))
+        }
+        "updates" if message.get("cancelUpgrade").and_then(|c| c.as_bool()) == Some(true) => {
+            crate::updates::cancel_upgrade();
+            Some(Ok(()))
         }
         _ => None,
     }
 }
 
-/// Run a source's upgrade command in the user's configured terminal — same
+/// Run a source's upgrade command in the user's configured terminal (`t` in
+/// the panel — the route for anything that needs a tty, e.g. a sudo'ing
+/// cask; `↵` runs it in the panel via `updates::upgrade`) — same
 /// hand-off as bang mode (`commands.rs::run_bang`): resolve the effective
 /// terminal, open a new window/tab per `bang_new_window`, fire-and-forget.
 fn upgrade_in_terminal(source: &str, config: &crate::config::Config) -> Result<(), String> {
@@ -1171,6 +1292,51 @@ fn tick(
 
 /// Restart a plugin: stream service killed (the supervisor respawns it), tick
 /// run now, UI rebuilt. The settings "restart" button and the gallery's `r`.
+/// The user's move on a permission: ask macOS if it has not asked, else
+/// open the System Settings pane where it is switched on. Returns what to
+/// tell the user.
+pub fn permission_fix(id: &str, name: &str) -> Result<String, String> {
+    use crate::permissions::{self, Status};
+    let p =
+        permissions::Permission::parse(name).ok_or_else(|| format!("unknown permission {name}"))?;
+    let declared = {
+        let reg = PLUGINS.lock().unwrap();
+        let e = reg
+            .iter()
+            .find(|e| e.state.id == id)
+            .ok_or_else(|| format!("no plugin {id}"))?;
+        declared_permissions(&e.manifest)
+    };
+    if !declared.contains(&p) {
+        return Err(format!("{id} does not declare {name}"));
+    }
+    let msg = match permissions::status(p) {
+        Status::Granted => format!("{} already allowed", p.label()),
+        Status::NotDetermined => {
+            permissions::request(p);
+            format!("asked macOS for {} — answer the prompt", p.label())
+        }
+        Status::Denied | Status::Unknown => {
+            open_url(&p.settings_url());
+            format!(
+                "opened System Settings → Privacy & Security → {}",
+                p.label()
+            )
+        }
+        Status::MissingUsageString => return Err(
+            "this launcharr build cannot ask — rebuild from a source that ships the usage string"
+                .into(),
+        ),
+    };
+    refresh_permissions(id, &declared);
+    poke(id);
+    Ok(msg)
+}
+
+fn open_url(url: &str) {
+    let _ = Command::new("open").arg(url).spawn();
+}
+
 pub fn restart(app: &AppHandle, id: &str) -> Result<(), String> {
     let (pid, first_party) = {
         let reg = PLUGINS.lock().unwrap();

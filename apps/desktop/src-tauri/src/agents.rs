@@ -658,6 +658,14 @@ fn jump(target: &str, terminal: Terminal) -> CmdResult<()> {
         }
     }
     let tty = tty.or_else(|| session.as_deref().and_then(session_client_tty));
+    crate::logbook::breadcrumb(
+        "agents",
+        &format!(
+            "jump target={target} session={} tty={} → raise {terminal:?}",
+            session.as_deref().unwrap_or("?"),
+            tty.as_deref().unwrap_or("none")
+        ),
+    );
     crate::terminal::raise_tty(terminal, tty.as_deref())
 }
 

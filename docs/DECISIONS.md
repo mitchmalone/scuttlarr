@@ -1244,3 +1244,58 @@ macOS consent prompt)`, Codex `off | authFile (~/.codex/auth.json)`. **launcharr
   deep-link IDs for the current macOS version. (PRD §5.1, risk R4.)
 - **Why.** Programmatic enumeration of panes is unreliable and the IDs are undocumented. A
   broken pane link is low-severity; a curated table is greppable and fixable in one line.
+
+### 2026-09-10 · Updates: upgrades run in the panel; the terminal is the fallback
+
+- **Decision.** `↵`/`a` in `updates ⏎` run the source's upgrade command inside the app
+  (`updates::upgrade`: `/bin/sh -c`, the checks' environment, stdin closed, output tail on the
+  report, `x` cancels). `t` keeps the terminal hand-off. npm is dropped as a source.
+- **Why.** The terminal hand-off failed invisibly twice over (bare PATH, wrong tmux session)
+  and even when it works the user has to go find the window. A run the panel can watch is
+  the honest UI. stdin closed means anything needing a tty (a sudo'ing cask) fails fast with
+  a visible exit line and the `t` hint rather than hanging a background process. Not a PTY:
+  interactive prompts are the terminal's job, and the weight budget says no to a second
+  terminal emulator.
+- **Alternatives.** Fix only the hand-off (done too — bang mode needed it); a PTY in the
+  panel (rejected, above).
+
+### 2026-09-10 · Bluetooth usage string in the bundle, for plugins — still zero granted permissions
+
+- **Decision.** `apps/desktop/src-tauri/Info.plist` carries `NSBluetoothAlwaysUsageDescription`.
+  launcharr's own code never opens CoreBluetooth; the string exists so a plugin's service
+  (a Bun child of launcharr.app, which macOS holds responsible) can. First user: the
+  `amaran` plugin in `~/.config/launcharr/plugins/`, a Swift GATT bridge + a TypeScript
+  Bluetooth Mesh stack driving a studio light with no vendor app.
+- **Why.** TCC attributes a child process to the responsible app and, when that app's
+  Info.plist lacks the usage string, kills the child outright — no prompt, no `.unauthorized`
+  state, only a DiagnosticReports entry (proven 2026-09-10, `ble-helper-*.ips`). Invariant 1
+  holds: nothing prompts until a plugin actually opens the radio, and the prompt names it.
+  Same shape as the loupe's Screen Recording opt-in.
+- **Alternatives.** A Rust Bluetooth command (product opinion for one plugin in core —
+  rejected, invariant 3); the plugin bundling its own `.app` for the helper (a second
+  responsible process to sign, notarise, and explain — rejected).
+
+### 2026-09-10 · Plugins declare permissions; launcharr asks first, blocks on denial, never dies silently
+
+- **Decision.** `manifest.permissions` names the privacy classes a service touches
+  (`bluetooth`, `camera`, `microphone`, `location`, `contacts`, `calendars`, `reminders`,
+  `photos`, `local-network`). `src-tauri/Info.plist` ships a usage string for every one of
+  them. `permissions.rs` (raw `msg_send!` in one place, one framework per class) reads the
+  bundle's own plist and TCC, **requests** at service start whatever macOS has not decided,
+  and the supervisor treats a denied class — or a bundle missing the string — like an unset
+  required setting: the service does not run, the cell dims, Settings → Plugins shows
+  "uses: Bluetooth · denied" with a button (`plugin_permission_fix`: ask, or open the
+  Privacy pane). A service the OS kills by signal reports `service killed (SIGABRT) — see
+DiagnosticReports` and waits the full backoff instead of thrashing. One new command.
+- **Why.** The first hardware plugin was killed on start with nothing but a crash file to
+  explain it (JOURNAL 2026-09-10). Plugins will want all kinds of permissions; the app
+  must recover gracefully rather than fail per class (Mitch, 2026-09-10). A usage string
+  can only live in the bundle at build time, so "recover" means: the bundle is never the
+  reason, the ask happens at a predictable moment in launcharr's name, and a denial is a
+  visible state with a fix — not a restart loop. Invariant 1 holds: strings prompt nothing
+  until code uses the API, and only a plugin the user installed does.
+- **Alternatives.** Prompt lazily on first use (rejected: the prompt lands mid-service
+  with a helper half-started, and a denial looks like a crash); ship only the strings
+  plugins currently need (rejected: every new class would need a release before a plugin
+  could exist); a Rust command per device class (rejected, invariant 3 — the helper
+  pattern keeps hardware out of core).

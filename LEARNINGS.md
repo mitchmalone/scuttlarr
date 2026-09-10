@@ -9,6 +9,10 @@ if it needs more. Never duplicate global AGENTS.md rules here.
 - Bulk `NSWorkspace.iconForFile` + rasterization leaks ~20–30MB/icon that autoreleasepool and
   `recache()` cannot release — icon extraction MUST run in the `--extract-icons` subprocess.
 - `open Foo.app` re-activates a running instance; always `pkill` before relaunching a rebuild.
+- TCC judges a child process by the **responsible app's** Info.plist. A helper spawned from
+  launcharr.app that touches a privacy-gated API (Bluetooth, camera, …) needs the matching
+  `NS…UsageDescription` in `src-tauri/Info.plist` or it is killed with no prompt — the only
+  trace is `~/Library/Logs/DiagnosticReports/<helper>-*.ips` (JOURNAL 2026-09-10).
 
 ## TUI kit (`packages/tui`)
 
@@ -43,6 +47,12 @@ if it needs more. Never duplicate global AGENTS.md rules here.
 - The Claude Design MCP cannot serve binary files; the site logo is a `sips` downscale of
   `apps/desktop/design/menubar-icon-source.png` (the repo copy is the source of truth).
   Favicons in `apps/www/src/app/` use the ⌘-on-black artwork Mitch supplied verbatim.
+
+## Plugins / Bun
+
+- Bun's `node:crypto` has no `aes-128-ccm` (ECB/CBC/GCM yes); Bun does not load node-gyp
+  addons. Hardware access from a service = a small compiled helper on stdio, protocol in
+  TypeScript (PLUGINS.md "Hardware is a helper"; JOURNAL 2026-09-10).
 
 ## Toolchain
 

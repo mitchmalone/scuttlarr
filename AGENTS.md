@@ -163,6 +163,7 @@ Same spirit as the TypeScript rules: strict, minimal, boring.
 | `pnpm --filter @launcharr/desktop tauri dev` | The app, for real (Tauri shell + panel)                                                 |
 | `pnpm --filter @launcharr/www dev`           | The site                                                                                |
 | `pnpm verify`                                | The gate: typecheck + lint + format + test + cargo test + clippy                        |
+| `scripts/dev-install.sh [--build]`           | Run a working-tree build: swap into `/Applications` and relaunch, quietly (no Finder)   |
 | `scripts/release.sh X.Y.Z`                   | The only way to release (see `docs/RELEASING.md`)                                       |
 
 ## Definition of done

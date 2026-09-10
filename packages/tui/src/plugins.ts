@@ -17,6 +17,32 @@ import type {
  * These mirror plugins.rs; keep the pairs adjacent in naming.
  */
 
+/** A privacy class a plugin may declare (mirrors `Permission` in permissions.rs). */
+export type PluginPermissionName =
+  | 'bluetooth'
+  | 'camera'
+  | 'microphone'
+  | 'location'
+  | 'contacts'
+  | 'calendars'
+  | 'reminders'
+  | 'photos'
+  | 'local-network'
+
+/** What macOS says about one (mirrors `Status`). `missing-usage-string` means
+ * this launcharr build cannot even ask — a stale bundle. */
+export type PluginPermissionStatus =
+  'granted' | 'denied' | 'not-determined' | 'missing-usage-string' | 'unknown'
+
+/** Mirrors PluginPermission in permissions.rs. */
+export interface PluginPermission {
+  name: PluginPermissionName
+  label: string
+  status: PluginPermissionStatus
+  /** What the user can do about a non-granted one. */
+  fix: string | null
+}
+
 /** Mirrors PanelMeta in plugins.rs — how `panel.tsx` joins the launcher. */
 export interface PluginPanelMeta {
   title?: string | null
@@ -43,6 +69,8 @@ export interface PluginManifest {
   settings?: WidgetSetting[]
   auth?: WidgetAuth
   requires?: WidgetRequire[]
+  /** Privacy classes the service touches; asked for before it runs. */
+  permissions?: PluginPermissionName[]
   panel?: PluginPanelMeta
   /** First-party only: the Rust state provider. */
   native?: string
@@ -78,6 +106,8 @@ export interface PluginState {
   auth?: WidgetAuth | null
   requires?: WidgetRequire[]
   needs?: string[]
+  /** Declared permissions with their live status; a denied one is in `needs`. */
+  permissions?: PluginPermission[]
   panel: PluginPanelMeta | null
 }
 

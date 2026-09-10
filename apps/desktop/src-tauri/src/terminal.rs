@@ -61,11 +61,23 @@ fn app_name(terminal: Terminal) -> &'static str {
 pub struct GhosttyProbe {
     /// herdr's default-session socket answered a ping.
     pub herdr_running: bool,
-    /// One entry per attached tmux client: (session name, `client_activity`). The
-    /// session with the highest activity is the one the user was last looking at.
-    pub tmux_sessions: Vec<(String, u64)>,
+    /// One entry per attached tmux client. The focused one (terminal focus events
+    /// reaching tmux) is the one the user is looking at; failing that, the highest
+    /// `client_activity` is the one they last typed into.
+    pub tmux_sessions: Vec<TmuxClient>,
     /// `pgrep -x ghostty` found a running process.
     pub ghostty_running: bool,
+}
+
+/// One attached tmux client, from `tmux list-clients`.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct TmuxClient {
+    pub session: String,
+    /// Unix seconds of the client's last input.
+    pub activity: u64,
+    /// `#{client_focused}` — set only while the terminal reports focus to tmux
+    /// (`focus-events on`, tmux ≥ 3.2); never set means "unknown", not "unfocused".
+    pub focused: bool,
 }
 
 /// The chosen route into Ghostty. Four ways in, tried in this order — see the module docs.
@@ -96,13 +108,11 @@ pub fn plan_ghostty(probe: &GhosttyProbe, command: &str) -> HandOff {
             command: command_opt,
         };
     }
-    if let Some((session, _)) = probe
-        .tmux_sessions
-        .iter()
-        .max_by_key(|(_, activity)| *activity)
-    {
+    let focused = probe.tmux_sessions.iter().find(|c| c.focused);
+    let recent = probe.tmux_sessions.iter().max_by_key(|c| c.activity);
+    if let Some(client) = focused.or(recent) {
         return HandOff::TmuxWindow {
-            session: session.clone(),
+            session: client.session.clone(),
             command: command_opt,
         };
     }
@@ -134,10 +144,14 @@ fn ghostty_running() -> bool {
         .unwrap_or(false)
 }
 
-fn tmux_clients() -> Vec<(String, u64)> {
+fn tmux_clients() -> Vec<TmuxClient> {
     for bin in ["tmux", "/opt/homebrew/bin/tmux", "/usr/local/bin/tmux"] {
         if let Ok(out) = Command::new(bin)
-            .args(["list-clients", "-F", "#{session_name} #{client_activity}"])
+            .args([
+                "list-clients",
+                "-F",
+                "#{session_name} #{client_activity} #{client_focused}",
+            ])
             .output()
         {
             if out.status.success() {
@@ -148,26 +162,51 @@ fn tmux_clients() -> Vec<(String, u64)> {
     Vec::new()
 }
 
-/// `tmux list-clients -F '#{session_name} #{client_activity}'` output: one client per
-/// line, session name then a unix-seconds activity timestamp. Splits on the *last*
-/// whitespace run since tmux session names may themselves contain spaces.
-fn parse_tmux_clients(out: &str) -> Vec<(String, u64)> {
+/// `tmux list-clients -F '#{session_name} #{client_activity} #{client_focused}'`
+/// output: one client per line — session name, a unix-seconds activity timestamp,
+/// then `1` when focused or nothing at all (tmux prints an unset flag as empty).
+/// Splits from the right since tmux session names may themselves contain spaces.
+fn parse_tmux_clients(out: &str) -> Vec<TmuxClient> {
     out.lines()
         .filter_map(|line| {
             let line = line.trim();
-            let (session, activity) = line.rsplit_once(char::is_whitespace)?;
-            Some((session.to_owned(), activity.trim().parse().ok()?))
+            let (rest, last) = line.rsplit_once(char::is_whitespace)?;
+            // Trailing field is either the focus flag (then activity precedes it)
+            // or, for a client with no focus flag, the activity itself.
+            let (session, activity, focused) = match last {
+                "1" => {
+                    let (session, activity) = rest.rsplit_once(char::is_whitespace)?;
+                    (session, activity, true)
+                }
+                _ => (rest, last, false),
+            };
+            Some(TmuxClient {
+                session: session.to_owned(),
+                activity: activity.trim().parse().ok()?,
+                focused,
+            })
         })
         .collect()
 }
 
 // ---- Ghostty: the executor -------------------------------------------------
 
-/// The single argv element `tmux new-window` runs: `<command>; exec <shell> -l`, so the
-/// window survives after the command finishes instead of closing. `None` command → no
-/// argv at all, a plain `tmux new-window` (empty bang = "just open a window").
+/// The single argv element `tmux new-window` runs: the user's shell, interactive +
+/// login (`-lic`), running `<command>; exec <shell> -l` — so PATH and friends come from
+/// their rc files (the window otherwise inherits the accessory app's bare PATH:
+/// `brew: not found`, JOURNAL 2026-09-10) and the window survives after the command
+/// finishes instead of closing. `None` command → no argv at all, a plain
+/// `tmux new-window` (empty bang = "just open a window").
 fn tmux_window_command(command: Option<&str>, shell: &str) -> Option<String> {
-    command.map(|c| format!("{c}; exec {shell} -l"))
+    command.map(|c| {
+        let inner = shell_single_quote(&format!("{c}; exec {shell} -l"));
+        format!("exec {shell} -lic {inner}")
+    })
+}
+
+/// Single-quote `s` for POSIX `sh` (tmux runs the argv through `sh -c`).
+fn shell_single_quote(s: &str) -> String {
+    format!("'{}'", s.replace('\'', "'\\''"))
 }
 
 /// `open -na Ghostty --args …` argv for starting the *first* Ghostty instance running
@@ -464,9 +503,29 @@ mod tests {
     fn probe(herdr: bool, tmux: &[(&str, u64)], ghostty: bool) -> GhosttyProbe {
         GhosttyProbe {
             herdr_running: herdr,
-            tmux_sessions: tmux.iter().map(|(s, a)| (s.to_string(), *a)).collect(),
+            tmux_sessions: tmux
+                .iter()
+                .map(|(s, a)| TmuxClient {
+                    session: s.to_string(),
+                    activity: *a,
+                    focused: false,
+                })
+                .collect(),
             ghostty_running: ghostty,
         }
+    }
+
+    #[test]
+    fn route2_focused_tmux_client_beats_a_more_recently_active_one() {
+        let mut p = probe(false, &[("gogogo", 100), ("psyke", 200)], true);
+        p.tmux_sessions[0].focused = true;
+        assert_eq!(
+            plan_ghostty(&p, "brew upgrade"),
+            HandOff::TmuxWindow {
+                session: "gogogo".into(),
+                command: Some("brew upgrade".into()),
+            }
+        );
     }
 
     #[test]
@@ -543,14 +602,21 @@ mod tests {
 
     #[test]
     fn parses_tmux_client_lines_into_session_activity_pairs() {
-        // Real `tmux list-clients -F '#{session_name} #{client_activity}'` output —
-        // one client per line, session then a unix-seconds timestamp.
-        let out = "gogogo 1788490699\nother-session 1000\n";
+        // Real `tmux list-clients -F '#{session_name} #{client_activity}
+        // #{client_focused}'` output — one client per line, session then a
+        // unix-seconds timestamp, then `1` or nothing (unset flag prints empty).
+        let out = "gogogo 1788490699 1\nother-session 1000\nmy session 5 \n";
+        let client = |s: &str, a: u64, f: bool| TmuxClient {
+            session: s.into(),
+            activity: a,
+            focused: f,
+        };
         assert_eq!(
             parse_tmux_clients(out),
             vec![
-                ("gogogo".to_string(), 1788490699),
-                ("other-session".to_string(), 1000),
+                client("gogogo", 1788490699, true),
+                client("other-session", 1000, false),
+                client("my session", 5, false),
             ]
         );
         assert_eq!(parse_tmux_clients(""), Vec::new());
@@ -561,7 +627,12 @@ mod tests {
     fn tmux_window_command_appends_a_login_shell_so_the_window_survives() {
         assert_eq!(
             tmux_window_command(Some("echo hi"), "/bin/zsh").as_deref(),
-            Some("echo hi; exec /bin/zsh -l")
+            Some("exec /bin/zsh -lic 'echo hi; exec /bin/zsh -l'")
+        );
+        // A single quote inside the command survives sh's quoting rules.
+        assert_eq!(
+            tmux_window_command(Some("echo 'x'"), "/bin/zsh").as_deref(),
+            Some("exec /bin/zsh -lic 'echo '\\''x'\\''; exec /bin/zsh -l'")
         );
         assert_eq!(tmux_window_command(None, "/bin/zsh"), None);
     }

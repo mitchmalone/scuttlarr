@@ -68,6 +68,12 @@ Tauri; it gets a four-call `host` and nothing else.
 - `settings`, `requires`, `auth` — exactly as in [WIDGETS.md](WIDGETS.md): settings are
   collected in Settings → Menubar → Plugins and delivered as **env**; secrets go to the
   Keychain; `auth` means `service.ts auth` runs the plugin's own sign-in.
+- `permissions` — privacy classes the service touches: `bluetooth`, `camera`,
+  `microphone`, `location`, `contacts`, `calendars`, `reminders`, `photos`,
+  `local-network`. Shown under the plugin in Settings with what macOS currently says;
+  before the service runs launcharr **asks** for any it has not decided (one prompt, in
+  launcharr's name, at a predictable moment) and **does not run it** while one is denied
+  — the row says so and offers the Privacy pane. An unknown name fails the manifest.
 
 ## `service.ts` — the logic
 
@@ -162,9 +168,10 @@ files runs under either.
 
 `packages/plugins/` holds the plugins launcharr ships — `usage` (the agent usage cell +
 `usage ⏎`), `calendar` (`cal ⏎`), and `updates` (app updates across brew, the App Store,
-pnpm, npm and mise — a count in the bar, `updates ⏎` for the list; its `updates` provider
+pnpm and mise — a count in the bar, `updates ⏎` for the list; its `updates` provider
 shells out every 6 h, `touch triggers/plugin.updates` or `r` in the panel for now; `↵` on a
-row upgrades that source in your terminal, `a` upgrades everything). Same contract, two differences: their UI is
+row upgrades that source in the panel with live output (`a` everything, `x` cancels), `t`
+hands it to your terminal instead). Same contract, two differences: their UI is
 Vite-bundled with the app, and their state comes from a Rust provider named in the
 manifest (`"native": "usage"`) instead of a Bun service, so the app never depends on Bun
 for its own panels. `native` is refused in user plugins. launcharr.com imports these
@@ -178,5 +185,16 @@ fixture isn't finished.
   reaching for raw HTML and CSS is the thing this design exists to avoid.
 - **Network is your business,** and it says so in Settings through `requires`/`settings`.
   Be fail-visible and cache: a plugin that blocks or blanks when a host is down is a bug.
+- **Hardware is a helper, not a native module.** A plugin directory has no `node_modules`
+  and Bun does not load node-gyp addons, so a service that needs a radio or a device
+  spawns a small compiled helper (Swift + CoreBluetooth, JSON lines on stdio, built once
+  into a dotdir the watcher ignores) and keeps the protocol in TypeScript where it is
+  testable. Worked example: the `amaran` light plugin (JOURNAL 2026-09-10).
+- **Declare what you touch.** macOS attributes a helper's privacy access to launcharr.app
+  and kills it, no prompt, when the bundle lacks the usage string. The bundle ships a
+  string for every class in `permissions` (DECISIONS 2026-09-10 ×2) and `permissions.rs`
+  asks and checks before the service runs — but only for what the manifest declares. An
+  undeclared class still works (the string is there) and simply prompts on first use; a
+  class not in the list needs its string added to `src-tauri/Info.plist` first.
 - **Trust.** Installing a plugin runs its code, like an editor extension. Read what you
   install.

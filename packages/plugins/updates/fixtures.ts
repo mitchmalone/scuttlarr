@@ -48,14 +48,29 @@ export function updatesReportAt(nowSecs: number): UpdatesReport {
         items: [],
       },
       {
-        id: 'npm',
-        label: 'npm',
-        upgradeCommand: 'npm update -g',
+        id: 'mise',
+        label: 'mise',
+        upgradeCommand: 'mise upgrade',
         checkedAt: nowSecs,
         error: 'registry timed out',
         items: [],
       },
     ],
+    upgrade: {
+      source: 'brew',
+      command: 'brew upgrade',
+      startedAt: nowSecs - 8,
+      finishedAt: 0,
+      exitCode: null,
+      cancelled: false,
+      tail: [
+        '==> Upgrading 3 outdated packages:',
+        'gcc 16.1.0 -> 16.2.0',
+        'vips 8.18.5_1 -> 8.18.6',
+        '==> Fetching gcc',
+        '==> Downloading https://ghcr.io/v2/homebrew/core/gcc/manifests/16.2.0',
+      ],
+    },
   }
 }
 

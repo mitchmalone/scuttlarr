@@ -18,6 +18,7 @@ import type {
   PluginState,
 } from '@launcharr/tui/plugins'
 import { invoke } from '@tauri-apps/api/core'
+import { listen } from '@tauri-apps/api/event'
 import * as Lucide from 'lucide-react'
 import { AlertTriangle } from 'lucide-react'
 import * as React from 'react'
@@ -213,7 +214,11 @@ export function PluginCellHost({
   )
 }
 
-/** Poll one plugin's state while its panel is open (in-memory read). */
+/**
+ * One plugin's state while its panel is open: re-pulled the moment the
+ * service emits (`plugin-state`, plugins.rs), with a 1 s poll as the floor
+ * for health fields that change without a state line.
+ */
 function useLivePlugin(id: string, initial: PluginState | null) {
   const [plugin, setPlugin] = useState<PluginState | null>(initial)
   useEffect(() => {
@@ -223,10 +228,14 @@ function useLivePlugin(id: string, initial: PluginState | null) {
         .then((p) => live && p && setPlugin(p))
         .catch(console.error)
     pull()
+    const un = listen<string>('plugin-state', (e) => {
+      if (e.payload === id) pull()
+    })
     const t = window.setInterval(pull, 1000)
     return () => {
       live = false
       window.clearInterval(t)
+      un.then((f) => f()).catch(console.error)
     }
   }, [id])
   return plugin

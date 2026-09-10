@@ -15,10 +15,27 @@ export interface UpdatesReport {
   refreshing: boolean
   /** Only present sources, in the table order (docs/plans). */
   sources: UpdateSource[]
+  /** The panel-owned upgrade run, live or last finished; absent until the first. */
+  upgrade?: UpgradeRun | null
+}
+
+/** Mirrors `updates.rs`'s `UpgradeRun`. */
+export interface UpgradeRun {
+  /** Source id, or 'all'. */
+  source: UpdateSource['id'] | 'all'
+  command: string
+  startedAt: number
+  /** 0 while running. */
+  finishedAt: number
+  /** null while running or when killed. */
+  exitCode: number | null
+  cancelled: boolean
+  /** Last lines of stdout+stderr, oldest first. */
+  tail: string[]
 }
 
 export interface UpdateSource {
-  id: 'brew' | 'mas' | 'pnpm' | 'npm' | 'mise'
+  id: 'brew' | 'mas' | 'pnpm' | 'mise'
   label: string
   upgradeCommand: string
   /** Epoch secs; 0 if the first check hasn't finished. */
@@ -62,11 +79,56 @@ export function cellTone(report: UpdatesReport): CellTone {
   return hasErrors(report) ? 'warn' : 'normal'
 }
 
-/** "Homebrew · 3" / "App Store · up to date" / "npm · error: …". */
+/** "Homebrew · 3" / "App Store · up to date" / "mise · error: …". */
 export function sourceLine(source: UpdateSource): string {
   if (source.error != null) return `${source.label} · error: ${source.error}`
   if (source.items.length === 0) return `${source.label} · up to date`
   return `${source.label} · ${source.items.length}`
+}
+
+/** Whether a panel-owned upgrade is in flight. */
+export function upgradeRunning(report: UpdatesReport | null): boolean {
+  return report?.upgrade != null && report.upgrade.finishedAt === 0
+}
+
+/** The label of what a run is upgrading: a source's label, or "everything". */
+export function upgradeTarget(report: UpdatesReport, run: UpgradeRun): string {
+  if (run.source === 'all') return 'everything'
+  return report.sources.find((s) => s.id === run.source)?.label ?? run.source
+}
+
+/** "3s" / "1 min 12s" / "2 h 5 min" — a duration in seconds, terse. */
+export function duration(secs: number): string {
+  const s = Math.max(0, Math.floor(secs))
+  if (s < 60) return `${s}s`
+  if (s < 3600) return `${Math.floor(s / 60)} min ${s % 60}s`
+  return `${Math.floor(s / 3600)} h ${Math.floor((s % 3600) / 60)} min`
+}
+
+/**
+ * The run's headline: "upgrading Homebrew · 12s" while running, then
+ * "Homebrew upgraded · 1 min 3s" / "Homebrew upgrade failed · exit 1" /
+ * "Homebrew upgrade cancelled".
+ */
+export function upgradeLine(
+  report: UpdatesReport,
+  run: UpgradeRun,
+  nowSecs: number,
+): string {
+  const target = upgradeTarget(report, run)
+  if (run.finishedAt === 0) {
+    return `upgrading ${target} · ${duration(nowSecs - run.startedAt)}`
+  }
+  if (run.cancelled) return `${target} upgrade cancelled`
+  const took = duration(run.finishedAt - run.startedAt)
+  if (run.exitCode === 0) return `${target} upgraded · ${took}`
+  const exit = run.exitCode == null ? 'killed' : `exit ${run.exitCode}`
+  return `${target} upgrade failed · ${exit}`
+}
+
+/** Whether a finished run ended badly — the panel points at `t` (terminal) then. */
+export function upgradeFailed(run: UpgradeRun): boolean {
+  return run.finishedAt !== 0 && !run.cancelled && run.exitCode !== 0
 }
 
 /** "checked just now" / "checked 12 min ago" / "checked 3 h ago" / "never checked". */

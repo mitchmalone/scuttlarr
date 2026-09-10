@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Merged into the bundle's Info.plist by Tauri. launcharr itself touches
+	     none of these. They exist so a plugin's service (a child macOS attributes
+	     to launcharr.app) can: without the string TCC kills the child, no prompt
+	     (DECISIONS 2026-09-10). A string prompts nothing until code uses the API.
+	     Keys mirror permissions.rs — keep the two in step. -->
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>A plugin you installed talks to a Bluetooth device. launcharr itself never uses Bluetooth.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>A plugin you installed uses the camera. launcharr itself never does.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>A plugin you installed listens to the microphone. launcharr itself never does.</string>
+	<key>NSLocationUsageDescription</key>
+	<string>A plugin you installed reads your location. launcharr itself never does.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>A plugin you installed reads your contacts. launcharr itself never does.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>A plugin you installed reads your calendars. launcharr itself never does.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>A plugin you installed reads your calendars. launcharr itself never does.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>A plugin you installed reads your reminders. launcharr itself never does.</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>A plugin you installed reads your reminders. launcharr itself never does.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>A plugin you installed reads your photo library. launcharr itself never does.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>A plugin you installed talks to devices on your local network.</string>
+</dict>
+</plist>

@@ -3,9 +3,53 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-09-04 (app updates plugin; zero-network retired)
+> Last updated: 2026-09-10 (plugin permissions: declare, ask first, block on denial)
 
 ## Where we are
+
+**Plugin permissions, 2026-09-10 (working tree, uncommitted — built, not yet
+reinstalled):** the generic answer to the amaran kill below. `manifest.permissions`
+names privacy classes; `src-tauri/Info.plist` ships usage strings for all nine;
+`permissions.rs` reads the bundle + TCC, asks at service start for what macOS has not
+decided, and the supervisor blocks a denied (or un-askable) class via the `needs` path —
+dim cell, Settings → Plugins row "uses: Bluetooth · denied" with ask / open-Privacy
+buttons (`plugin_permission_fix`, the one new command). A service killed by signal reports
+`service killed (SIGABRT) — see DiagnosticReports` and waits the full backoff. DECISIONS
+2026-09-10 (permissions), plan `plans/done/plugin-permissions.md`, PLUGINS.md `permissions`
+
+- "Declare what you touch". `pnpm verify` green (5 new Rust tests). **Proved live 2026-09-10:** reinstalled; the log shows `asked macOS for Bluetooth` →
+  service started → connected; the cell toggles the light. Same session: the panel switch
+  double-fired (row + button, fixed in the plugin) and lagged a second behind the bar — the
+  panel polled while the bar was pushed; state lines now emit `plugin-state` and the panel
+  re-pulls (JOURNAL 2026-09-10). Installed via the new `scripts/dev-install.sh` (quiet swap + `open -g`, no Finder
+  flash): panel and bar both instant — "working great" (Mitch, 2026-09-10).
+
+**First hardware plugin, 2026-09-10 (working tree, uncommitted — built, not yet
+reinstalled):** Mitch's amaran 60d S studio light is a user plugin
+(`~/.config/launcharr/plugins/amaran/`, not in this repo): a Swift CoreBluetooth bridge
+spawned by the Bun service, a TypeScript Bluetooth Mesh stack (AES-CCM hand-rolled — Bun
+has none — verified against the spec vectors), Telink `0x26` commands, and the light's
+status replies decoded so the cell follows the physical dial. Cell click toggles, `light ⏎`
+has a slider and presets. **Proved live** from a terminal: on/off/on by eye, status
+`on=true intensity=120`. Under launcharr.app the helper was TCC-killed with no prompt —
+the bundle had no `NSBluetoothAlwaysUsageDescription`; added `src-tauri/Info.plist`
+(DECISIONS 2026-09-10, invariant 1 intact: nothing prompts until a plugin opens the radio).
+Built to `target/release/bundle/macos/launcharr.app`; **the reinstall over the running app
+is pending (Mitch)** — then one Bluetooth prompt and the cell should go live. PLUGINS.md
+grew a "Hardware is a helper" rule; JOURNAL ×3; plan
+`plans/done/amaran-plugin-bluetooth.md`. Loose thread: status replies arrived in one run
+and not in three earlier probes — recorded, not chased.
+
+**Updates plugin, second pass, 2026-09-10 (working tree, uncommitted — built + running):**
+npm dropped as a source (its only globals are node's own `npm`/`corepack`, mise's business).
+Two environment bugs fixed, both from the LaunchAgent's bare PATH (JOURNAL 2026-09-10):
+checks now run with an augmented PATH + inferred `PNPM_HOME`; the tmux hand-off runs the
+command in `$SHELL -lic` and targets the _focused_ tmux client (`#{client_focused}`) before
+the most recently active one. `↵`/`a` in `updates ⏎` now upgrade **in the panel** —
+`updates::upgrade` spawns `/bin/sh -c`, stdin closed, tail on the report, `x` cancels; `t`
+is the terminal hand-off (sudo). Plan: `plans/active/updates-upgrade-in-panel.md` (move to
+`done/` with the commit). Not changed: the 6 h TTL — checks cost < 4 s total, 1 h is fine
+when wanted.
 
 **App updates in the menubar, 2026-09-04 (on main, unreleased — built + running):** the
 third bundled plugin, `updates` (`packages/plugins/updates/`, provider `updates.rs`):

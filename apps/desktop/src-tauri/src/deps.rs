@@ -15,7 +15,7 @@ use crate::error::{CmdError, CmdResult};
 
 /// Where Homebrew puts binaries on Apple silicon and Intel; a dev shell's PATH
 /// (checked first) can override.
-const BREW_BINS: [&str; 2] = ["/opt/homebrew/bin", "/usr/local/bin"];
+pub const BREW_BINS: [&str; 2] = ["/opt/homebrew/bin", "/usr/local/bin"];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

@@ -159,7 +159,12 @@ pub async fn agent_jump(
     state: State<'_, AppState>,
 ) -> CmdResult<()> {
     let terminal = state.config.read().unwrap().terminal;
-    crate::agents::jump_session(&app, &session, terminal)
+    crate::logbook::breadcrumb("agents", &format!("jump {session} ({terminal:?})"));
+    let result = crate::agents::jump_session(&app, &session, terminal);
+    if let Err(e) = &result {
+        crate::logbook::breadcrumb("agents", &format!("jump {session} failed: {e}"));
+    }
+    result
 }
 
 /// Forget an agent session by hand — the escape hatch for a cell the liveness
@@ -768,4 +773,11 @@ pub fn plugin_remove(id: String) -> CmdResult<()> {
 #[tauri::command]
 pub fn plugin_restart(app: AppHandle, id: String) -> CmdResult<()> {
     crate::plugins::restart(&app, &id).map_err(CmdError::Internal)
+}
+
+/// The user's move on a declared permission that is not granted: make macOS
+/// ask, or open the System Settings pane. Returns a line for the settings row.
+#[tauri::command]
+pub fn plugin_permission_fix(id: String, name: String) -> CmdResult<String> {
+    crate::plugins::permission_fix(&id, &name).map_err(CmdError::Internal)
 }

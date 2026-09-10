@@ -1,5 +1,5 @@
 import type { BarWidget } from '@launcharr/tui'
-import type { PluginState } from '@launcharr/tui/plugins'
+import type { PluginPermission, PluginState } from '@launcharr/tui/plugins'
 import { invoke } from '@tauri-apps/api/core'
 import { useState } from 'react'
 
@@ -117,6 +117,7 @@ export function PluginsSection({
           {p.description && (
             <p className="hint widgetsetting-note">{p.description}</p>
           )}
+          <PluginPermissions plugin={p} />
           <WidgetPrereqs widget={asWidget(p)} />
           <WidgetSettings widget={asWidget(p)} config={config} set={set} />
         </div>
@@ -151,6 +152,74 @@ export function PluginsSection({
       </div>
       {note && <p className="hint">{note}</p>}
     </section>
+  )
+}
+
+/** One word per status for the row; the fix text carries the detail. */
+function permissionWord(s: PluginPermission['status']): string {
+  switch (s) {
+    case 'granted':
+      return 'allowed'
+    case 'denied':
+      return 'denied'
+    case 'not-determined':
+      return 'not asked yet'
+    case 'missing-usage-string':
+      return 'this build cannot ask'
+    case 'unknown':
+      return 'asked on use'
+  }
+}
+
+/**
+ * Declared permissions (manifest `permissions`) with what macOS says about
+ * each — visible before enabling, so the ask is never a surprise. A
+ * non-granted one gets a button: ask macOS, or open the Privacy pane.
+ */
+function PluginPermissions({ plugin }: { plugin: PluginState }) {
+  const [note, setNote] = useState<string | null>(null)
+  const perms = plugin.permissions ?? []
+  if (!perms.length) return null
+  const act = (perm: PluginPermission) => {
+    setNote(null)
+    invoke<string>('plugin_permission_fix', { id: plugin.id, name: perm.name })
+      .then(setNote)
+      .catch((e) => setNote(String(e)))
+  }
+  return (
+    <div className="widgetsettings widgetprereqs">
+      {perms.map((perm) => {
+        const bad =
+          perm.status === 'denied' || perm.status === 'missing-usage-string'
+        return (
+          <div className="linkrow widgetsetting" key={perm.name}>
+            <span
+              className={`widgetsetting-label ${bad ? 'widgetsetting-req' : ''}`}
+            >
+              uses
+            </span>
+            <span className="widgetprereq-text" title={perm.fix ?? undefined}>
+              {perm.label} · {permissionWord(perm.status)}
+            </span>
+            {perm.status !== 'granted' && perm.status !== 'unknown' && (
+              <button
+                type="button"
+                className="ghost widgetfix"
+                title={perm.fix ?? undefined}
+                onClick={() => act(perm)}
+              >
+                {perm.status === 'not-determined'
+                  ? 'ask now'
+                  : perm.status === 'denied'
+                    ? 'open privacy settings'
+                    : 'needs a rebuild'}
+              </button>
+            )}
+          </div>
+        )
+      })}
+      {note && <p className="hint">{note}</p>}
+    </div>
   )
 }
 

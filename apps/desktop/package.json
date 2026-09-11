@@ -1,5 +1,5 @@
 {
-  "name": "@launcharr/desktop",
+  "name": "@scuttlarr/desktop",
   "private": true,
   "version": "0.6.0",
   "type": "module",
@@ -12,9 +12,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@launcharr/core": "workspace:*",
-    "@launcharr/plugins": "workspace:*",
-    "@launcharr/tui": "workspace:*",
+    "@scuttlarr/core": "workspace:*",
+    "@scuttlarr/plugins": "workspace:*",
+    "@scuttlarr/tui": "workspace:*",
     "@tauri-apps/api": "^2",
     "lucide-react": "^1.30.0",
     "react": "^19.1.0",

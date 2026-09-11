@@ -3,10 +3,10 @@
 import {
   UPDATES_PLUGIN,
   updatesReportAt,
-} from '@launcharr/plugins/updates/fixtures'
-import UpdatesPanelPlugin from '@launcharr/plugins/updates/panel'
-import { USAGE_PLUGIN, usageReportAt } from '@launcharr/plugins/usage/fixtures'
-import UsagePanelPlugin from '@launcharr/plugins/usage/panel'
+} from '@scuttlarr/plugins/updates/fixtures'
+import UpdatesPanelPlugin from '@scuttlarr/plugins/updates/panel'
+import { USAGE_PLUGIN, usageReportAt } from '@scuttlarr/plugins/usage/fixtures'
+import UsagePanelPlugin from '@scuttlarr/plugins/usage/panel'
 import {
   KeyHints,
   ListRow,
@@ -14,14 +14,14 @@ import {
   SectionHeader,
   TextPrompt,
   useListNav,
-} from '@launcharr/tui'
-import { NOOP_HOST } from '@launcharr/tui/plugins'
+} from '@scuttlarr/tui'
+import { NOOP_HOST } from '@scuttlarr/tui/plugins'
 import { useState } from 'react'
 
 import { PANEL_INFO, type PanelId, WIFI } from '@/lib/demo-data'
 
 /**
- * The demo's TUI panels, rendered from the *shipping* `@launcharr/tui` components
+ * The demo's TUI panels, rendered from the *shipping* `@scuttlarr/tui` components
  * rather than website mock-ups (DECISIONS 2026-08-16). Only the data is fictional;
  * the chrome, keyboard navigation and row selection are the same code the app runs.
  */
@@ -261,7 +261,7 @@ export function StubPanel({
         dim
         label="A browser has no CoreAudio, pasteboard or live keymap to read."
       />
-      <ListRow dim label="Install launcharr and type this trigger to see it." />
+      <ListRow dim label="Install scuttlarr and type this trigger to see it." />
     </Panel>
   )
 }

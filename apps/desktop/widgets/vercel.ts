@@ -1,4 +1,4 @@
-// launcharr widget: latest Vercel deployment per project (docs/WIDGETS.md).
+// scuttlarr widget: latest Vercel deployment per project (docs/WIDGETS.md).
 //
 // The reference widget for the **stored-token** half of widget settings:
 // `VERCEL_TOKEN` (a personal token from vercel.com/account/tokens, pasted into
@@ -12,8 +12,8 @@
 // With no token from anywhere — or a stale CLI login — the cell goes dim with
 // the fix in the card and in Settings, never silently blank (Mitch, 2026-08-20).
 //
-// Install: copy into ~/.config/launcharr/widgets/. Runs under Bun.
-import type { WidgetTone, WidgetView } from '@launcharr/tui/bar/types'
+// Install: copy into ~/.config/scuttlarr/widgets/. Runs under Bun.
+import type { WidgetTone, WidgetView } from '@scuttlarr/tui/bar/types'
 import { readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
@@ -104,7 +104,7 @@ async function get<T>(
   const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
-      'User-Agent': 'launcharr-widget',
+      'User-Agent': 'scuttlarr-widget',
     },
     signal: AbortSignal.timeout(12000),
   })

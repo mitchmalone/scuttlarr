@@ -1,11 +1,11 @@
-import type { Link } from '@launcharr/core/types'
+import type { Link } from '@scuttlarr/core/types'
 import type {
   BarSnapshot,
   BarWidget,
   UsageReport,
   WidgetSetting,
-} from '@launcharr/tui'
-import { GithubIcon, XIcon } from '@launcharr/tui/icons'
+} from '@scuttlarr/tui'
+import { GithubIcon, XIcon } from '@scuttlarr/tui/icons'
 import { getVersion } from '@tauri-apps/api/app'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
@@ -41,7 +41,7 @@ import { HooksRow } from './HooksRow'
 import HotkeyRecorder from './HotkeyRecorder'
 import { PluginsSection } from './PluginsSection'
 import SubTabs from './SubTabs'
-import iconUrl from './launcharr.svg'
+import iconUrl from './scuttlarr.svg'
 
 /**
  * The settings window: a live view over config.json. Every edit autosaves (debounced);
@@ -59,10 +59,10 @@ const TABS = [
   { id: 'about', label: 'About', icon: Info },
 ] as const
 
-/** Where launcharr lives on the web — the About tab's links. */
-const SITE_URL = 'https://launcharr.com'
-const DOCS_URL = 'https://launcharr.com/docs'
-const GITHUB_URL = 'https://github.com/mitchmalone/launcharr'
+/** Where scuttlarr lives on the web — the About tab's links. */
+const SITE_URL = 'https://scuttlarr.com'
+const DOCS_URL = 'https://scuttlarr.com/docs'
+const GITHUB_URL = 'https://github.com/mitchmalone/scuttlarr'
 const RELEASES_URL = `${GITHUB_URL}/releases`
 const X_URL = 'https://x.com/mitchmalone'
 
@@ -293,7 +293,7 @@ function ColorPickerSection({ config, set }: { config: Config; set: SetFn }) {
             checked={config.colorLoupe}
             onChange={(e) => set('colorLoupe', e.target.checked)}
           />
-          Use the launcharr loupe
+          Use the scuttlarr loupe
         </label>
         {config.colorLoupe && (
           <label className="check">
@@ -323,9 +323,9 @@ function ColorPickerSection({ config, set }: { config: Config; set: SetFn }) {
         )}
         <p className="hint">
           Off (default): <code>colorpicker</code> uses Apple's own sampler — no
-          permission, its zoom. On: launcharr draws its own loupe, which needs{' '}
+          permission, its zoom. On: scuttlarr draws its own loupe, which needs{' '}
           <strong>Screen Recording</strong> — the first pick after switching
-          asks macOS once; grant it, relaunch launcharr, and picks use the
+          asks macOS once; grant it, relaunch scuttlarr, and picks use the
           loupe. Flip back any time to compare.
         </p>
       </Row>
@@ -353,7 +353,7 @@ function ConfigSection() {
         </div>
         <p className="hint">
           This whole window is a view over{' '}
-          <code>~/.config/launcharr/config.json</code> — edit either place,
+          <code>~/.config/scuttlarr/config.json</code> — edit either place,
           changes apply live.
         </p>
       </Row>
@@ -558,7 +558,7 @@ function AgentsTab({ config, set }: { config: Config; set: SetFn }) {
                 Account limits (“how soon am I rate-limited?”) are computed by
                 the providers, so showing them means one HTTPS request to each —
                 using credentials the CLIs already store. Grant access per
-                provider; launcharr picks the freshest source, falls back
+                provider; scuttlarr picks the freshest source, falls back
                 automatically, and never refreshes or writes tokens.
               </p>
               <label className="check">
@@ -1253,7 +1253,7 @@ function WidgetsSection({
     <section className="row-full">
       <div className="zonehead">Custom widgets</div>
       <p className="hint">
-        Executables in <code>~/.config/launcharr/widgets/</code> that answer{' '}
+        Executables in <code>~/.config/scuttlarr/widgets/</code> that answer{' '}
         <code>manifest</code> and <code>tick</code> — any language, live, no
         restart. Contract and reference widgets: docs/WIDGETS.md.
       </p>
@@ -1396,7 +1396,7 @@ function MenubarTab({ config, set }: { config: Config; set: SetFn }) {
                   set('bar', { ...config.bar, enabled: e.target.checked })
                 }
               />
-              Enable the launcharr bar
+              Enable the scuttlarr bar
             </label>
             <p className="hint">
               Replaces the macOS menu bar with an Omarchy-style strip. Applies
@@ -1468,7 +1468,7 @@ function AboutTab() {
   const open = (url: string) => invoke('open_url', { url }).catch(console.error)
   const links: { label: string; url: string; icon: React.ReactNode }[] = [
     {
-      label: 'launcharr.com',
+      label: 'scuttlarr.com',
       url: SITE_URL,
       icon: <Globe size={15} strokeWidth={1.75} aria-hidden />,
     },
@@ -1487,9 +1487,9 @@ function AboutTab() {
   ]
   return (
     <div className="about">
-      <img className="appicon" src={iconUrl} alt="launcharr icon" />
+      <img className="appicon" src={iconUrl} alt="scuttlarr icon" />
       <p className="wordmark">
-        <span className="sigil">❯</span> launcharr
+        <span className="sigil">❯</span> scuttlarr
         {version ? ` v${version}` : ''}
       </p>
       <p className="hint">The keyboard control surface for macOS.</p>
@@ -1510,7 +1510,7 @@ function AboutTab() {
       </div>
       <p className="hint aboutfoot">
         Zero granted permissions, zero network. Your config lives at{' '}
-        <code>~/.config/launcharr/config.json</code>; scripts extend the prompt
+        <code>~/.config/scuttlarr/config.json</code>; scripts extend the prompt
         (see docs). Because the apps won’t launch themselves. Yarr.
       </p>
     </div>

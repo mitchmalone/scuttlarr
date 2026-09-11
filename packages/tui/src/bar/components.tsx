@@ -47,7 +47,7 @@ import type {
 
 /**
  * The bar's presentational layer — the single copy of the strip's chrome,
- * rendered by both the desktop app and launcharr.com (AGENTS invariant 10).
+ * rendered by both the desktop app and scuttlarr.com (AGENTS invariant 10).
  *
  * Nothing here touches the environment: no `invoke`, no Rust, no window
  * globals. Data comes in as props and interactions go out as callbacks, so the
@@ -522,7 +522,7 @@ export function BarBatteryCell({
 /**
  * The keep-awake card: what stays on, how the session ends, and who else is
  * holding the Mac awake. All strings arrive as props — the words are product
- * copy owned by @launcharr/core/awake, composed by each consumer.
+ * copy owned by @scuttlarr/core/awake, composed by each consumer.
  */
 export function BarAwakeCard({
   armed,

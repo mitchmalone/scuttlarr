@@ -1,4 +1,4 @@
-import type { PluginState } from '@launcharr/tui/plugins'
+import type { PluginState } from '@scuttlarr/tui/plugins'
 
 import manifest from './manifest.json'
 import type { UpdatesReport } from './model'

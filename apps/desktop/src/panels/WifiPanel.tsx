@@ -1,5 +1,5 @@
 /**
- * Wifi panel, presentational half: pure props + @launcharr/tui, no tauri
+ * Wifi panel, presentational half: pure props + @scuttlarr/tui, no tauri
  * imports — the workbench renders every state of this file directly. The
  * container (WifiPanelContainer) owns invokes, refresh, and the scan.
  */
@@ -12,7 +12,7 @@ import {
   WifiStrengthIcon,
   useListNav,
   wifiBars,
-} from '@launcharr/tui'
+} from '@scuttlarr/tui'
 import { Lock, Search, Wifi } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useState } from 'react'

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The local half of releasing launcharr. Deterministic: every step either passes or
+# The local half of releasing scuttlarr. Deterministic: every step either passes or
 # the script dies telling you exactly what's missing. If a release step isn't in here
 # or in .github/workflows/release.yml, it isn't part of the release — add it first.
 # See docs/RELEASING.md.
@@ -19,8 +19,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DESKTOP="$ROOT/apps/desktop"
 WWW="$ROOT/apps/www"
-REPO="mitchmalone/launcharr"
-NOTARY_PROFILE="launcharr-notary"
+REPO="mitchmalone/scuttlarr"
+NOTARY_PROFILE="launcharr-notary"  # local keychain profile name; not renamed
 
 die() { echo "✗ $*" >&2; exit 1; }
 step() { echo; echo "── $*"; }
@@ -52,8 +52,8 @@ done
 TAG="v$VERSION"
 NOTES="$ROOT/docs/releases/$TAG.md"
 DIST="$ROOT/dist/$TAG"
-ZIP="launcharr-$VERSION.zip"
-DMG="launcharr-$VERSION.dmg"
+ZIP="scuttlarr-$VERSION.zip"
+DMG="scuttlarr-$VERSION.dmg"
 DL="https://github.com/$REPO/releases/download/$TAG"
 
 step "1/8 preflight"
@@ -90,7 +90,7 @@ if [[ "$DRY" == 1 ]]; then
   step "dry run — remaining plan"
   cat <<EOF
   3. bump $VERSION into apps/desktop/{package.json,src-tauri/tauri.conf.json,src-tauri/Cargo.toml}
-  4. pnpm --filter @launcharr/desktop tauri build  (signed: $SIGNED; targets: app + dmg)
+  4. pnpm --filter @scuttlarr/desktop tauri build  (signed: $SIGNED; targets: app + dmg)
   5. verify (spctl), package $ZIP + $DMG + SHA256SUMS into dist/$TAG/;
      write apps/www/src/lib/release.json (ships in the release commit)
   6. manual smoke tests (fresh-profile + upgrade-path) — interactive gates
@@ -118,8 +118,8 @@ if [[ "$SIGNED" == 1 ]]; then
 else
   unset APPLE_SIGNING_IDENTITY 2>/dev/null || true
 fi
-pnpm --filter @launcharr/desktop tauri build
-APP_BUNDLE="$DESKTOP/src-tauri/target/release/bundle/macos/launcharr.app"
+pnpm --filter @scuttlarr/desktop tauri build
+APP_BUNDLE="$DESKTOP/src-tauri/target/release/bundle/macos/scuttlarr.app"
 DMG_SRC=$(ls "$DESKTOP"/src-tauri/target/release/bundle/dmg/*.dmg | head -1)
 
 step "5/8 verify, notarize, package"
@@ -168,7 +168,7 @@ jq -n --arg v "$VERSION" --arg d "$(date +%Y-%m-%d)" \
 pnpm prettier --write "$WWW/src/lib/release.json" >/dev/null
 
 step "6/8 manual smoke tests (the two things a script can't feel)"
-echo "  fresh-profile: mv ~/.config/launcharr{,.bak}; open $DIST-extracted app; first-run hint, budgets in range; restore."
+echo "  fresh-profile: mv ~/.config/scuttlarr{,.bak}; open $DIST-extracted app; first-run hint, budgets in range; restore."
 confirm "fresh-profile smoke test passed?"
 echo "  upgrade-path: install this build over the running version; config/themes/frecency/scripts all intact."
 confirm "upgrade-path smoke test passed?"
@@ -183,10 +183,10 @@ git push origin main
 
 step "8/8 GitHub release (creates the tag → triggers the fan-out workflow)"
 gh release create "$TAG" "$DIST/$ZIP" "$DIST/$DMG" "$DIST/SHA256SUMS" \
-  --repo "$REPO" --title "launcharr $TAG" --notes-file "$NOTES" \
+  --repo "$REPO" --title "scuttlarr $TAG" --notes-file "$NOTES" \
   --target "$(git rev-parse HEAD)"
 
 echo
-echo "✔ launcharr $TAG released. Fan-out (tap, Notion, deploy hook) is CI's job now:"
+echo "✔ scuttlarr $TAG released. Fan-out (tap, Notion, deploy hook) is CI's job now:"
 echo "  gh run watch --repo $REPO \$(gh run list --repo $REPO --workflow release --limit 1 --json databaseId --jq '.[0].databaseId')"
 echo "  Post-release: update docs/STATUS.md; announce (deliberate, optional)."

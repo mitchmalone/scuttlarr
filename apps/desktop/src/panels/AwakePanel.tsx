@@ -1,11 +1,11 @@
 /**
- * Awake panel, presentational half: pure props + @launcharr/tui, no tauri
+ * Awake panel, presentational half: pure props + @scuttlarr/tui, no tauri
  * imports. The copy is the feature (plans/active/awake.md): every string says
  * what the user observes, states how it ends, and carries its limitation
- * inline. The words themselves live in @launcharr/core/awake where they're
+ * inline. The words themselves live in @scuttlarr/core/awake where they're
  * shared with the grammar rows and the bar card.
  */
-import type { AwakeSpec, AwakeStatus, AwakeUntil } from '@launcharr/core/awake'
+import type { AwakeSpec, AwakeStatus, AwakeUntil } from '@scuttlarr/core/awake'
 import {
   DEFAULT_FLOOR,
   endsLabel,
@@ -14,8 +14,8 @@ import {
   formatSeconds,
   holdLabel,
   parseSpec,
-} from '@launcharr/core/awake'
-import { KeyHints, ListRow, Panel, SectionHeader } from '@launcharr/tui'
+} from '@scuttlarr/core/awake'
+import { KeyHints, ListRow, Panel, SectionHeader } from '@scuttlarr/tui'
 import { Coffee } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useEffect, useRef, useState } from 'react'

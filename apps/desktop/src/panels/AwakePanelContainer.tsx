@@ -1,5 +1,5 @@
-import type { AwakeSpec, AwakeStatus } from '@launcharr/core/awake'
-import { untilDeadline } from '@launcharr/core/awake'
+import type { AwakeSpec, AwakeStatus } from '@scuttlarr/core/awake'
+import { untilDeadline } from '@scuttlarr/core/awake'
 import { invoke } from '@tauri-apps/api/core'
 import { useCallback, useEffect, useState } from 'react'
 

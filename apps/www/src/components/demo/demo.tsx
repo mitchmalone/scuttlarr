@@ -1,6 +1,6 @@
 'use client'
 
-import { parseInput } from '@launcharr/core/grammar'
+import { parseInput } from '@scuttlarr/core/grammar'
 import {
   AskPinned,
   AskSurface,
@@ -8,7 +8,7 @@ import {
   BUILTIN_THEMES,
   themeNames,
   themeVars,
-} from '@launcharr/tui'
+} from '@scuttlarr/tui'
 import { useEffect, useRef, useState } from 'react'
 
 import { type PanelId, askAnswer } from '@/lib/demo-data'
@@ -44,7 +44,7 @@ const SAMPLES = [
  * launcher panel hanging Spotlight-style below it.
  *
  * Everything the panel decides — grammar, fuzzy matching, ranking, row shapes —
- * runs in `@launcharr/core`, and the TUI panels are the real `@launcharr/tui`
+ * runs in `@scuttlarr/core`, and the TUI panels are the real `@scuttlarr/tui`
  * components. The website supplies a fake index and fake OS data; it never
  * forks engine logic (invariant 5).
  */
@@ -54,7 +54,7 @@ export function Demo() {
   const [frecency, setFrecency] =
     useState<Record<string, number>>(SEED_FRECENCY)
   const [toast, setToast] = useState('')
-  const [themeName, setThemeName] = useState('launcharr')
+  const [themeName, setThemeName] = useState('scuttlarr')
   const [panel, setPanel] = useState<PanelId | null>(null)
   // `?` conversation as turns — the same AskSurface the app renders (invariant 10);
   // only the answers are canned.
@@ -75,7 +75,7 @@ export function Demo() {
     [],
   )
 
-  const theme = BUILTIN_THEMES[themeName] ?? BUILTIN_THEMES.launcharr!
+  const theme = BUILTIN_THEMES[themeName] ?? BUILTIN_THEMES.scuttlarr!
 
   const showToast = (message: string) => {
     setToast(message)
@@ -291,7 +291,7 @@ export function Demo() {
                     ref={inputRef}
                     spellCheck={false}
                     autoComplete="off"
-                    aria-label="launcharr demo prompt"
+                    aria-label="scuttlarr demo prompt"
                     placeholder={
                       askActive
                         ? askBusy

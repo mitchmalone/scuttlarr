@@ -1,9 +1,9 @@
 /**
  * Journal mirror (docs/PLUGINS.md reference, tick mode): every `interval`
  * seconds, rsync another machine's Codex / Claude Code journals into
- * ~/.local/share/launcharr/mirrors/<host>/{codex,claude}/ — the directories
+ * ~/.local/share/scuttlarr/mirrors/<host>/{codex,claude}/ — the directories
  * usage.rs scans by convention alongside the local ones. The network is the
- * plugin's, over the user's own ssh to their own machine; launcharr itself
+ * plugin's, over the user's own ssh to their own machine; scuttlarr itself
  * still makes no requests (invariant 2, the widgets carve-out).
  */
 import { type Outcome, jobs, rsyncArgs, view } from './model'

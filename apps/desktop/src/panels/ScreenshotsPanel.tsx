@@ -3,7 +3,7 @@
  * search prompt + a newest-first thumbnail grid. The first grid and the first
  * scrolling surface in the app — a screenshot is found by recency, not by name,
  * so "8 rows and narrow" doesn't fit; ↓ past the bottom (or scrolling there)
- * loads another page. Pure props + @launcharr/tui; the container owns invokes.
+ * loads another page. Pure props + @scuttlarr/tui; the container owns invokes.
  */
 import {
   KeyHints,
@@ -13,7 +13,7 @@ import {
   ThumbCell,
   ThumbGrid,
   useGridNav,
-} from '@launcharr/tui'
+} from '@scuttlarr/tui'
 import { Camera, Move } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 

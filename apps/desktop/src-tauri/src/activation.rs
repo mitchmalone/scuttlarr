@@ -1,13 +1,13 @@
-//! App activation. launcharr is an Accessory app and the launcher panel is
+//! App activation. scuttlarr is an Accessory app and the launcher panel is
 //! non-activating, so when a regular window (settings) is created or re-shown
-//! from the panel, launcharr is *not* the active app: tao orders the window
-//! front within launcharr but whatever app was in front stays in front and the
+//! from the panel, scuttlarr is *not* the active app: tao orders the window
+//! front within scuttlarr but whatever app was in front stays in front and the
 //! window lands behind it (Mitch, 2026-08-19). Regular windows call this after
 //! ordering front.
 
 use tauri::AppHandle;
 
-/// Make launcharr the active app, from whatever thread; a no-op if the main
+/// Make scuttlarr the active app, from whatever thread; a no-op if the main
 /// thread can't be reached.
 pub fn bring_to_front(app: &AppHandle) {
     let _ = app.run_on_main_thread(activate_on_main);

@@ -2,7 +2,7 @@ import type {
   PluginCellComponent,
   PluginManifest,
   PluginPanelComponent,
-} from '@launcharr/tui/plugins'
+} from '@scuttlarr/tui/plugins'
 
 import CalendarCell from './calendar/cell'
 import calendarManifest from './calendar/manifest.json'
@@ -15,8 +15,8 @@ import usageManifest from './usage/manifest.json'
 import UsagePanel from './usage/panel'
 
 /**
- * The plugins bundled with launcharr, keyed by id. Same contract as a plugin
- * in `~/.config/launcharr/plugins/` (docs/PLUGINS.md); the difference is that
+ * The plugins bundled with scuttlarr, keyed by id. Same contract as a plugin
+ * in `~/.config/scuttlarr/plugins/` (docs/PLUGINS.md); the difference is that
  * these are Vite-bundled with the app and take their state from a Rust
  * provider (`manifest.native`), so the app never needs Bun for its own
  * panels. plugins.rs embeds the same manifests (`FIRST_PARTY`) — keep the two

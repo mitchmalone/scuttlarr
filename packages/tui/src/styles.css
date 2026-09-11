@@ -1,4 +1,4 @@
-/* @launcharr/tui — Omarchy-inspired terminal chrome.
+/* @scuttlarr/tui — Omarchy-inspired terminal chrome.
  *
  * Theming: every color resolves through a --tui-* token, falling back to the
  * app's existing theme tokens (--bg/--surface/--border/--fg/--dim/--accent/

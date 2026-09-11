@@ -1777,33 +1777,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "launcharr"
-version = "0.6.0"
-dependencies = [
- "block2",
- "dirs 6.0.0",
- "image",
- "notify",
- "objc2",
- "objc2-app-kit",
- "objc2-foundation",
- "plist",
- "rusqlite",
- "security-framework",
- "serde",
- "serde_json",
- "sha2",
- "tauri",
- "tauri-build",
- "tauri-nspanel",
- "tauri-plugin-autostart",
- "tauri-plugin-global-shortcut",
- "thiserror 2.0.20",
- "ureq",
- "url",
-]
-
-[[package]]
 name = "libappindicator"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2873,6 +2846,33 @@ name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
+
+[[package]]
+name = "scuttlarr"
+version = "0.6.0"
+dependencies = [
+ "block2",
+ "dirs 6.0.0",
+ "image",
+ "notify",
+ "objc2",
+ "objc2-app-kit",
+ "objc2-foundation",
+ "plist",
+ "rusqlite",
+ "security-framework",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tauri",
+ "tauri-build",
+ "tauri-nspanel",
+ "tauri-plugin-autostart",
+ "tauri-plugin-global-shortcut",
+ "thiserror 2.0.20",
+ "ureq",
+ "url",
+]
 
 [[package]]
 name = "security-framework"

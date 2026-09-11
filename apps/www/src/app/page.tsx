@@ -1,5 +1,5 @@
-import { agentGlyph, agentStateLabel } from '@launcharr/tui/bar'
-import { GithubIcon, XIcon } from '@launcharr/tui/icons'
+import { agentGlyph, agentStateLabel } from '@scuttlarr/tui/bar'
+import { GithubIcon, XIcon } from '@scuttlarr/tui/icons'
 import {
   AppWindow,
   ArrowUpRight,
@@ -81,7 +81,7 @@ const FEATURES = [
     body: (
       <>
         Drop an executable in{' '}
-        <code className={MONO_CODE}>~/.config/launcharr/scripts/</code> — its
+        <code className={MONO_CODE}>~/.config/scuttlarr/scripts/</code> — its
         trigger word is live before you switch back to the panel.{' '}
         <code className={MONO_CODE}>json</code> and{' '}
         <code className={MONO_CODE}>ip</code> ship bundled.
@@ -200,7 +200,7 @@ const FEATURES = [
     title: 'The desktop layer',
     body: (
       <>
-        Tiling via AeroSpace with a config launcharr writes for you — a
+        Tiling via AeroSpace with a config scuttlarr writes for you — a
         modifier, gaps, workspaces, done. Opt-in JankyBorders in your
         theme&rsquo;s accent, and the pre-Tahoe window corners back if you want
         them. Flip <em>manage</em> off and the toml is yours.
@@ -251,7 +251,7 @@ const STATS = [
   { value: '3.7ms', label: 'measured summon — the budget is 100ms' },
   { value: '~96MB', label: 'main-process RSS while idling invisibly' },
   { value: '+19MB', label: 'marginal memory for the whole bar' },
-  { value: '0', label: 'permissions launcharr asks you to grant' },
+  { value: '0', label: 'permissions scuttlarr asks you to grant' },
 ]
 
 const BAR_MODULES = [
@@ -282,7 +282,7 @@ const BAR_MODULES = [
 ]
 
 const COMPARISON = {
-  columns: ['launcharr', 'Raycast', 'Alfred', 'Sketchybar'],
+  columns: ['scuttlarr', 'Raycast', 'Alfred', 'Sketchybar'],
   rows: [
     [
       'feels like',
@@ -345,7 +345,7 @@ export default function Home() {
         <p
           className={`m-0 max-w-[64ch] font-sans text-[19px] leading-[1.6] text-(--body) text-pretty`}
         >
-          launcharr started as an app launcher that dresses up as a shell
+          scuttlarr started as an app launcher that dresses up as a shell
           prompt. It has kept growing: a full menubar replacement in the Omarchy
           mold, keyboard-driven TUI panels, agent monitoring, and a grammar you
           extend by dropping executables in a folder. Hit{' '}
@@ -482,7 +482,7 @@ export default function Home() {
               If you run coding agents in tmux all day, the bar is their status
               board. Every session is one glyph, grouped by tmux session and
               ordered by tab. Hover a cell for the task and state; click it and
-              launcharr drops you into the exact pane.
+              scuttlarr drops you into the exact pane.
             </p>
             {/* Glyphs, labels and colours all come from the kit — `bar-agent-*`
                 is the same class the real cell wears, so this legend cannot
@@ -541,7 +541,7 @@ export default function Home() {
           </Table>
         </div>
         <p className="mt-3.5 text-[12.5px] text-(--dim2)">
-          All fine tools, and all of them do things launcharr doesn&rsquo;t.
+          All fine tools, and all of them do things scuttlarr doesn&rsquo;t.
           This table is about temperament, not superiority.
         </p>
       </section>
@@ -559,8 +559,8 @@ export default function Home() {
         <p className="mt-[18px] max-w-[74ch] font-sans text-sm leading-[1.7] text-(--muted) text-pretty">
           First run: the panel appears once with the hint line, a default config
           is written to{' '}
-          <code className={MONO_CODE}>~/.config/launcharr/config.json</code>,
-          and launcharr registers as a login item (toggleable in settings). The
+          <code className={MONO_CODE}>~/.config/scuttlarr/config.json</code>,
+          and scuttlarr registers as a login item (toggleable in settings). The
           bar is off by default — flip{' '}
           <code className={MONO_CODE}>bar.enabled</code> when you&rsquo;re ready
           to retire your menubar.
@@ -577,7 +577,7 @@ export default function Home() {
               Building in the open — v0.4 shipped, v0.5 next
             </h2>
             <p className={`m-0 ${PROSE}`}>
-              v0.4 is where launcharr became a control surface: bar, panels,
+              v0.4 is where scuttlarr became a control surface: bar, panels,
               agents, the desktop layer — all in daily use. v0.5 is the plugin
               release: a module API for the bar, multi-display, settings inside
               the panels. Explicit non-goals hold: no file search, no snippets,{' '}
@@ -613,7 +613,7 @@ export default function Home() {
               className="opacity-75 [filter:var(--logo)]"
             />
             <span className="text-[13px] text-(--dim2)">
-              launcharr {VERSION} — because the apps won&rsquo;t launch
+              scuttlarr {VERSION} — because the apps won&rsquo;t launch
               themselves. Yarr.
             </span>
           </div>

@@ -1,12 +1,12 @@
 /**
  * Clipboard panel, presentational half (Omarchy clipboard manager): search
  * prompt + history list on the left, full-text preview on the right. Pure
- * props + @launcharr/tui + the pure core matcher — the container owns invokes.
+ * props + @scuttlarr/tui + the pure core matcher — the container owns invokes.
  * Text clips only, like the underlying history (PRD §5.6).
  */
-import { fuzzyMatch } from '@launcharr/core/matcher'
-import { clipTitle } from '@launcharr/core/rows'
-import type { Clip } from '@launcharr/core/types'
+import { fuzzyMatch } from '@scuttlarr/core/matcher'
+import { clipTitle } from '@scuttlarr/core/rows'
+import type { Clip } from '@scuttlarr/core/types'
 import {
   KeyHints,
   ListRow,
@@ -14,7 +14,7 @@ import {
   TextPrompt,
   TwoPane,
   useListNav,
-} from '@launcharr/tui'
+} from '@scuttlarr/tui'
 import { ClipboardList } from 'lucide-react'
 import { useMemo, useState } from 'react'
 

@@ -1,8 +1,8 @@
 {
-  "name": "@launcharr/plugins",
+  "name": "@scuttlarr/plugins",
   "private": true,
   "type": "module",
-  "description": "launcharr's first-party plugins — the bundled cells and panels, written to the same contract third-party plugins use (docs/PLUGINS.md). The app bundles them; launcharr.com imports them.",
+  "description": "scuttlarr's first-party plugins — the bundled cells and panels, written to the same contract third-party plugins use (docs/PLUGINS.md). The app bundles them; scuttlarr.com imports them.",
   "exports": {
     ".": "./index.ts",
     "./usage/cell": "./usage/cell.tsx",
@@ -21,7 +21,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@launcharr/tui": "workspace:*",
+    "@scuttlarr/tui": "workspace:*",
     "lucide-react": "^1.30.0"
   },
   "peerDependencies": {

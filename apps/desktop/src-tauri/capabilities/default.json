@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "launcharr panel capabilities",
+  "description": "scuttlarr panel capabilities",
   "windows": ["main", "settings", "bar-*", "loupe"],
   "permissions": ["core:default"]
 }

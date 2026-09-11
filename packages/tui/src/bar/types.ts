@@ -77,7 +77,7 @@ export interface AwakeBarState {
   elapsedSeconds: number
   untilEpochMs: number | null
   batteryFloor: number | null
-  /** Serialized AwakeSpec (@launcharr/core/awake), stored verbatim by Rust. */
+  /** Serialized AwakeSpec (@scuttlarr/core/awake), stored verbatim by Rust. */
   spec: string | null
   /** Why the last session ended on its own ("deadline" | "floor"). */
   released: string | null

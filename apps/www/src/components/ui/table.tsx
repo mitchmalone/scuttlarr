@@ -3,7 +3,7 @@ import type * as React from 'react'
 import { cn } from '@/lib/utils'
 
 /**
- * shadcn's table, retuned for the launcharr palette. Wrapped in its own
+ * shadcn's table, retuned for the scuttlarr palette. Wrapped in its own
  * overflow-x container so a narrow viewport scrolls the table, never the page.
  */
 function Table({ className, ...props }: React.ComponentProps<'table'>) {

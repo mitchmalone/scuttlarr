@@ -44,13 +44,13 @@ importers:
 
   apps/desktop:
     dependencies:
-      '@launcharr/core':
+      '@scuttlarr/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@launcharr/plugins':
+      '@scuttlarr/plugins':
         specifier: workspace:*
         version: link:../../packages/plugins
-      '@launcharr/tui':
+      '@scuttlarr/tui':
         specifier: workspace:*
         version: link:../../packages/tui
       '@tauri-apps/api':
@@ -93,18 +93,18 @@ importers:
 
   apps/www:
     dependencies:
-      '@launcharr/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@launcharr/plugins':
-        specifier: workspace:*
-        version: link:../../packages/plugins
-      '@launcharr/tui':
-        specifier: workspace:*
-        version: link:../../packages/tui
       '@radix-ui/react-tabs':
         specifier: ^1.1.21
         version: 1.1.21(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@scuttlarr/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@scuttlarr/plugins':
+        specifier: workspace:*
+        version: link:../../packages/plugins
+      '@scuttlarr/tui':
+        specifier: workspace:*
+        version: link:../../packages/tui
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -167,7 +167,7 @@ importers:
 
   packages/plugins:
     dependencies:
-      '@launcharr/tui':
+      '@scuttlarr/tui':
         specifier: workspace:*
         version: link:../tui
       lucide-react:
@@ -195,7 +195,7 @@ importers:
 
   packages/tui:
     dependencies:
-      '@launcharr/core':
+      '@scuttlarr/core':
         specifier: workspace:*
         version: link:../core
       lucide-react:

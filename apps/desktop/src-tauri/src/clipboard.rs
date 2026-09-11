@@ -65,7 +65,7 @@ pub fn clear(conn: &Connection) -> CmdResult<()> {
     Ok(())
 }
 
-/// Put text on the general pasteboard (the whole of "paste" launcharr is allowed to do —
+/// Put text on the general pasteboard (the whole of "paste" scuttlarr is allowed to do —
 /// auto-⌘V would need Accessibility, which the PRD bans).
 pub fn set_string(text: &str) {
     use objc2_app_kit::{NSPasteboard, NSPasteboardTypeString};
@@ -104,7 +104,7 @@ fn read_if_recordable() -> Option<String> {
     })
 }
 
-/// Watch the pasteboard by changeCount. launcharr's own writes are recorded too, on
+/// Watch the pasteboard by changeCount. scuttlarr's own writes are recorded too, on
 /// purpose: re-copying from history bumps the item to the top via `record`'s dedupe.
 pub fn watch(app: AppHandle) {
     std::thread::spawn(move || {
@@ -121,7 +121,7 @@ pub fn watch(app: AppHandle) {
                 let state = app.state::<crate::AppState>();
                 let db = state.db.lock().unwrap();
                 if let Err(e) = record(&db, &text, crate::frecency::now_secs()) {
-                    eprintln!("[launcharr] clip record failed: {e}");
+                    eprintln!("[scuttlarr] clip record failed: {e}");
                 }
             }
         }

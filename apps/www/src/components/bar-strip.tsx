@@ -1,7 +1,7 @@
 'use client'
 
-import UpdatesCell from '@launcharr/plugins/updates/cell'
-import UsageCell from '@launcharr/plugins/usage/cell'
+import UpdatesCell from '@scuttlarr/plugins/updates/cell'
+import UsageCell from '@scuttlarr/plugins/usage/cell'
 import {
   Bar,
   BarAgents,
@@ -10,8 +10,8 @@ import {
   BarFrontApp,
   BarWifiCell,
   BarWorkspaces,
-} from '@launcharr/tui'
-import { NOOP_HOST, type PluginCellComponent } from '@launcharr/tui/plugins'
+} from '@scuttlarr/tui'
+import { NOOP_HOST, type PluginCellComponent } from '@scuttlarr/tui/plugins'
 import { useMemo, useState } from 'react'
 
 import { useWebBarHover } from '@/components/demo/bar-hover'
@@ -27,7 +27,7 @@ const PLUGIN_CELLS: Record<string, PluginCellComponent<never>> = {
 
 /**
  * A still of the bar for the explainer section — the real components from
- * `@launcharr/tui`, frozen at a fixed clock so it reads like a screenshot.
+ * `@scuttlarr/tui`, frozen at a fixed clock so it reads like a screenshot.
  * The website owns no bar markup (AGENTS invariant 10).
  */
 export function BarStrip() {

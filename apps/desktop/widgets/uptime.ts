@@ -1,13 +1,13 @@
-// launcharr widget: Upptime status of your sites (docs/WIDGETS.md).
+// scuttlarr widget: Upptime status of your sites (docs/WIDGETS.md).
 //
 // Reads an Upptime `summary.json` (a public array of {name, url, status, time})
 // and paints an up/down arrow with the count of sites that are down. The card
 // lists every site with a dot; a row opens the site, the cell opens the status
 // page. Point UPTIME_SUMMARY_URL / UPTIME_STATUS_URL at your own.
 //
-// Install: copy into ~/.config/launcharr/widgets/ (or Settings → Menubar →
+// Install: copy into ~/.config/scuttlarr/widgets/ (or Settings → Menubar →
 // Custom widgets → add file). Runs under Bun; the type import is erased.
-import type { WidgetView } from '@launcharr/tui/bar/types'
+import type { WidgetView } from '@scuttlarr/tui/bar/types'
 
 const SUMMARY_URL =
   process.env.UPTIME_SUMMARY_URL ??
@@ -65,7 +65,7 @@ export function view(sites: UpptimeSite[]): WidgetView {
 
 async function tick(): Promise<WidgetView> {
   const res = await fetch(SUMMARY_URL, {
-    headers: { 'User-Agent': 'launcharr-widget' },
+    headers: { 'User-Agent': 'scuttlarr-widget' },
     signal: AbortSignal.timeout(8000),
   })
   if (!res.ok) throw new Error(`summary.json ${res.status}`)

@@ -5,7 +5,7 @@ import {
   holdLabel,
   needsWatching,
   parseSpec,
-} from '@launcharr/core/awake'
+} from '@scuttlarr/core/awake'
 import {
   Bar,
   BarAgents,
@@ -22,9 +22,9 @@ import {
   type WidgetAction,
   type WifiDetail,
   formatBarClock,
-} from '@launcharr/tui'
-import '@launcharr/tui/bar.css'
-import { pluginIdOf } from '@launcharr/tui/plugins'
+} from '@scuttlarr/tui'
+import '@scuttlarr/tui/bar.css'
+import { pluginIdOf } from '@scuttlarr/tui/plugins'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { useEffect, useRef, useState } from 'react'
@@ -46,10 +46,10 @@ import './bar.css'
 import { useBarHover } from './hover'
 
 /**
- * The bar window: a thin container around `@launcharr/tui`'s bar components.
+ * The bar window: a thin container around `@scuttlarr/tui`'s bar components.
  *
  * Everything visual — the strip, cells, cards, CSS — lives in the kit, because
- * launcharr.com renders the same bar and the website may never hold a second
+ * scuttlarr.com renders the same bar and the website may never hold a second
  * copy (AGENTS invariant 10). What stays here is everything the kit must not
  * know about: Rust snapshot delivery, `invoke` calls, `window.__notched`, and
  * config-driven zone resolution.

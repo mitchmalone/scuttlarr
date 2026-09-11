@@ -14,15 +14,15 @@ describe('resolveTheme', () => {
     expect(resolveTheme('terminal', {})).toEqual(BUILTIN_THEMES.terminal)
   })
 
-  it('falls back to the launcharr theme for unknown names', () => {
-    expect(resolveTheme('nope', {})).toEqual(BUILTIN_THEMES.launcharr)
-    expect(resolveTheme('', undefined)).toEqual(BUILTIN_THEMES.launcharr)
+  it('falls back to the scuttlarr theme for unknown names', () => {
+    expect(resolveTheme('nope', {})).toEqual(BUILTIN_THEMES.scuttlarr)
+    expect(resolveTheme('', undefined)).toEqual(BUILTIN_THEMES.scuttlarr)
   })
 
-  it('custom themes overlay the launcharr defaults', () => {
+  it('custom themes overlay the scuttlarr defaults', () => {
     const custom = resolveTheme('mine', { mine: { accent: '#ff0000' } })
     expect(custom.accent).toBe('#ff0000')
-    expect(custom.bg).toBe(BUILTIN_THEMES.launcharr!.bg)
+    expect(custom.bg).toBe(BUILTIN_THEMES.scuttlarr!.bg)
   })
 
   it('a custom entry named after a built-in overlays that built-in', () => {
@@ -44,7 +44,7 @@ describe('themeNames', () => {
 
   it('ships the full built-in roster', () => {
     for (const name of [
-      'launcharr',
+      'scuttlarr',
       'dracula',
       'terminal',
       'amber',
@@ -75,13 +75,13 @@ describe('isLightColor', () => {
 
 describe('themeVars', () => {
   it('maps panel vars with the translucent glass background', () => {
-    const vars = themeVars(BUILTIN_THEMES.launcharr!, 'panel')
-    expect(vars['--bg']).toBe(BUILTIN_THEMES.launcharr!.glass)
-    expect(vars['--sigil']).toBe(BUILTIN_THEMES.launcharr!.sigil)
-    expect(vars['--selected']).toBe(BUILTIN_THEMES.launcharr!.selected)
+    const vars = themeVars(BUILTIN_THEMES.scuttlarr!, 'panel')
+    expect(vars['--bg']).toBe(BUILTIN_THEMES.scuttlarr!.glass)
+    expect(vars['--sigil']).toBe(BUILTIN_THEMES.scuttlarr!.sigil)
+    expect(vars['--selected']).toBe(BUILTIN_THEMES.scuttlarr!.selected)
     // The bar is a panel-kind window and its alert tiers reach for these.
-    expect(vars['--warn']).toBe(BUILTIN_THEMES.launcharr!.warn)
-    expect(vars['--danger']).toBe(BUILTIN_THEMES.launcharr!.danger)
+    expect(vars['--warn']).toBe(BUILTIN_THEMES.scuttlarr!.warn)
+    expect(vars['--danger']).toBe(BUILTIN_THEMES.scuttlarr!.danger)
   })
 
   it('maps settings vars with the opaque background and surface', () => {
@@ -96,5 +96,13 @@ describe('themeVars', () => {
     expect(vars['--check']).toContain(
       encodeURIComponent(BUILTIN_THEMES['solarized-light']!.fg),
     )
+  })
+
+  it("resolves the pre-rename default name 'launcharr' to the scuttlarr theme", () => {
+    expect(resolveTheme('launcharr', undefined)).toBe(BUILTIN_THEMES.scuttlarr)
+    // A user theme that happens to be named launcharr still wins.
+    expect(
+      resolveTheme('launcharr', { launcharr: { accent: '#123456' } }).accent,
+    ).toBe('#123456')
   })
 })

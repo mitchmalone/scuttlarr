@@ -5,7 +5,7 @@ import { SEED_FRECENCY } from './launch-index'
 
 /**
  * Adapter tests only: engine behavior (matching, ranking, grammar) is tested in
- * @launcharr/core — these cover the core-row → demo-row translation.
+ * @scuttlarr/core — these cover the core-row → demo-row translation.
  */
 describe('computeDemoRows', () => {
   it('returns no rows for an empty query', () => {

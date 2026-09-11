@@ -1,5 +1,5 @@
 /* The bar *window*'s own chrome. Everything that styles the strip itself lives
- * in @launcharr/tui/bar.css — one copy, shared with the website (invariant 10).
+ * in @scuttlarr/tui/bar.css — one copy, shared with the website (invariant 10).
  * These rules are window-specific and deliberately do NOT travel: a page that
  * imported them would get a locked-height, unscrollable, unselectable body. */
 

@@ -15,7 +15,7 @@ use crate::settings_panes;
 pub enum ItemKind {
     App,
     Settings,
-    Launcharr,
+    Scuttlarr,
     Link,
     Command,
 }
@@ -23,7 +23,7 @@ pub enum ItemKind {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IndexItem {
-    /// Stable identity: app bundle path, `settings:<pane-id>`, or `launcharr:<action>`.
+    /// Stable identity: app bundle path, `settings:<pane-id>`, or `scuttlarr:<action>`.
     pub id: String,
     pub name: String,
     pub kind: ItemKind,
@@ -122,14 +122,14 @@ pub fn scan(links: &[crate::config::Link], include_bookmarks: bool) -> Vec<Index
         items.dedup_by(|a, b| a.id == b.id);
     }
 
-    // launcharr self-indexes (PRD §4.5): the prompt is the preferences UI.
+    // scuttlarr self-indexes (PRD §4.5): the prompt is the preferences UI.
     for (action, name, alias) in [
         (
             "settings",
-            "launcharr — Settings",
+            "scuttlarr — Settings",
             "settings preferences options",
         ),
-        ("reindex", "launcharr — Reindex apps", "reindex"),
+        ("reindex", "scuttlarr — Reindex apps", "reindex"),
         (
             "colorpicker",
             "Color Picker",
@@ -137,17 +137,17 @@ pub fn scan(links: &[crate::config::Link], include_bookmarks: bool) -> Vec<Index
         ),
         (
             "config",
-            "launcharr — Open config",
+            "scuttlarr — Open config",
             "config settings preferences",
         ),
-        ("quit", "launcharr — Quit", "quit exit"),
+        ("quit", "scuttlarr — Quit", "quit exit"),
     ] {
         items.push(IndexItem {
-            id: format!("launcharr:{action}"),
+            id: format!("scuttlarr:{action}"),
             name: name.into(),
-            kind: ItemKind::Launcharr,
+            kind: ItemKind::Scuttlarr,
             path: String::new(),
-            hint: "launcharr".into(),
+            hint: "scuttlarr".into(),
             icon: None,
             aliases: alias.split(' ').map(String::from).collect(),
             browser: None,
@@ -212,7 +212,7 @@ pub fn start(app: AppHandle) {
         let mut watcher = match notify::recommended_watcher(tx) {
             Ok(w) => w,
             Err(e) => {
-                eprintln!("[launcharr] app watcher failed: {e}");
+                eprintln!("[scuttlarr] app watcher failed: {e}");
                 return;
             }
         };
@@ -249,7 +249,7 @@ mod tests {
         assert!(items
             .iter()
             .any(|i| i.name == "Bluetooth" && i.kind == ItemKind::Settings));
-        assert!(items.iter().any(|i| i.id == "launcharr:quit"));
+        assert!(items.iter().any(|i| i.id == "scuttlarr:quit"));
     }
 
     #[test]

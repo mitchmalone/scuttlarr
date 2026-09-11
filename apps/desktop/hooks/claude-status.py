@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
-"""Claude Code hook adapter for launcharr's agent monitor (agents.rs).
+"""Claude Code hook adapter for scuttlarr's agent monitor (agents.rs).
 
 Claude supplies hook JSON on stdin; this maps the lifecycle event to an agent
-state and emits one JSON line to launcharr's agents socket. It degrades
-safely: malformed payloads and a missing socket (launcharr not running) both
+state and emits one JSON line to scuttlarr's agents socket. It degrades
+safely: malformed payloads and a missing socket (scuttlarr not running) both
 exit 0 — a status widget must never break the agent it watches.
 
 Inside a herdr pane it does the opposite: herdr already owns that pane's agent
-state and launcharr reads it from there, so the hook enriches herdr's record
+state and scuttlarr reads it from there, so the hook enriches herdr's record
 with the user's prompt instead of emitting a second, competing cell.
 
-Install: launcharr owns this. The bundled copy is written to
-~/.config/launcharr/hooks/claude-status.py and registered for every event
+Install: scuttlarr owns this. The bundled copy is written to
+~/.config/scuttlarr/hooks/claude-status.py and registered for every event
 (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, PermissionRequest,
 Notification, Stop, SessionEnd, SubagentStart, SubagentStop) in each Claude
 config dir's settings.json from Settings → Agents (hooks.rs). Point hooks at
-the installed path, never at a checkout — launcharr repairs stale paths on
+the installed path, never at a checkout — scuttlarr repairs stale paths on
 launch, but only ones it recognises.
 """
 
@@ -43,7 +43,7 @@ STATES = {
 
 # Claude Code's background daemon (`claude daemon run` → `--bg-pty-host` →
 # `bg-spare` / pty sessions) runs these hooks too, with TMUX_PANE scrubbed. It
-# is plumbing, not an agent: launcharr shows a background session only once it
+# is plumbing, not an agent: scuttlarr shows a background session only once it
 # is actually driven (first prompt), so we mark rather than drop (agents.rs).
 BACKGROUND_MARKERS = ("daemon run", "--bg-pty-host", "bg-spare")
 
@@ -55,15 +55,15 @@ PASSTHROUGH = {"sh", "bash", "zsh", "dash", "fish", "ksh", "csh", "tcsh", "env",
 
 
 def agent_pid() -> int:
-    """The pid launcharr should watch for liveness.
+    """The pid scuttlarr should watch for liveness.
 
-    launcharr reaps a session when this process is gone (agents.rs), which is
+    scuttlarr reaps a session when this process is gone (agents.rs), which is
     how an agent that dies without firing SessionEnd — closed window, killed
     pane, crash — stops haunting the bar. Adapters that know their own pid can
     say so outright; otherwise walk up the parent chain past the shells the
     hook was spawned through and take the first real process.
     """
-    override = os.environ.get("LAUNCHARR_AGENT_PID", "").strip()
+    override = os.environ.get("SCUTTLARR_AGENT_PID", "").strip()
     if override.isdigit():
         return int(override)
     pid = os.getppid()
@@ -113,13 +113,13 @@ def background_ancestry() -> bool:
 
 def socket_path() -> str:
     state_home = os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state")
-    return os.path.join(state_home, "launcharr", "agents.sock")
+    return os.path.join(state_home, "scuttlarr", "agents.sock")
 
 
 def send_line(path: str, line: str) -> None:
     """One newline-JSON line to a unix socket, failing silently.
 
-    Both launcharr and herdr speak this; a status widget must never break the
+    Both scuttlarr and herdr speak this; a status widget must never break the
     agent it watches, so an absent socket is a no-op, not an error.
     """
     try:
@@ -134,7 +134,7 @@ def send_line(path: str, line: str) -> None:
 def report_to_herdr(pane: str, title: str, detail: str) -> None:
     """Inside a herdr pane, herdr owns the cell — we only enrich it.
 
-    herdr classifies agent state itself and launcharr reads that (herdr.rs), so
+    herdr classifies agent state itself and scuttlarr reads that (herdr.rs), so
     emitting our own event too would put two cells on the bar for one pane.
     Instead we hand herdr the thing it can't know: the user's actual prompt.
     `pane.report_metadata` is presentation-only by design — it cannot take
@@ -150,11 +150,11 @@ def report_to_herdr(pane: str, title: str, detail: str) -> None:
         path,
         json.dumps(
             {
-                "id": "launcharr-claude-title",
+                "id": "scuttlarr-claude-title",
                 "method": "pane.report_metadata",
                 "params": {
                     "pane_id": pane,
-                    "source": "user:launcharr-claude",
+                    "source": "user:scuttlarr-claude",
                     "agent": "claude",
                     "title": title[:100],
                     "detail": detail[:100],

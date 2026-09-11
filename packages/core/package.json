@@ -1,8 +1,8 @@
 {
-  "name": "@launcharr/core",
+  "name": "@scuttlarr/core",
   "private": true,
   "type": "module",
-  "description": "The shared launcharr engine — grammar, fuzzy matcher, ranking, rows. Pure TypeScript, no I/O.",
+  "description": "The shared scuttlarr engine — grammar, fuzzy matcher, ranking, rows. Pure TypeScript, no I/O.",
   "exports": {
     "./*": "./src/*.ts"
   },

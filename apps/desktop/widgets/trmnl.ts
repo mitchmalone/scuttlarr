@@ -1,4 +1,4 @@
-// launcharr widget: TRMNL e-ink device battery (docs/WIDGETS.md).
+// scuttlarr widget: TRMNL e-ink device battery (docs/WIDGETS.md).
 //
 // Polls https://trmnl.com/api/devices with your account API key and paints a
 // tablet glyph toned by the lowest device battery (blue > 40 %, amber ≤ 40 %,
@@ -6,12 +6,12 @@
 // battery cell). The card lists every device with charge, voltage and last ping.
 //
 // The key comes from TRMNL_API_KEY, else from the `secret` helper
-// (`secret shared/trmnl/api_key`) — launcharr never sees or stores it; the
+// (`secret shared/trmnl/api_key`) — scuttlarr never sees or stores it; the
 // widget is inert without one: `{"hidden": true}`, no cell, no request
 // (DECISIONS 2026-08-16).
 //
-// Install: copy into ~/.config/launcharr/widgets/. Runs under Bun.
-import type { WidgetTone, WidgetView } from '@launcharr/tui/bar/types'
+// Install: copy into ~/.config/scuttlarr/widgets/. Runs under Bun.
+import type { WidgetTone, WidgetView } from '@scuttlarr/tui/bar/types'
 import { spawnSync } from 'node:child_process'
 
 const DEVICES_URL = process.env.TRMNL_API_URL ?? 'https://trmnl.com/api/devices'
@@ -116,7 +116,7 @@ async function tick(): Promise<WidgetView> {
   const res = await fetch(DEVICES_URL, {
     headers: {
       Authorization: `Bearer ${key}`,
-      'User-Agent': 'launcharr-widget',
+      'User-Agent': 'scuttlarr-widget',
     },
     signal: AbortSignal.timeout(10000),
   })

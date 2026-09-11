@@ -1,4 +1,4 @@
-//! External desktop-layer tools launcharr drives but never ships: AeroSpace
+//! External desktop-layer tools scuttlarr drives but never ships: AeroSpace
 //! (tiling; a Homebrew cask dependency of ours), JankyBorders (opt-in Homebrew
 //! formula — GPL-3, never vendored, DECISIONS 2026-08-17) and Homebrew itself,
 //! through which the Settings → Desktop rows install them. Pure detection here;
@@ -206,6 +206,6 @@ mod tests {
     #[test]
     fn locate_finds_a_system_binary_and_not_nonsense() {
         assert!(locate("ls").is_some());
-        assert!(locate("definitely-not-a-binary-launcharr").is_none());
+        assert!(locate("definitely-not-a-binary-scuttlarr").is_none());
     }
 }

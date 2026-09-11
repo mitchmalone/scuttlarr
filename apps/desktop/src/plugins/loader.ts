@@ -3,12 +3,12 @@
  *
  * Rust builds each plugin with `bun build --external <shared>` (plugins.rs),
  * so the output still says `import { useState } from "react"` and
- * `import { BarCell } from "@launcharr/tui"`. Those must resolve to the
+ * `import { BarCell } from "@scuttlarr/tui"`. Those must resolve to the
  * *app's* React and kit — a second React instance breaks hooks; a second kit
  * breaks theming — and a Vite-bundled app has no bare `react` to offer. So:
  *
  * 1. the app registers its own module namespaces under
- *    `globalThis.__launcharrShared` (`registerShared`),
+ *    `globalThis.__scuttlarrShared` (`registerShared`),
  * 2. each shared name gets a tiny generated ESM shim that re-exports from
  *    that global, served as a blob: URL,
  * 3. the plugin's source has its shared specifiers rewritten to those blob
@@ -20,29 +20,29 @@
  */
 
 declare global {
-  var __launcharrShared: Record<string, object> | undefined
+  var __scuttlarrShared: Record<string, object> | undefined
 }
 
 const IDENT = /^[A-Za-z_$][\w$]*$/
 
 /** Make the app's module namespaces reachable from generated shims. */
 export function registerShared(modules: Record<string, object>) {
-  globalThis.__launcharrShared = {
-    ...(globalThis.__launcharrShared ?? {}),
+  globalThis.__scuttlarrShared = {
+    ...(globalThis.__scuttlarrShared ?? {}),
     ...modules,
   }
 }
 
 /**
- * An ESM module that re-exports `globalThis.__launcharrShared[name]` under
+ * An ESM module that re-exports `globalThis.__scuttlarrShared[name]` under
  * every export name the real module has — static `export const` per name, as
  * ESM demands, generated from the namespace at run time.
  */
 export function shimSource(name: string, exportNames: string[]): string {
   const key = JSON.stringify(name)
   const lines = [
-    `const m = globalThis.__launcharrShared?.[${key}];`,
-    `if (!m) throw new Error("launcharr: shared module " + ${key} + " is not registered");`,
+    `const m = globalThis.__scuttlarrShared?.[${key}];`,
+    `if (!m) throw new Error("scuttlarr: shared module " + ${key} + " is not registered");`,
     `export default ("default" in m ? m.default : m);`,
   ]
   for (const n of exportNames) {
@@ -75,7 +75,7 @@ const shimUrls = new Map<string, string>()
 function shimUrl(name: string): string | undefined {
   const cached = shimUrls.get(name)
   if (cached) return cached
-  const mod = globalThis.__launcharrShared?.[name]
+  const mod = globalThis.__scuttlarrShared?.[name]
   if (!mod) return undefined
   const url = URL.createObjectURL(
     new Blob([shimSource(name, Object.keys(mod))], {

@@ -1,5 +1,5 @@
-import type { BarWidget } from '@launcharr/tui'
-import type { PluginPermission, PluginState } from '@launcharr/tui/plugins'
+import type { BarWidget } from '@scuttlarr/tui'
+import type { PluginPermission, PluginState } from '@scuttlarr/tui/plugins'
 import { invoke } from '@tauri-apps/api/core'
 import { useState } from 'react'
 
@@ -62,8 +62,8 @@ export function PluginsSection({
     <section className="row-full">
       <div className="zonehead">Plugins</div>
       <p className="hint">
-        Directories in <code>~/.config/launcharr/plugins/</code>: a manifest, a
-        Bun service, and a cell and panel written in React on the launcharr kit.
+        Directories in <code>~/.config/scuttlarr/plugins/</code>: a manifest, a
+        Bun service, and a cell and panel written in React on the scuttlarr kit.
         Bundled ones ship with the app. Contract and reference plugins:
         docs/PLUGINS.md.
       </p>
@@ -126,7 +126,7 @@ export function PluginsSection({
         <input
           type="text"
           className="grow"
-          placeholder="https://github.com/…/launcharr-plugin.git — install from git"
+          placeholder="https://github.com/…/scuttlarr-plugin.git — install from git"
           value={url}
           disabled={busy}
           onChange={(e) => setUrl(e.target.value)}

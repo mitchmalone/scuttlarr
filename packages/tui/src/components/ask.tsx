@@ -1,4 +1,4 @@
-import { type Span, parseMarkdownLite } from '@launcharr/core/markdown'
+import { type Span, parseMarkdownLite } from '@scuttlarr/core/markdown'
 import { type ReactNode, useEffect, useState } from 'react'
 
 /**

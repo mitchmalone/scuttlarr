@@ -1,5 +1,5 @@
 //! Keep-awake power assertions for `awake ⏎` — held in-process, never by
-//! spawning `caffeinate`, so they carry launcharr's name in `pmset -g
+//! spawning `caffeinate`, so they carry scuttlarr's name in `pmset -g
 //! assertions`, are introspectable, and vanish on release, quit, or crash
 //! (assertions are per-process kernel state; the OS reaps them with us).
 //!
@@ -84,7 +84,7 @@ impl Assertion {
     fn create(kind: Kind) -> Option<Assertion> {
         // NUL-free by construction: both strings are ASCII literals.
         let raw_type = std::ffi::CString::new(kind.raw()).ok()?;
-        let raw_name = std::ffi::CString::new("launcharr").ok()?;
+        let raw_name = std::ffi::CString::new("scuttlarr").ok()?;
         // SAFETY: CFStringCreateWithCString copies the bytes of a valid
         // NUL-terminated C string; we own the returned CFStrings and release
         // them below on every path. IOPMAssertionCreateWithName only reads
@@ -280,7 +280,7 @@ fn persisted_path() -> std::path::PathBuf {
         .map(std::path::PathBuf::from)
         .filter(|p| p.is_absolute())
         .unwrap_or_else(|| dirs::home_dir().unwrap_or_default().join(".local/state"))
-        .join("launcharr")
+        .join("scuttlarr")
         .join("awake.json")
 }
 
@@ -453,7 +453,7 @@ fn start_watchdog() {
 }
 
 /// The session as every surface sees it (bar snapshot, panel, hover card).
-/// Cheap: in-memory reads only. Mirrored by `AwakeState` in @launcharr/core.
+/// Cheap: in-memory reads only. Mirrored by `AwakeState` in @scuttlarr/core.
 #[derive(Debug, Clone, Default, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AwakeState {
@@ -681,7 +681,7 @@ Listed by owning process:
    pid 3627(caffeinate): [0x0000123400098766] 04:12:10 PreventUserIdleSystemSleep named: "CAFFEINATE COMMAND-LINE TOOL"
    pid 500(Music): [0x0000567800012345] 00:22:33 PreventUserIdleSystemSleep named: "com.apple.Music.playback"
         Timeout will fire in 600 secs Action=TimeoutActionRelease
-   pid 999(launcharr): [0x0000999900012345] 00:01:00 PreventUserIdleSystemSleep named: "launcharr"
+   pid 999(scuttlarr): [0x0000999900012345] 00:01:00 PreventUserIdleSystemSleep named: "scuttlarr"
 
 Kernel Assertions: 0x100=MAGICWAKE
    id=502  level=255 0x100=MAGICWAKE mod=16/08/26, 9:01 description=en0 owner=en0
@@ -709,9 +709,9 @@ Kernel Assertions: 0x100=MAGICWAKE
 
     #[test]
     fn own_pid_is_listed_for_other_processes() {
-        // Same fixture read from a different pid: launcharr's hold shows.
+        // Same fixture read from a different pid: scuttlarr's hold shows.
         let list = parse_assertions(PMSET, 42);
-        assert!(list.iter().any(|h| h.app == "launcharr"));
+        assert!(list.iter().any(|h| h.app == "scuttlarr"));
     }
 
     #[test]
@@ -744,7 +744,7 @@ Kernel Assertions: 0x100=MAGICWAKE
 
     pub(super) fn serial() -> std::sync::MutexGuard<'static, ()> {
         let guard = TEST_LOCK.lock().unwrap();
-        let dir = std::env::temp_dir().join(format!("launcharr-awake-test-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("scuttlarr-awake-test-{}", std::process::id()));
         let _ = std::fs::create_dir_all(&dir);
         *PERSIST_DIR.lock().unwrap() = Some(dir);
         guard

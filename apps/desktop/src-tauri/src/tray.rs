@@ -18,7 +18,7 @@ pub fn init(app: &AppHandle) -> CmdResult<()> {
     let reindex =
         MenuItem::with_id(app, "reindex", "Reindex apps", true, None::<&str>).map_err(tray_err)?;
     let quit =
-        MenuItem::with_id(app, "quit", "Quit launcharr", true, None::<&str>).map_err(tray_err)?;
+        MenuItem::with_id(app, "quit", "Quit scuttlarr", true, None::<&str>).map_err(tray_err)?;
 
     let menu = MenuBuilder::new(app)
         .item(&summon)

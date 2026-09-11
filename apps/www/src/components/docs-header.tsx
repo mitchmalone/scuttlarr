@@ -1,4 +1,4 @@
-import { GithubIcon } from '@launcharr/tui/icons'
+import { GithubIcon } from '@scuttlarr/tui/icons'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -20,7 +20,7 @@ export function DocsHeader() {
         <Link
           href="/"
           className="flex items-center gap-3 hover:no-underline"
-          aria-label="launcharr home"
+          aria-label="scuttlarr home"
         >
           <Image
             src="/menubar-icon.png"
@@ -30,7 +30,7 @@ export function DocsHeader() {
             className="[filter:var(--logo)]"
           />
           <span className="text-base font-bold tracking-[-0.01em] text-(--fg)">
-            launcharr
+            scuttlarr
           </span>
         </Link>
         <span className="text-[13px] text-(--dim)">/ docs</span>

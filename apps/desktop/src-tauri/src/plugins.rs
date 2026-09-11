@@ -1,4 +1,4 @@
-//! Plugins: directories in `~/.config/launcharr/plugins/<id>/` (docs/PLUGINS.md)
+//! Plugins: directories in `~/.config/scuttlarr/plugins/<id>/` (docs/PLUGINS.md)
 //! and the first-party set bundled with the app (`packages/plugins/`). A plugin
 //! is `manifest.json` plus, optionally:
 //!
@@ -8,13 +8,13 @@
 //!   `host.send()` messages as JSON lines. Tick mode (`interval` set): run as
 //!   `service.ts tick` every N seconds, stdout = one JSON state — the
 //!   docs/WIDGETS.md contract, so a tick widget is a plugin without UI files.
-//! - `cell.tsx` / `panel.tsx` — its UI, React on `@launcharr/tui`, built with
-//!   `bun build` on install/change into `~/.config/launcharr/.build/<id>/` and
+//! - `cell.tsx` / `panel.tsx` — its UI, React on `@scuttlarr/tui`, built with
+//!   `bun build` on install/change into `~/.config/scuttlarr/.build/<id>/` and
 //!   imported by the webview (src/plugins/loader.ts). Absent → the generic
 //!   widget cell/card render the state (when it has the `WidgetView` shape).
 //!
 //! First-party plugins ship their UI statically (Vite bundles
-//! `@launcharr/plugins`) and take their state from a Rust provider named by
+//! `@scuttlarr/plugins`) and take their state from a Rust provider named by
 //! the manifest's `native` field — usage.rs is one — so the app never depends
 //! on Bun for its own panels. Third-party plugins never get `native`.
 //!
@@ -45,7 +45,7 @@ use crate::widgets::{WidgetAuth, WidgetRequire, WidgetSetting};
 // ---- the contract ------------------------------------------------------
 
 /// `panel` in a manifest: how the plugin's `panel.tsx` joins the launcher —
-/// mirrored by `PluginPanelMeta` in @launcharr/tui.
+/// mirrored by `PluginPanelMeta` in @scuttlarr/tui.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PanelMeta {
@@ -63,7 +63,7 @@ pub struct PanelMeta {
     pub aliases: Vec<String>,
 }
 
-/// `manifest.json` — mirrored by `PluginManifest` in @launcharr/tui.
+/// `manifest.json` — mirrored by `PluginManifest` in @scuttlarr/tui.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PluginManifest {
@@ -140,12 +140,12 @@ pub const SHARED_MODULES: [&str; 6] = [
     "react/jsx-runtime",
     "react/jsx-dev-runtime",
     "react-dom",
-    "@launcharr/tui",
+    "@scuttlarr/tui",
     "lucide-react",
 ];
 
 /// A plugin as the bar, launcher, and settings see it — mirrored by
-/// `PluginState` in @launcharr/tui.
+/// `PluginState` in @scuttlarr/tui.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PluginState {
@@ -817,7 +817,7 @@ fn supervise(app: AppHandle, id: String, generation: u64) {
         };
         let (env, mut needs) = crate::widgets::settings_for(&app, &id, &settings);
         // Permissions: ask now for anything macOS has not decided (one
-        // predictable prompt, in launcharr's name, before the service exists),
+        // predictable prompt, in scuttlarr's name, before the service exists),
         // and do not run while one is denied or this bundle cannot ask —
         // the service would be killed with no prompt (JOURNAL 2026-09-10).
         for p in &declared {
@@ -942,7 +942,7 @@ fn run_stream(
     for (k, v) in env {
         cmd.env(k, v);
     }
-    cmd.env("LAUNCHARR_PLUGIN", id);
+    cmd.env("SCUTTLARR_PLUGIN", id);
     if let Some(dir) = service.parent() {
         cmd.current_dir(dir);
     }
@@ -1247,7 +1247,7 @@ fn tick(
             for (k, v) in &env {
                 cmd.env(k, v);
             }
-            cmd.env("LAUNCHARR_PLUGIN", &id);
+            cmd.env("SCUTTLARR_PLUGIN", &id);
             if let Some(dir) = service.parent() {
                 cmd.current_dir(dir);
             }
@@ -1324,7 +1324,7 @@ pub fn permission_fix(id: &str, name: &str) -> Result<String, String> {
             )
         }
         Status::MissingUsageString => return Err(
-            "this launcharr build cannot ask — rebuild from a source that ships the usage string"
+            "this scuttlarr build cannot ask — rebuild from a source that ships the usage string"
                 .into(),
         ),
     };
@@ -1418,7 +1418,7 @@ pub fn remove(id: &str) -> Result<(), String> {
             .find(|e| e.state.id == id)
             .ok_or_else(|| format!("no plugin {id}"))?;
         if e.state.first_party {
-            return Err(format!("{id} ships with launcharr — disable it instead"));
+            return Err(format!("{id} ships with scuttlarr — disable it instead"));
         }
         e.dir.clone()
     };
@@ -1568,7 +1568,7 @@ mod tests {
 
     #[test]
     fn find_entry_prefers_listed_extensions() {
-        let dir = std::env::temp_dir().join(format!("launcharr-plugins-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("scuttlarr-plugins-{}", std::process::id()));
         let _ = fs::create_dir_all(&dir);
         fs::write(dir.join("cell.tsx"), "").unwrap();
         assert_eq!(

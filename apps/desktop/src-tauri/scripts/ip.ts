@@ -1,9 +1,9 @@
-// launcharr script: show local IP addresses (zero-network: no external lookups).
+// scuttlarr script: show local IP addresses (zero-network: no external lookups).
 // Yours to edit. Runs under Bun (docs/SCRIPTS.md); `ip ⏎` in the launcher.
 //
 // The type import is erased at run time — it's there so an editor in the repo
-// (or one that resolves @launcharr/core) checks the contract for you.
-import type { ScriptItem } from '@launcharr/core/types'
+// (or one that resolves @scuttlarr/core) checks the contract for you.
+import type { ScriptItem } from '@scuttlarr/core/types'
 import { execFileSync } from 'node:child_process'
 
 const INTERFACES = ['en0', 'en1', 'en2', 'utun0']

@@ -29,7 +29,7 @@ pub fn open_tab(app: &AppHandle, tab: Option<&str>) -> CmdResult<()> {
         None => "settings.html".to_owned(),
     };
     WebviewWindowBuilder::new(app, "settings", WebviewUrl::App(url.into()))
-        .title("launcharr settings")
+        .title("scuttlarr settings")
         .inner_size(760.0, 720.0)
         .resizable(true)
         .title_bar_style(TitleBarStyle::Overlay)
@@ -40,7 +40,7 @@ pub fn open_tab(app: &AppHandle, tab: Option<&str>) -> CmdResult<()> {
         .disable_drag_drop_handler()
         .build()
         .map_err(|e| CmdError::Internal(format!("settings window: {e}")))?;
-    // Opened from the non-activating panel, launcharr isn't the active app —
+    // Opened from the non-activating panel, scuttlarr isn't the active app —
     // without this the new window sits behind whatever was in front.
     crate::activation::bring_to_front(app);
     Ok(())

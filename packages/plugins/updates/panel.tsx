@@ -4,8 +4,8 @@ import {
   Panel,
   SectionHeader,
   useListNav,
-} from '@launcharr/tui'
-import type { PluginPanelProps } from '@launcharr/tui/plugins'
+} from '@scuttlarr/tui'
+import type { PluginPanelProps } from '@scuttlarr/tui/plugins'
 import { Package } from 'lucide-react'
 import { useEffect, useState } from 'react'
 

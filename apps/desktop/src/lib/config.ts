@@ -1,13 +1,13 @@
-import type { DesktopConfig } from '@launcharr/core/desktop'
-import type { Link } from '@launcharr/core/types'
-import type { BarModule, BarZones } from '@launcharr/tui'
-import { isPluginModuleId, pluginModuleId } from '@launcharr/tui/plugins'
+import type { DesktopConfig } from '@scuttlarr/core/desktop'
+import type { Link } from '@scuttlarr/core/types'
+import type { BarModule, BarZones } from '@scuttlarr/tui'
+import { isPluginModuleId, pluginModuleId } from '@scuttlarr/tui/plugins'
 
 import type { ThemeTokens } from './themes'
 
 /**
  * App configuration. Desktop-only: it references ThemeTokens and app concerns (hotkey,
- * terminal hand-off), so it lives beside the app rather than in @launcharr/core.
+ * terminal hand-off), so it lives beside the app rather than in @scuttlarr/core.
  */
 export type Config = {
   hotkey: string
@@ -21,7 +21,7 @@ export type Config = {
   /** Alfred-style dead-end fallback, {query} placeholder. */
   searchFallback: string
   indexBookmarks: boolean
-  /** Active theme name: built-in (launcharr, dracula, terminal) or a `themes` key. */
+  /** Active theme name: built-in (scuttlarr, dracula, terminal) or a `themes` key. */
   theme: string
   /** User-defined themes: name → partial token overrides (see lib/themes.ts). */
   themes: Record<string, Partial<ThemeTokens>>
@@ -32,7 +32,7 @@ export type Config = {
   /** The desktop layer (v0.4): AeroSpace tiling, JankyBorders, corner radius. Rust
    * persists it opaquely; read it through `normalizeDesktop` (partial/absent → defaults). */
   desktop: Partial<DesktopConfig> | undefined
-  /** `colorpicker` opens the launcharr loupe (2×) — needs Screen Recording, so it is
+  /** `colorpicker` opens the scuttlarr loupe (2×) — needs Screen Recording, so it is
    * opt-in and the toggle is what triggers the prompt; off = Apple's sampler. */
   colorLoupe: boolean
   /** Loupe magnification, 2–8 (default 8). */
@@ -58,10 +58,10 @@ export type BarConfig = {
 }
 
 /* Shape lives in the kit — the bar renders from it in both the app and on
- * launcharr.com, so there is one definition (invariant 10). The *semantics*
+ * scuttlarr.com, so there is one definition (invariant 10). The *semantics*
  * below (normalization, notch derivation, legacy migration) are config
  * concerns and stay here. */
-export type { BarModule, BarZones } from '@launcharr/tui'
+export type { BarModule, BarZones } from '@scuttlarr/tui'
 
 export type ZoneName = 'left' | 'center' | 'right'
 export const ZONE_NAMES: ZoneName[] = ['left', 'center', 'right']
@@ -87,7 +87,7 @@ export {
   isPluginModuleId,
   pluginIdOf,
   pluginModuleId,
-} from '@launcharr/tui/plugins'
+} from '@scuttlarr/tui/plugins'
 
 /** What normalization needs to know about a discovered widget or plugin:
  * its id, the zone its manifest asks for, and which of the two it is. */
@@ -172,7 +172,7 @@ export type AgentsConfig = {
   askMode: boolean
   /** Which CLI answers `?`. */
   askProvider: 'claude' | 'codex'
-  /** Consent capabilities: launcharr may read the CLI's stored credentials
+  /** Consent capabilities: scuttlarr may read the CLI's stored credentials
    * for account-limit fetches; the code owns source selection + fallback. */
   claudeCreds: boolean
   codexCreds: boolean

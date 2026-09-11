@@ -5,8 +5,8 @@ import {
   Panel,
   type StoryFile,
   applyTheme,
-} from '@launcharr/tui'
-import '@launcharr/tui/styles.css'
+} from '@scuttlarr/tui'
+import '@scuttlarr/tui/styles.css'
 import { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
@@ -42,7 +42,7 @@ type Viewport = keyof typeof VIEWPORTS
 function Workbench() {
   const [fileIdx, setFileIdx] = useState(0)
   const [storyIdx, setStoryIdx] = useState(0)
-  const [theme, setTheme] = useState('launcharr')
+  const [theme, setTheme] = useState('scuttlarr')
   const [viewport, setViewport] = useState<Viewport>('panel')
 
   useEffect(() => {

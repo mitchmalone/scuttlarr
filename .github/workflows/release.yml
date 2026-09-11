@@ -55,7 +55,7 @@ jobs:
             echo "release not visible yet (attempt $i) — retrying"
             sleep 10
           done
-          for asset in "launcharr-$VERSION.zip" "launcharr-$VERSION.dmg" "SHA256SUMS"; do
+          for asset in "scuttlarr-$VERSION.zip" "scuttlarr-$VERSION.dmg" "SHA256SUMS"; do
             grep -qx "$asset" assets.txt || { echo "::error::release asset missing: $asset"; exit 1; }
           done
 
@@ -83,16 +83,16 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --pattern SHA256SUMS
-          ZIP_SHA=$(awk -v f="launcharr-$VERSION.zip" '$2==f{print $1}' SHA256SUMS)
+          ZIP_SHA=$(awk -v f="scuttlarr-$VERSION.zip" '$2==f{print $1}' SHA256SUMS)
           [ -n "$ZIP_SHA" ] || { echo "::error::zip sha not found in SHA256SUMS"; exit 1; }
           git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/${{ vars.HOMEBREW_TAP_REPO }}.git" tap
           cd tap
           sed -i -e "s/version \".*\"/version \"$VERSION\"/" \
-                 -e "s/sha256 \".*\"/sha256 \"$ZIP_SHA\"/" Casks/launcharr.rb
-          git config user.name "launcharr release bot"
+                 -e "s/sha256 \".*\"/sha256 \"$ZIP_SHA\"/" Casks/scuttlarr.rb
+          git config user.name "scuttlarr release bot"
           git config user.email "actions@users.noreply.github.com"
           git add -A
-          git commit -m "launcharr v$VERSION"
+          git commit -m "scuttlarr v$VERSION"
           git push
 
   notion:
@@ -111,7 +111,7 @@ jobs:
             echo "configured=true" >> "$GITHUB_OUTPUT"
           fi
       - if: steps.config.outputs.configured == 'true'
-        name: Set Version on the Launcharr row
+        name: Set Version on the Scuttlarr row
         env:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
         run: |

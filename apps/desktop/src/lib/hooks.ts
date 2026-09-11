@@ -1,8 +1,8 @@
 import { invoke } from '@tauri-apps/api/core'
 
 /**
- * The Claude Code hook adapter launcharr owns (hooks.rs): installed to
- * `~/.config/launcharr/hooks/claude-status.py`, registered in every Claude
+ * The Claude Code hook adapter scuttlarr owns (hooks.rs): installed to
+ * `~/.config/scuttlarr/hooks/claude-status.py`, registered in every Claude
  * config dir's `settings.json`. Rust does the surgery; this is the typed view.
  */
 

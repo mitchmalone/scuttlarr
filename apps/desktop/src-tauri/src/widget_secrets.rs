@@ -1,5 +1,5 @@
 //! Widget secrets: the values a manifest declares `secret: true` (tokens), kept
-//! in the macOS Keychain as generic passwords — service `launcharr`, account
+//! in the macOS Keychain as generic passwords — service `scuttlarr`, account
 //! `widget/<id>/<KEY>`. Never in config.json (plain text, dotfiles, hot-watched)
 //! and never sent to a webview: the settings UI only learns *whether* a key is
 //! set. Plain settings live in `config.widgets`; both reach a widget as env
@@ -11,7 +11,7 @@ use security_framework::passwords::{
     delete_generic_password, get_generic_password, set_generic_password,
 };
 
-const SERVICE: &str = "launcharr";
+const SERVICE: &str = "scuttlarr";
 
 fn account(id: &str, key: &str) -> String {
     format!("widget/{id}/{key}")

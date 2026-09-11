@@ -1,6 +1,6 @@
 'use client'
 
-import type { BarHoverApi } from '@launcharr/tui'
+import type { BarHoverApi } from '@scuttlarr/tui'
 import { useEffect, useRef, useState } from 'react'
 
 /**

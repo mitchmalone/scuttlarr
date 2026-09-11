@@ -48,9 +48,9 @@ describe('renderAerospaceToml', () => {
     expect(toml).not.toContain('after-startup-command')
   })
 
-  it('touches the launcharr trigger file on workspace change', () => {
+  it('touches the scuttlarr trigger file on workspace change', () => {
     expect(toml).toContain('exec-on-workspace-change')
-    expect(toml).toContain('$HOME/.config/launcharr/triggers/workspace')
+    expect(toml).toContain('$HOME/.config/scuttlarr/triggers/workspace')
   })
 
   it('renders the gap plan: visible gaps, borders off, bar on externals', () => {
@@ -148,7 +148,7 @@ describe('renderAerospaceToml', () => {
 })
 
 describe('inactiveBorderColor', () => {
-  it('is a solid tone 57% from border to fg — #8083a0 for the launcharr theme', () => {
+  it('is a solid tone 57% from border to fg — #8083a0 for the scuttlarr theme', () => {
     expect(inactiveBorderColor(COLORS)).toBe('#8083a0')
     expect(inactiveBorderColor({ border: '#000000', fg: '#ffffff' })).toBe(
       '#919191',

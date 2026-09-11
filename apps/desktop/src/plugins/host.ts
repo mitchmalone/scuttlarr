@@ -1,4 +1,4 @@
-import type { PluginHost } from '@launcharr/tui/plugins'
+import type { PluginHost } from '@scuttlarr/tui/plugins'
 import { invoke } from '@tauri-apps/api/core'
 
 /**

@@ -1,6 +1,6 @@
 /**
  * Audio panel, presentational half (Omarchy audio screen): OUTPUT slider +
- * device list, INPUT slider + device list. Pure props + @launcharr/tui — the
+ * device list, INPUT slider + device list. Pure props + @scuttlarr/tui — the
  * container owns invokes. Keyboard: ↑↓ move, ←→ adjust a selected slider,
  * ⏎ makes a device the default, m toggles mute.
  */
@@ -11,7 +11,7 @@ import {
   SectionHeader,
   Slider,
   useListNav,
-} from '@launcharr/tui'
+} from '@scuttlarr/tui'
 import { Headphones, Mic, Speaker, Volume2, VolumeX } from 'lucide-react'
 
 const ROW_ICON = { size: 15, strokeWidth: 2, 'aria-hidden': true } as const

@@ -1,5 +1,5 @@
-import type { Clip } from '@launcharr/core/types'
-import { defineStories } from '@launcharr/tui'
+import type { Clip } from '@scuttlarr/core/types'
+import { defineStories } from '@scuttlarr/tui'
 
 import { ClipboardPanel } from './ClipboardPanel'
 

@@ -3,7 +3,7 @@
   "id": "mirror",
   "name": "Journal mirror",
   "version": "0.1.0",
-  "description": "Pulls another machine's Codex and Claude Code journals over SSH into ~/.local/share/launcharr/mirrors/<host>/ so the usage panel counts every machine, not just this one.",
+  "description": "Pulls another machine's Codex and Claude Code journals over SSH into ~/.local/share/scuttlarr/mirrors/<host>/ so the usage panel counts every machine, not just this one.",
   "kinds": ["bar-widget", "service"],
   "zone": "right",
   "icon": "refresh-cw",

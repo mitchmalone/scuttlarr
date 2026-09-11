@@ -1,4 +1,4 @@
-import { normalizeDesktop } from '@launcharr/core/desktop'
+import { normalizeDesktop } from '@scuttlarr/core/desktop'
 import {
   Bot,
   Camera,

@@ -1,17 +1,17 @@
-//! One-line breadcrumbs to `~/Library/Logs/launcharr.log`. stderr goes nowhere
+//! One-line breadcrumbs to `~/Library/Logs/scuttlarr.log`. stderr goes nowhere
 //! for a Finder/login launch, so decisions that are impossible to reconstruct
 //! after the fact ("which picker did I get", "why didn't my hold resume") leave
 //! a dated line here. Append-only, best-effort, never blocks a feature.
 
 pub fn breadcrumb(tag: &str, line: &str) {
-    eprintln!("[launcharr {tag}] {line}");
+    eprintln!("[scuttlarr {tag}] {line}");
     // Tests exercise the real code paths (power.rs arms real assertions);
     // their breadcrumbs must not land in the developer's log.
     if cfg!(test) {
         return;
     }
     if let Some(home) = dirs::home_dir() {
-        let path = home.join("Library/Logs/launcharr.log");
+        let path = home.join("Library/Logs/scuttlarr.log");
         if let Ok(mut f) = std::fs::OpenOptions::new()
             .create(true)
             .append(true)

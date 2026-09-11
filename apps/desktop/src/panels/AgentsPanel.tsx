@@ -1,9 +1,9 @@
 /**
  * Agents panel, presentational half: live coding-agent sessions from the
- * monitor (agents.rs). Pure props + @launcharr/tui — the container
+ * monitor (agents.rs). Pure props + @scuttlarr/tui — the container
  * (AgentsPanelContainer) owns invokes and refresh.
  */
-import { KeyHints, ListRow, Panel, useListNav } from '@launcharr/tui'
+import { KeyHints, ListRow, Panel, useListNav } from '@scuttlarr/tui'
 import type { KeyboardEvent } from 'react'
 
 /** Mirrors AgentSession in agents.rs. */

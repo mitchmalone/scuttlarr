@@ -127,7 +127,7 @@ pub async fn awake_readings(
     }
 }
 
-/// Mirrors `AwakeReading` in @launcharr/core.
+/// Mirrors `AwakeReading` in @scuttlarr/core.
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AwakeReading {
@@ -254,7 +254,7 @@ pub fn hooks_status() -> crate::hooks::HooksStatus {
 }
 
 /// Install the adapter to its stable path and register it in every Claude
-/// config dir's settings.json (idempotent; one-time `.bak-launcharr`).
+/// config dir's settings.json (idempotent; one-time `.bak-scuttlarr`).
 #[tauri::command]
 pub async fn hooks_install() -> CmdResult<crate::hooks::HooksStatus> {
     crate::hooks::install()
@@ -317,7 +317,7 @@ pub fn execute(
     // Dismiss first: the <50ms Enter budget is about perceived latency.
     panel::hide(&app);
 
-    if item.id != "launcharr:quit" {
+    if item.id != "scuttlarr:quit" {
         let db = state.db.lock().unwrap();
         frecency::record(&db, &item.id, &query, frecency::now_secs())?;
     }
@@ -340,12 +340,12 @@ pub fn execute(
         ItemKind::Command => {
             crate::system_commands::run(item.id.trim_start_matches("cmd:"))?;
         }
-        ItemKind::Launcharr => match item.id.as_str() {
-            "launcharr:quit" => app.exit(0),
-            "launcharr:settings" => crate::settings_window::open(&app)?,
-            "launcharr:reindex" => crate::indexer::refresh(&app),
-            "launcharr:colorpicker" => crate::colorpicker::pick(&app),
-            "launcharr:config" => {
+        ItemKind::Scuttlarr => match item.id.as_str() {
+            "scuttlarr:quit" => app.exit(0),
+            "scuttlarr:settings" => crate::settings_window::open(&app)?,
+            "scuttlarr:reindex" => crate::indexer::refresh(&app),
+            "scuttlarr:colorpicker" => crate::colorpicker::pick(&app),
+            "scuttlarr:config" => {
                 Command::new("open")
                     .arg(crate::config::config_path())
                     .spawn()?;
@@ -522,7 +522,7 @@ pub fn write_config(config: Config) -> CmdResult<()> {
     Ok(())
 }
 
-/// Open launcharr's editable surfaces from settings: the config file (default editor),
+/// Open scuttlarr's editable surfaces from settings: the config file (default editor),
 /// the scripts folder (Finder), or System Settings → Battery (the battery hover card's
 /// click target — macOS owns power mode, we only report it). Validated enum — never an
 /// arbitrary path across IPC.

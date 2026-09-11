@@ -1,4 +1,4 @@
-import type { CellTone } from '@launcharr/tui'
+import type { CellTone } from '@scuttlarr/tui'
 
 /**
  * The updates plugin's logic, pure and tested apart from React — the

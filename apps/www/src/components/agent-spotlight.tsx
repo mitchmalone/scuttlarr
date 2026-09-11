@@ -1,6 +1,6 @@
 'use client'
 
-import { BarAgents } from '@launcharr/tui'
+import { BarAgents } from '@scuttlarr/tui'
 import { useMemo, useState } from 'react'
 
 import { useWebBarHover } from '@/components/demo/bar-hover'
@@ -12,7 +12,7 @@ const MONO_CODE = 'font-mono text-(--fg)'
 
 /**
  * "Hover a cell" — the bar's agent cluster, magnified so the card is readable
- * on a marketing page. This is `BarAgents` from `@launcharr/tui`, the same
+ * on a marketing page. This is `BarAgents` from `@scuttlarr/tui`, the same
  * component the bar renders; only the scale wrapper is the website's, so the
  * geometry and card layout cannot drift.
  *

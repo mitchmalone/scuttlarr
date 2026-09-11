@@ -65,10 +65,10 @@ export function InstallTabs() {
         <>
           <div className="grid gap-3 bg-(--bg) px-5 py-[22px] font-mono text-[13.5px]">
             <a href={RELEASE.artifacts.dmg.url}>
-              launcharr-{RELEASE.version}.dmg
+              scuttlarr-{RELEASE.version}.dmg
             </a>
             <a href={RELEASE.artifacts.zip.url}>
-              launcharr-{RELEASE.version}.zip
+              scuttlarr-{RELEASE.version}.zip
             </a>
           </div>
           <div className="border-t border-(--border) bg-(--chip) px-4 py-2.5 text-xs text-(--dim)">
@@ -90,7 +90,7 @@ export function InstallTabs() {
           </pre>
           <div className="border-t border-(--border) bg-(--chip) px-4 py-2.5 text-xs text-(--dim)">
             Requires Rust stable + pnpm ·{' '}
-            <a href={GITHUB_URL}>github.com/mitchmalone/launcharr</a>
+            <a href={GITHUB_URL}>github.com/mitchmalone/scuttlarr</a>
           </div>
         </>
       ) : null}

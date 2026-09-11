@@ -208,7 +208,7 @@ mod tests {
 
     #[test]
     fn lists_images_newest_first() {
-        let dir = std::env::temp_dir().join(format!("launcharr-shots-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("scuttlarr-shots-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         for (name, secs) in [
@@ -235,7 +235,7 @@ mod tests {
 
     #[test]
     fn thumbnails_are_cached_by_path_and_mtime() {
-        let dir = std::env::temp_dir().join(format!("launcharr-thumbs-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("scuttlarr-thumbs-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let src = dir.join("src.png");
         std::fs::create_dir_all(&dir).unwrap();

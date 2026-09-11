@@ -1,11 +1,11 @@
 /**
  * Themes: a flat map of the color tokens both windows already style with. Built-ins live
  * here; user themes are plain JSON in config.json under `themes` (name → partial token
- * map), overlaying the launcharr defaults — or, when named after a built-in, that
- * built-in. Selection is `config.theme`; unknown names fall back to `launcharr` so a
+ * map), overlaying the scuttlarr defaults — or, when named after a built-in, that
+ * built-in. Selection is `config.theme`; unknown names fall back to `scuttlarr` so a
  * hand-edit can't blank the UI.
  *
- * Reachable as `@launcharr/tui/themes` as well as through the barrel, and that second
+ * Reachable as `@scuttlarr/tui/themes` as well as through the barrel, and that second
  * entry point is load-bearing: this module is pure data, so a React Server Component
  * (apps/www) can import the tokens directly. Going through `.` instead drags in
  * `components/controls.tsx`, whose hooks fail a server build. Keep it free of React.
@@ -34,7 +34,7 @@ export interface ThemeTokens {
 }
 
 export const BUILTIN_THEMES: Record<string, ThemeTokens> = {
-  launcharr: {
+  scuttlarr: {
     bg: '#1c1d2a',
     surface: '#262838',
     glass: 'rgba(28, 29, 42, 0.96)',
@@ -232,14 +232,18 @@ export const BUILTIN_THEMES: Record<string, ThemeTokens> = {
   },
 }
 
-const DEFAULT_THEME = 'launcharr'
+const DEFAULT_THEME = 'scuttlarr'
+
+/** Names that meant something before the 2026-09-11 rename; configs still carry them. */
+const THEME_ALIASES: Record<string, string> = { launcharr: 'scuttlarr' }
 
 export type CustomThemes = Record<string, Partial<ThemeTokens>> | undefined
 
 /** Resolve a theme name against built-ins + config-defined customs. */
 export function resolveTheme(name: string, themes: CustomThemes): ThemeTokens {
-  const base = BUILTIN_THEMES[name] ?? BUILTIN_THEMES[DEFAULT_THEME]!
   const custom = themes?.[name]
+  const canonical = custom ? name : (THEME_ALIASES[name] ?? name)
+  const base = BUILTIN_THEMES[canonical] ?? BUILTIN_THEMES[DEFAULT_THEME]!
   return custom ? { ...base, ...custom } : base
 }
 

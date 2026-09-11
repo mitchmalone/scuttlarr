@@ -1,6 +1,6 @@
-import { BarUsageCell, type UsageReport } from '@launcharr/tui'
-import { foldUsageBarState } from '@launcharr/tui/bar'
-import type { PluginCellProps } from '@launcharr/tui/plugins'
+import { BarUsageCell, type UsageReport } from '@scuttlarr/tui'
+import { foldUsageBarState } from '@scuttlarr/tui/bar'
+import type { PluginCellProps } from '@scuttlarr/tui/plugins'
 
 /**
  * The usage cell: the tiny meter plus the tightest window's percent across

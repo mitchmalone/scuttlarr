@@ -11,7 +11,7 @@ import type {
  * The plugin contract (docs/PLUGINS.md, DECISIONS 2026-08-27): what a plugin's
  * `cell.tsx` and `panel.tsx` receive, and what the app tells everyone about a
  * plugin. Pure types — this entry point has no React barrel behind it, so a
- * plugin's `import type` from `@launcharr/tui/plugins` costs nothing at run
+ * plugin's `import type` from `@scuttlarr/tui/plugins` costs nothing at run
  * time and the website's server components can read the same shapes.
  *
  * These mirror plugins.rs; keep the pairs adjacent in naming.
@@ -30,7 +30,7 @@ export type PluginPermissionName =
   | 'local-network'
 
 /** What macOS says about one (mirrors `Status`). `missing-usage-string` means
- * this launcharr build cannot even ask — a stale bundle. */
+ * this scuttlarr build cannot even ask — a stale bundle. */
 export type PluginPermissionStatus =
   'granted' | 'denied' | 'not-determined' | 'missing-usage-string' | 'unknown'
 

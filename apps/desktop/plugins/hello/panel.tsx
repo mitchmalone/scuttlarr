@@ -1,5 +1,5 @@
-import { KeyHints, ListRow, Panel, SectionHeader } from '@launcharr/tui'
-import type { PluginPanelProps } from '@launcharr/tui/plugins'
+import { KeyHints, ListRow, Panel, SectionHeader } from '@scuttlarr/tui'
+import type { PluginPanelProps } from '@scuttlarr/tui/plugins'
 import { Hand } from 'lucide-react'
 
 import type { HelloState } from './model'
@@ -27,7 +27,7 @@ export default function HelloPanel({
           host.send({ reset: true })
         } else if (e.key === 'o') {
           e.preventDefault()
-          host.open('https://launcharr.com/')
+          host.open('https://scuttlarr.com/')
         } else if (e.key === 'Escape') {
           e.preventDefault()
           onClose()

@@ -2,9 +2,9 @@
 /* The real TUI kit's chrome — the demo panels are the shipping components, not
    mocks (DECISIONS 2026-08-16). Its colors resolve through --tui-* tokens that
    the demo sets per theme; without them they'd fall back to the *page* tokens. */
-@import '@launcharr/tui/styles.css';
+@import '@scuttlarr/tui/styles.css';
 /* The bar's chrome — the same stylesheet the desktop bar window loads. */
-@import '@launcharr/tui/bar.css';
+@import '@scuttlarr/tui/bar.css';
 
 /* Dark is the default theme; light overrides via next-themes' data-theme attr. */
 :root {
@@ -67,7 +67,7 @@ html[data-theme='light'] {
     var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-sans: var(--font-ibm-plex-sans), system-ui, sans-serif;
 
-  /* shadcn/ui semantic tokens, MAPPED onto the launcharr palette above rather
+  /* shadcn/ui semantic tokens, MAPPED onto the scuttlarr palette above rather
      than imported (DECISIONS 2026-08-16). shadcn's own oklch defaults would
      fork the design tokens invariant 8 keeps single-source. Note the two
      vocabularies differ: shadcn's `accent` is a hover surface, ours is the

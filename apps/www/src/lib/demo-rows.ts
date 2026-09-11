@@ -1,18 +1,18 @@
-import { parseInput } from '@launcharr/core/grammar'
+import { parseInput } from '@scuttlarr/core/grammar'
 import {
   type Row as CoreRow,
   emojiRows,
   launchRows,
   panelRows,
   quicklinkRows,
-} from '@launcharr/core/rows'
-import type { FrecencyMap, IndexItem } from '@launcharr/core/types'
+} from '@scuttlarr/core/rows'
+import type { FrecencyMap, IndexItem } from '@scuttlarr/core/types'
 
 import { PANEL_INFO } from './demo-data'
 import { INDEX, QUICKLINKS, TRIGGERS } from './launch-index'
 
 /**
- * Thin adapter between the real engine (@launcharr/core) and the demo panel. All grammar,
+ * Thin adapter between the real engine (@scuttlarr/core) and the demo panel. All grammar,
  * matching, ranking, and row logic runs in core; this file only translates core rows into
  * the demo's presentation shape — no engine logic lives on the website.
  */

@@ -6,6 +6,17 @@
 
 ---
 
+### 2026-09-11 · A blanket rename sed rewrote the _legacy_ path too — the one string that had to stay
+
+The launcharr → scuttlarr rename (DECISIONS 2026-09-11) was a global `s/launcharr/scuttlarr/`
+over every tracked non-docs file. It also rewrote `legacy_config_dir()` in `config.rs`
+from `~/.launcharr` to `~/.scuttlarr` — a path that never existed — which would have
+silently disabled the 2026-08-10 home migration. Same trap for the keychain notary
+profile name in `release.sh` (a local identifier, not a product string). Rule for any
+future rename: after the sed, grep the diff for every _historical_ identifier
+(old paths, markers, profile names, `plans/done/` links) and put the ones that name the
+past back. `rename.rs` carries the old names as constants on purpose.
+
 ### 2026-09-10 · A plugin panel lagged its own toggle by up to a second — the panel polled, the bar was pushed
 
 The amaran panel's switch felt broken from the launcher and instant from the bar

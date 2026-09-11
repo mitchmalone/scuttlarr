@@ -225,7 +225,7 @@ pub struct Config {
     pub sigil: String,
     /// Prompt sigil in bang mode.
     pub bang_sigil: String,
-    /// Register launcharr as a login item (a launcher that isn't running is furniture).
+    /// Register scuttlarr as a login item (a launcher that isn't running is furniture).
     pub launch_at_login: bool,
     /// Custom links: indexed like apps, Enter opens the URL in the default browser.
     pub links: Vec<Link>,
@@ -236,7 +236,7 @@ pub struct Config {
     pub search_fallback: String,
     /// Opt-in: index browser bookmarks (Chrome-family + Safari) as results. Default off.
     pub index_bookmarks: bool,
-    /// Active theme: a built-in name (launcharr, dracula, terminal) or a key of `themes`.
+    /// Active theme: a built-in name (scuttlarr, dracula, terminal) or a key of `themes`.
     /// Resolution and the token model live frontend-side (src/lib/themes.ts).
     pub theme: String,
     /// User-defined themes: name → token overrides. Opaque to Rust; just persisted.
@@ -246,10 +246,10 @@ pub struct Config {
     /// Agent monitoring + usage monitor (all off by default).
     pub agents: AgentsConfig,
     /// The desktop layer (v0.4): tiling via AeroSpace, JankyBorders, corner radius.
-    /// Opaque to Rust — the shape and defaults live in `@launcharr/core/desktop`;
+    /// Opaque to Rust — the shape and defaults live in `@scuttlarr/core/desktop`;
     /// desktop.rs only receives rendered bytes and argv.
     pub desktop: serde_json::Value,
-    /// `colorpicker` uses the launcharr loupe (2×, needs Screen Recording — the toggle
+    /// `colorpicker` uses the scuttlarr loupe (2×, needs Screen Recording — the toggle
     /// is the only thing that ever asks) instead of Apple's permission-free sampler.
     /// Default off (invariant 1).
     pub color_loupe: bool,
@@ -279,7 +279,7 @@ impl Default for Config {
             shortcuts: std::collections::HashMap::new(),
             search_fallback: "https://www.google.com/search?q={query}".into(),
             index_bookmarks: false,
-            theme: "launcharr".into(),
+            theme: "scuttlarr".into(),
             themes: std::collections::HashMap::new(),
             bar: BarConfig::default(),
             agents: AgentsConfig::default(),
@@ -294,13 +294,14 @@ impl Default for Config {
 }
 
 pub fn config_dir() -> PathBuf {
-    // ~/.config/launcharr — XDG-style, deliberate: a terminal-nerd path, not ~/Library.
+    // ~/.config/scuttlarr — XDG-style, deliberate: a terminal-nerd path, not ~/Library.
     // Briefly ~/.launcharr on 2026-08-10, reversed same day (see DECISIONS); migrate_home
-    // brings any dir at the old spot back.
+    // brings any dir at the old spot back. ~/.config/launcharr → ~/.config/scuttlarr is
+    // rename.rs (2026-09-11) and runs first.
     dirs::home_dir()
         .unwrap_or_else(|| PathBuf::from("/tmp"))
         .join(".config")
-        .join("launcharr")
+        .join("scuttlarr")
 }
 
 pub fn config_path() -> PathBuf {
@@ -330,7 +331,7 @@ pub fn load_or_create() -> CmdResult<(Config, bool)> {
     if let Err(e) = migrate_home(&legacy_config_dir(), &config_dir()) {
         // Don't brick startup over a failed move; the old path simply stays put and a
         // fresh default is created at the new one.
-        eprintln!("launcharr: home migration failed: {e}");
+        eprintln!("scuttlarr: home migration failed: {e}");
     }
     let path = config_path();
     if !path.exists() {
@@ -343,14 +344,14 @@ pub fn load_or_create() -> CmdResult<(Config, bool)> {
     // A broken hand-edit must not brick the launcher: fall back to defaults —
     // but say so, or a typo silently reverts every setting (found 2026-08-15).
     let mut parsed: Config = serde_json::from_str(&raw).unwrap_or_else(|e| {
-        eprintln!("[launcharr] config.json unreadable, using defaults: {e}");
+        eprintln!("[scuttlarr] config.json unreadable, using defaults: {e}");
         Config::default()
     });
     parsed.bar.migrate_legacy();
     Ok((parsed, false))
 }
 
-/// Watch ~/.config/launcharr for edits; reload, re-register the hotkey, notify the frontend.
+/// Watch ~/.config/scuttlarr for edits; reload, re-register the hotkey, notify the frontend.
 pub fn watch(app: AppHandle) {
     std::thread::spawn(move || {
         use notify::{RecursiveMode, Watcher};
@@ -358,12 +359,12 @@ pub fn watch(app: AppHandle) {
         let mut watcher = match notify::recommended_watcher(tx) {
             Ok(w) => w,
             Err(e) => {
-                eprintln!("[launcharr] config watcher failed: {e}");
+                eprintln!("[scuttlarr] config watcher failed: {e}");
                 return;
             }
         };
         if let Err(e) = watcher.watch(&config_dir(), RecursiveMode::NonRecursive) {
-            eprintln!("[launcharr] config watch failed: {e}");
+            eprintln!("[scuttlarr] config watch failed: {e}");
             return;
         }
         loop {
@@ -400,7 +401,7 @@ pub fn watch(app: AppHandle) {
                     }
                     let _ = app.emit("config-changed", &new_config);
                 }
-                Err(e) => eprintln!("[launcharr] config reload failed: {e}"),
+                Err(e) => eprintln!("[scuttlarr] config reload failed: {e}"),
             }
         }
     });
@@ -430,7 +431,7 @@ mod tests {
     #[test]
     fn theme_fields_default_and_parse() {
         let cfg: Config = serde_json::from_str("{}").unwrap();
-        assert_eq!(cfg.theme, "launcharr");
+        assert_eq!(cfg.theme, "scuttlarr");
         assert!(cfg.themes.is_empty());
         let cfg: Config =
             serde_json::from_str(r##"{"theme":"dracula","themes":{"mine":{"accent":"#f00"}}}"##)
@@ -469,7 +470,7 @@ mod tests {
 
     #[test]
     fn migrate_home_moves_once_and_only_when_target_absent() {
-        let base = std::env::temp_dir().join(format!("launcharr-mig-{}", std::process::id()));
+        let base = std::env::temp_dir().join(format!("scuttlarr-mig-{}", std::process::id()));
         let old = base.join("old");
         let new = base.join("new");
         fs::create_dir_all(old.join("scripts")).unwrap();

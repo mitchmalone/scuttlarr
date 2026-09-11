@@ -339,10 +339,10 @@ fn keychain_service(dir: &Path, is_default: bool) -> String {
 /// Walk a provider root, reusing per-file results keyed by (len, mtime) —
 /// journals are append-only, so unchanged files cost nothing on rescans.
 /// Journals pulled from other machines by convention (the `mirror` reference
-/// plugin, docs/PLUGINS.md): `~/.local/share/launcharr/mirrors/<host>/<provider>/`.
+/// plugin, docs/PLUGINS.md): `~/.local/share/scuttlarr/mirrors/<host>/<provider>/`.
 /// Anything that syncs journals there — rsync, Syncthing, a cron — counts.
 pub fn mirror_roots(home: &Path, provider: &str) -> Vec<PathBuf> {
-    let base = home.join(".local/share/launcharr/mirrors");
+    let base = home.join(".local/share/scuttlarr/mirrors");
     let Ok(hosts) = std::fs::read_dir(&base) else {
         return Vec::new();
     };
@@ -620,7 +620,7 @@ fn collect_jsonl(dir: &Path, out: &mut Vec<PathBuf>) {
 //
 // The primary use-case — "how soon am I limited?" — cannot be derived locally:
 // the windows are account-wide and server-computed (other devices count).
-// Both fetches reuse credentials the CLIs already store; launcharr NEVER
+// Both fetches reuse credentials the CLIs already store; scuttlarr NEVER
 // refreshes or writes another app's tokens — an expired token degrades to a
 // visible note instead (DECISIONS 2026-08-16, invariant 2 carve-out).
 
@@ -721,7 +721,7 @@ fn claude_token_from_file(path: &Path) -> Result<String, String> {
 }
 
 /// Claude Code's keychain item, read via the system CLI so macOS runs its
-/// standard consent prompt — launcharr never links Security.framework for this.
+/// standard consent prompt — scuttlarr never links Security.framework for this.
 fn claude_token_from_keychain(service: &str) -> Result<String, String> {
     let out = std::process::Command::new("/usr/bin/security")
         .args(["find-generic-password", "-s", service, "-w"])
@@ -860,7 +860,7 @@ fn codex_fetch(creds: &(String, Option<String>)) -> Result<Vec<LimitWindow>, Str
     let mut request = ureq::get("https://chatgpt.com/backend-api/wham/usage")
         .set("Authorization", &format!("Bearer {}", creds.0))
         .set("Accept", "application/json")
-        .set("User-Agent", "launcharr")
+        .set("User-Agent", "scuttlarr")
         .timeout(Duration::from_secs(8));
     if let Some(account) = &creds.1 {
         request = request.set("ChatGPT-Account-Id", account);
@@ -1151,7 +1151,7 @@ mod tests {
         assert!(parse_claude_credentials(expired)
             .unwrap_err()
             .contains("expired"));
-        let dir = std::env::temp_dir().join(format!("launcharr-usage-cred-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("scuttlarr-usage-cred-{}", std::process::id()));
         std::fs::create_dir_all(&dir).expect("tmp dir");
         let path = dir.join("auth.json");
         std::fs::write(
@@ -1195,7 +1195,7 @@ mod tests {
     #[test]
     fn discovers_claude_accounts_by_dir_convention() {
         let home =
-            std::env::temp_dir().join(format!("launcharr-usage-home-{}", std::process::id()));
+            std::env::temp_dir().join(format!("scuttlarr-usage-home-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&home);
         std::fs::create_dir_all(home.join(".claude/projects")).expect("mk");
         std::fs::create_dir_all(home.join(".claude-work")).expect("mk");

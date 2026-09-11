@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client'
 import './loupe.css'
 
 /**
- * The launcharr loupe (colorpicker, 2026-08-17): a transparent window over the
+ * The scuttlarr loupe (colorpicker, 2026-08-17): a transparent window over the
  * mouse's screen; this draws a 2× magnifier around the cursor from pixels Rust
  * captures *below* the window (`loupe_capture`), shows the hex of the pixel under
  * the cursor, and reports the pick (`loupe_done`). Click picks, Esc cancels.

@@ -1,4 +1,4 @@
-//! The launcharr loupe (colorpicker feedback, 2026-08-17: "try a zoom of 2"). Apple's
+//! The scuttlarr loupe (colorpicker feedback, 2026-08-17: "try a zoom of 2"). Apple's
 //! `NSColorSampler` magnifies more than Mitch wants and offers no knob, so this is our
 //! own: a transparent, non-activating key panel over the mouse's screen; the webview
 //! (`src/loupe/`) draws the magnifier and asks Rust for the pixels around the cursor.
@@ -150,7 +150,7 @@ pub fn breadcrumb(line: &str) {
     crate::logbook::breadcrumb("loupe", line);
 }
 
-/// Screen Recording granted to launcharr?
+/// Screen Recording granted to scuttlarr?
 pub fn capture_allowed() -> bool {
     // SAFETY: plain C call, no arguments.
     unsafe { CGPreflightScreenCaptureAccess() }

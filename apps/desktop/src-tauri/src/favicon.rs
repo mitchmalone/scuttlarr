@@ -9,7 +9,7 @@ use std::{
 use url::Url;
 
 /// User-initiated favicon fetch for quicklinks — the one sanctioned network touchpoint in
-/// launcharr (DECISIONS 2026-08-09). Called exactly once, when a quicklink is added; never
+/// scuttlarr (DECISIONS 2026-08-09). Called exactly once, when a quicklink is added; never
 /// in the background.
 ///
 /// Quality order: apple-touch-icon (usually 180px) > `<link rel=icon>` with the largest
@@ -32,7 +32,7 @@ fn agent() -> ureq::Agent {
     ureq::AgentBuilder::new()
         .timeout_connect(Duration::from_secs(4))
         .timeout(Duration::from_secs(6))
-        .user_agent("launcharr-favicon/0.1")
+        .user_agent("scuttlarr-favicon/0.1")
         .build()
 }
 
@@ -238,7 +238,7 @@ mod tests {
     #[test]
     #[ignore]
     fn favicon_live_fetch_github() {
-        let dir = std::env::temp_dir().join("launcharr-favicon-test");
+        let dir = std::env::temp_dir().join("scuttlarr-favicon-test");
         let got = fetch("https://github.com", &dir);
         assert!(got.is_some(), "no favicon fetched for github.com");
         let bytes = std::fs::read(got.unwrap()).unwrap();

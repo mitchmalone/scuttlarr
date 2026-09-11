@@ -1,19 +1,19 @@
-// launcharr widget: latest GitHub Actions run per repo (docs/WIDGETS.md).
+// scuttlarr widget: latest GitHub Actions run per repo (docs/WIDGETS.md).
 //
 // Credentials piggyback on the GitHub CLI (`gh auth token` — gh keeps its own
 // token fresh), or a pasted GITHUB_TOKEN setting overrides it. No CLI and no
 // token → the cell goes dim with the fix (`gh auth login`) in the card and in
 // Settings — alerted, never silently blank (Mitch, 2026-08-20). The `auth`
 // device flow is still here but dormant: it lights up only when a CLIENT_ID
-// for a launcharr OAuth App is baked in below.
+// for a scuttlarr OAuth App is baked in below.
 //
 // Each tick: the ten repos you pushed to most recently (edit REPOS below to
 // pin a list) and each one's latest workflow run. The cell is a monitor, red
 // with the failing count while anything is failing, amber while something
 // runs; the card lists runs newest first.
 //
-// Install: copy into ~/.config/launcharr/widgets/. Runs under Bun.
-import type { WidgetTone, WidgetView } from '@launcharr/tui/bar/types'
+// Install: copy into ~/.config/scuttlarr/widgets/. Runs under Bun.
+import type { WidgetTone, WidgetView } from '@scuttlarr/tui/bar/types'
 
 /** Thrown when the fix is the user's, not the widget's — becomes `setup`. */
 class SetupNeeded extends Error {
@@ -30,7 +30,7 @@ const DEFAULT_REPOS = 10
 /** Pin repos here (`owner/repo`); empty = your most recently pushed. */
 const REPOS: string[] = []
 /**
- * launcharr's GitHub OAuth App (device flow enabled). A client id is public —
+ * scuttlarr's GitHub OAuth App (device flow enabled). A client id is public —
  * it names the app the user is approving, nothing more. Fill in once the app
  * is registered; until then sign-in explains itself. Override for a fork with
  * GITHUB_CLIENT_ID in the environment.
@@ -150,7 +150,7 @@ async function gh<T>(path: string, token: string): Promise<T> {
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
-      'User-Agent': 'launcharr-widget',
+      'User-Agent': 'scuttlarr-widget',
     },
     signal: AbortSignal.timeout(12000),
   })
@@ -175,7 +175,7 @@ type WorkflowRun = {
 
 /**
  * The GitHub CLI's token — gh refreshes its own credential store. Launched
- * from Finder, launcharr's PATH is bare, so the usual homes are probed too.
+ * from Finder, scuttlarr's PATH is bare, so the usual homes are probed too.
  */
 async function ghCliToken(): Promise<string | null> {
   const candidates = ['gh', '/opt/homebrew/bin/gh', '/usr/local/bin/gh']
@@ -252,7 +252,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 /**
  * GitHub's OAuth device flow (docs.github.com → "Authorizing OAuth apps" →
  * device flow): ask for a code, show it, poll until the user approves, hand
- * the token back to launcharr as a secret setting.
+ * the token back to scuttlarr as a secret setting.
  */
 async function auth(): Promise<void> {
   const clientId = CLIENT_ID
@@ -264,7 +264,7 @@ async function auth(): Promise<void> {
   const headers = {
     Accept: 'application/json',
     'Content-Type': 'application/json',
-    'User-Agent': 'launcharr-widget',
+    'User-Agent': 'scuttlarr-widget',
   }
   const start = await fetch('https://github.com/login/device/code', {
     method: 'POST',

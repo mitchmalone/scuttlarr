@@ -1,12 +1,12 @@
 [package]
-name = "launcharr"
+name = "scuttlarr"
 version = "0.6.0"
 description = "An app launcher for pirates"
 authors = ["Mitch Malone"]
 edition = "2021"
 
 [lib]
-name = "launcharr_lib"
+name = "scuttlarr_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

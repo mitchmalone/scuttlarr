@@ -1,4 +1,4 @@
-//! `colorpicker` (Notion "Color Picker", 2026-08-17): the launcharr loupe (loupe.rs,
+//! `colorpicker` (Notion "Color Picker", 2026-08-17): the scuttlarr loupe (loupe.rs,
 //! 2× — Mitch's feedback the same day) when Screen Recording is granted, else Apple's
 //! own `NSColorSampler` — a magnifier that follows the cursor, click samples, Esc
 //! cancels, no permission needed. Either way the pick lands on the pasteboard as
@@ -13,7 +13,7 @@ use objc2_app_kit::{NSColor, NSColorSampler, NSColorSpace};
 use tauri::{AppHandle, Manager};
 
 /// Open the picker on the main thread. Default: Apple's sampler, no permission. With
-/// `colorLoupe` on (Settings → General) and Screen Recording granted: the launcharr
+/// `colorLoupe` on (Settings → General) and Screen Recording granted: the scuttlarr
 /// loupe (loupe.rs, 2×). Toggle on but not granted: prompt once, sampler meanwhile.
 pub fn pick(app: &AppHandle) {
     let handle = app.clone();

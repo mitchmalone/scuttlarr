@@ -1,4 +1,4 @@
-import { isoWeek, yearProgress } from '@launcharr/tui'
+import { isoWeek, yearProgress } from '@scuttlarr/tui'
 
 /**
  * The calendar plugin's logic, pure and tested apart from React — the

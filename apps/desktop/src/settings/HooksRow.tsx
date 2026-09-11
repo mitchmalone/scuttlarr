@@ -40,7 +40,7 @@ export function HooksRow() {
   return (
     <div className="hooksrow">
       <p className="hint">
-        Claude Code reports through a hook script launcharr installs at{' '}
+        Claude Code reports through a hook script scuttlarr installs at{' '}
         <code>{status.scriptPath}</code>
         {status.scriptCurrent ? '' : ' (not installed yet)'} and registers in
         each account&apos;s <code>settings.json</code>. Stale paths are mended

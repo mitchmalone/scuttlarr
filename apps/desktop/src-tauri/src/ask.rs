@@ -1,5 +1,5 @@
 //! Agent mode: `?` pipes a prompt to the user's own `claude` CLI — their
-//! subscription, their credentials, their network. launcharr spawns a process
+//! subscription, their credentials, their network. scuttlarr spawns a process
 //! and streams stdout; it makes zero network requests itself (same family as
 //! the iTerm2 hand-off). Ported from the spike-ask-ai branch 2026-08-16;
 //! gated by `agents.askMode` (Settings → Agents, off by default).
@@ -92,7 +92,7 @@ pub fn ask(
     } else {
         "claude"
     })?;
-    // The child inherits launcharr's TCC identity: anything it touches, macOS bills to
+    // The child inherits scuttlarr's TCC identity: anything it touches, macOS bills to
     // us. Cage it — empty cwd we own (so project discovery finds nothing) and the
     // tightest tool restrictions each CLI offers (`?` is Q&A, not an agent).
     let cage = app

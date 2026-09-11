@@ -1,5 +1,5 @@
-import { FIRST_PARTY } from '@launcharr/plugins'
-import * as Tui from '@launcharr/tui'
+import { FIRST_PARTY } from '@scuttlarr/plugins'
+import * as Tui from '@scuttlarr/tui'
 import {
   type BarHoverApi,
   type BarWidget,
@@ -9,14 +9,14 @@ import {
   Panel,
   type WidgetAction,
   type WidgetView,
-} from '@launcharr/tui'
+} from '@scuttlarr/tui'
 import type {
   PluginCellComponent,
   PluginCellProps,
   PluginPanelComponent,
   PluginPanelProps,
   PluginState,
-} from '@launcharr/tui/plugins'
+} from '@scuttlarr/tui/plugins'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import * as Lucide from 'lucide-react'
@@ -46,7 +46,7 @@ registerShared({
   'react/jsx-runtime': JsxRuntime,
   'react/jsx-dev-runtime': JsxDevRuntime,
   'react-dom': ReactDOM,
-  '@launcharr/tui': Tui,
+  '@scuttlarr/tui': Tui,
   'lucide-react': Lucide,
 })
 

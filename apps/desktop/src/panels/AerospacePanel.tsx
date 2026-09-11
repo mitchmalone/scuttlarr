@@ -2,7 +2,7 @@
  * AeroSpace panel, presentational half (`aerospace ⏎`, fuzzy `aero`). The tray
  * menu as launcher rows — workspaces (Enter focuses), pause/resume tiling,
  * reload config, open config, sponsor — so the menu bar item is redundant.
- * Pure props + @launcharr/tui; the container owns invokes.
+ * Pure props + @scuttlarr/tui; the container owns invokes.
  */
 import {
   KeyHints,
@@ -11,7 +11,7 @@ import {
   SectionHeader,
   SegmentedControl,
   useListNav,
-} from '@launcharr/tui'
+} from '@scuttlarr/tui'
 import { LayoutGrid } from 'lucide-react'
 import { useState } from 'react'
 
@@ -44,7 +44,7 @@ const ACTIONS: { action: AerospaceAction; label: string; sub: string }[] = [
   {
     action: { kind: 'openConfig' },
     label: 'Open config',
-    sub: 'launcharr’s config.json when managed, else aerospace.toml',
+    sub: 'scuttlarr’s config.json when managed, else aerospace.toml',
   },
   {
     action: { kind: 'sponsor' },

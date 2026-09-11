@@ -1,4 +1,4 @@
-import type { Clip } from '@launcharr/core/types'
+import type { Clip } from '@scuttlarr/core/types'
 import { invoke } from '@tauri-apps/api/core'
 import { useCallback, useEffect, useState } from 'react'
 

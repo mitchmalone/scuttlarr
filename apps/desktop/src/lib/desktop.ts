@@ -3,8 +3,8 @@ import {
   bordersArgs,
   normalizeDesktop,
   renderAerospaceToml,
-} from '@launcharr/core/desktop'
-import { BAR_STRIP_HEIGHT } from '@launcharr/tui/bar'
+} from '@scuttlarr/core/desktop'
+import { BAR_STRIP_HEIGHT } from '@scuttlarr/tui/bar'
 import { invoke } from '@tauri-apps/api/core'
 
 import type { Config } from './config'

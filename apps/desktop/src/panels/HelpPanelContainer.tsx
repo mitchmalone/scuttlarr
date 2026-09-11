@@ -1,4 +1,4 @@
-import type { IndexItem, ScriptInfo } from '@launcharr/core/types'
+import type { IndexItem, ScriptInfo } from '@scuttlarr/core/types'
 import { invoke } from '@tauri-apps/api/core'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -78,7 +78,7 @@ export function buildSections(
     .filter((i) => i.kind === 'command')
     .map((i) => ({ left: keyword(i), right: i.name }))
   const builtins = index
-    .filter((i) => i.kind === 'launcharr')
+    .filter((i) => i.kind === 'scuttlarr')
     .map((i) => ({ left: keyword(i), right: i.name }))
   if (commands.length + builtins.length > 0) {
     sections.push({ label: 'Commands', entries: [...commands, ...builtins] })

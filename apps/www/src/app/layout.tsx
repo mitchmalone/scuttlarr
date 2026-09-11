@@ -16,14 +16,14 @@ const ibmPlexSans = IBM_Plex_Sans({
   variable: '--font-ibm-plex-sans',
 })
 
-const TITLE = 'launcharr — the keyboard control surface for macOS'
+const TITLE = 'scuttlarr — the keyboard control surface for macOS'
 const DESCRIPTION =
   'A macOS launcher that dresses up as a shell prompt, plus a menubar replacement, keyboard-driven TUI panels and agent monitoring. Hit ⌥Space and run your Mac without touching the mouse. Free and open source.'
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  metadataBase: new URL('https://launcharr.com'),
+  metadataBase: new URL('https://scuttlarr.com'),
   openGraph: {
     title: TITLE,
     description:

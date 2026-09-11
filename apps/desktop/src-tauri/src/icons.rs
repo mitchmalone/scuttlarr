@@ -46,7 +46,7 @@ pub fn annotate_cached(items: &mut [IndexItem], icon_dir: &Path) {
 }
 
 /// Extract any missing icons, then re-annotate state and notify. The actual extraction runs
-/// in a throwaway child process (`launcharr --extract-icons <dir>`): AppKit's icon machinery
+/// in a throwaway child process (`scuttlarr --extract-icons <dir>`): AppKit's icon machinery
 /// retains ~30MB of rasterized data per icon and no amount of autoreleasepool/recache gives
 /// it back — exiting the process is the only reliable release (see JOURNAL 2026-08-08).
 pub fn extract_missing(app: AppHandle) {
@@ -78,7 +78,7 @@ pub fn extract_missing(app: AppHandle) {
             .map(|s| s.success())
             .unwrap_or(false);
         if !ok {
-            eprintln!("[launcharr] icon extraction subprocess failed");
+            eprintln!("[scuttlarr] icon extraction subprocess failed");
         }
 
         let mut index = state.index.write().unwrap();
@@ -192,7 +192,7 @@ mod tests {
     #[test]
     #[ignore]
     fn bulk_extraction_in_process_leaks_by_design_of_appkit() {
-        let dir = std::env::temp_dir().join("launcharr-icon-bulk");
+        let dir = std::env::temp_dir().join("scuttlarr-icon-bulk");
         let _ = fs::create_dir_all(&dir);
         let apps = crate::indexer::scan(&[], false);
         let before = rss_mb();
@@ -211,7 +211,7 @@ mod tests {
 
     #[test]
     fn extracts_a_real_app_icon_as_png() {
-        let dir = std::env::temp_dir().join("launcharr-icon-test");
+        let dir = std::env::temp_dir().join("scuttlarr-icon-test");
         let _ = fs::create_dir_all(&dir);
         let dest = dir.join("calculator.png");
         let _ = fs::remove_file(&dest);

@@ -9,7 +9,7 @@ describe('mirror plugin', () => {
     expect(j.map((x) => x.provider)).toEqual(['codex', 'claude'])
     expect(j[0]).toMatchObject({
       remote: '.codex/sessions',
-      dest: '/Users/x/.local/share/launcharr/mirrors/beebee/codex/',
+      dest: '/Users/x/.local/share/scuttlarr/mirrors/beebee/codex/',
     })
     expect(
       jobs({ MIRROR_HOST: 'b', MIRROR_CODEX: '/srv/codex' }, '/h')[0]?.remote,

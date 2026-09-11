@@ -1,7 +1,7 @@
 export type ItemKind =
   | 'app'
   | 'settings'
-  | 'launcharr'
+  | 'scuttlarr'
   | 'link'
   | 'command'
   /** A panel trigger word (wifi, usage…) surfaced as a rankable item so it fuzzy-matches

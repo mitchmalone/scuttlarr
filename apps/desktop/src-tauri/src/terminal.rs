@@ -440,7 +440,7 @@ pub fn run(configured: Terminal, command: &str, new_window: bool) -> CmdResult<(
     }
     let script = script_for(terminal, command, new_window);
     // Spawn, don't wait: the first run triggers macOS's Automation consent prompt, which
-    // blocks osascript until the user answers. launcharr must dismiss immediately (PRD §4.4).
+    // blocks osascript until the user answers. scuttlarr must dismiss immediately (PRD §4.4).
     Command::new("osascript")
         .arg("-e")
         .arg(&script)

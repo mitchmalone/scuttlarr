@@ -1,9 +1,9 @@
 //! Privacy permissions a plugin may declare (`manifest.permissions`), and what
-//! launcharr can learn or do about each: is the usage string in our bundle,
+//! scuttlarr can learn or do about each: is the usage string in our bundle,
 //! what does TCC currently say, can we make macOS ask now, and where in
 //! System Settings the user flips it (DECISIONS 2026-09-10 ×2).
 //!
-//! macOS judges a child process by the *responsible* app — launcharr.app —
+//! macOS judges a child process by the *responsible* app — scuttlarr.app —
 //! and kills it with no prompt when that app's Info.plist lacks the usage
 //! string. So the strings ship in the bundle for every class listed here,
 //! nothing prompts until code touches the API, and the plugin supervisor
@@ -291,11 +291,11 @@ pub fn describe(p: Permission) -> PluginPermission {
         Status::Granted | Status::Unknown => None,
         Status::NotDetermined => Some("macOS will ask when the plugin starts".into()),
         Status::Denied => Some(format!(
-            "allow launcharr in System Settings → Privacy & Security → {}",
+            "allow scuttlarr in System Settings → Privacy & Security → {}",
             p.label()
         )),
         Status::MissingUsageString => Some(
-            "this launcharr build cannot ask — rebuild from a source that ships the usage string"
+            "this scuttlarr build cannot ask — rebuild from a source that ships the usage string"
                 .into(),
         ),
     };

@@ -16,6 +16,6 @@ export function reportResultsPainted(resultCount: number): void {
   const elapsed = performance.now() - inputMarkedAt
   inputMarkedAt = null
   console.log(
-    `[launcharr perf] keystroke→results ${elapsed.toFixed(1)}ms (${resultCount} rows)`,
+    `[scuttlarr perf] keystroke→results ${elapsed.toFixed(1)}ms (${resultCount} rows)`,
   )
 }

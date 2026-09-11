@@ -1,6 +1,6 @@
-import { untilDeadline } from '@launcharr/core/awake'
-import { parseInput } from '@launcharr/core/grammar'
-import { generateLorem, loremToast } from '@launcharr/core/lorem'
+import { untilDeadline } from '@scuttlarr/core/awake'
+import { parseInput } from '@scuttlarr/core/grammar'
+import { generateLorem, loremToast } from '@scuttlarr/core/lorem'
 import {
   type QuicklinkDraft,
   type Row,
@@ -15,22 +15,22 @@ import {
   panelRows,
   quicklinkRows,
   scriptRows,
-} from '@launcharr/core/rows'
+} from '@scuttlarr/core/rows'
 import type {
   Clip,
   FrecencyMap,
   IndexItem,
   ScriptInfo,
   ScriptItem,
-} from '@launcharr/core/types'
+} from '@scuttlarr/core/types'
 import {
   AskPinned,
   AskSurface,
   type AskTurn,
   WidgetGlyph,
-} from '@launcharr/tui'
-import { pluginPanelInfo } from '@launcharr/tui/plugins'
-import '@launcharr/tui/styles.css'
+} from '@scuttlarr/tui'
+import { pluginPanelInfo } from '@scuttlarr/tui/plugins'
+import '@scuttlarr/tui/styles.css'
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import type React from 'react'
@@ -136,7 +136,7 @@ const DEFAULT_CONFIG: Config = {
   shortcuts: {},
   searchFallback: 'https://www.google.com/search?q={query}',
   indexBookmarks: false,
-  theme: 'launcharr',
+  theme: 'scuttlarr',
   themes: {},
   bar: { enabled: false, layout: DEFAULT_BAR_LAYOUT },
   agents: DEFAULT_AGENTS_CONFIG,

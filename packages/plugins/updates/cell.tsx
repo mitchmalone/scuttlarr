@@ -8,8 +8,8 @@ import {
   BarHoverCell,
   ICON_PROPS,
   toneClass,
-} from '@launcharr/tui'
-import type { PluginCellProps } from '@launcharr/tui/plugins'
+} from '@scuttlarr/tui'
+import type { PluginCellProps } from '@scuttlarr/tui/plugins'
 import { Package } from 'lucide-react'
 
 import {

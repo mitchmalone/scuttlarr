@@ -101,7 +101,7 @@ pub fn enable_hover_events(webview: *mut AnyObject) -> bool {
 pub fn prevent_app_nap() {
     use objc2_foundation::{NSActivityOptions, NSProcessInfo, NSString};
     let info = NSProcessInfo::processInfo();
-    let reason = NSString::from_str("launcharr bar renders continuously");
+    let reason = NSString::from_str("scuttlarr bar renders continuously");
     let token = info.beginActivityWithOptions_reason(
         NSActivityOptions::UserInitiatedAllowingIdleSystemSleep,
         &reason,

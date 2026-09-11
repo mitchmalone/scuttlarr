@@ -15,7 +15,7 @@ use crate::error::{CmdError, CmdResult};
 
 /// The script protocol (v2 pulled forward — see docs/SCRIPTS.md):
 /// - `.ts` files (run under Bun/Node, runtime.rs) or executables in
-///   `~/.config/launcharr/scripts/`
+///   `~/.config/scuttlarr/scripts/`
 /// - `<script> manifest` → `{"trigger": "...", "name": "...", "description": "..."}`
 /// - `<script> query <args>` → `{"items": [{"title", "subtitle"?, "action"?}]}`
 /// - actions: `{"type": "copy", "value": ...}` | `{"type": "open", "value": ...}` |
@@ -113,7 +113,7 @@ pub fn discover() -> Vec<ScriptInfo> {
         let mut cmd = match crate::runtime::command_for(&path) {
             Ok(cmd) => cmd,
             Err(e) => {
-                eprintln!("[launcharr] script {}: {e}", path.display());
+                eprintln!("[scuttlarr] script {}: {e}", path.display());
                 continue;
             }
         };
@@ -185,7 +185,7 @@ fn retire(dir: &std::path::Path, name: &str) {
     let parked = dir.join(format!("{name}.retired"));
     if fs::rename(&old, &parked).is_ok() {
         let _ = fs::set_permissions(&parked, fs::Permissions::from_mode(0o644));
-        eprintln!("[launcharr] retired bundled script {name} → {name}.retired");
+        eprintln!("[scuttlarr] retired bundled script {name} → {name}.retired");
     }
 }
 
@@ -215,7 +215,7 @@ pub fn start(app: AppHandle) {
         let mut watcher = match notify::recommended_watcher(tx) {
             Ok(w) => w,
             Err(e) => {
-                eprintln!("[launcharr] scripts watcher failed: {e}");
+                eprintln!("[scuttlarr] scripts watcher failed: {e}");
                 return;
             }
         };
@@ -266,7 +266,7 @@ mod tests {
             return;
         }
         let dir =
-            std::env::temp_dir().join(format!("launcharr-script-test-{}", std::process::id()));
+            std::env::temp_dir().join(format!("scuttlarr-script-test-{}", std::process::id()));
         let _ = fs::create_dir_all(&dir);
         for (name, body) in BUNDLED {
             let p = dir.join(name);
@@ -282,7 +282,7 @@ mod tests {
 
     #[test]
     fn retire_parks_python_twins_out_of_discovery() {
-        let dir = std::env::temp_dir().join(format!("launcharr-retire-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("scuttlarr-retire-{}", std::process::id()));
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         let old = dir.join("ip.py");

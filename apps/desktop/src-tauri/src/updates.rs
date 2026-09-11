@@ -6,7 +6,7 @@
 //! cached read plus a background refresh on a long TTL, so the 1 Hz bar
 //! snapshot never blocks on a shell-out. Every check is the user's own
 //! package manager doing what it already does on `brew outdated` — no
-//! request launcharr makes on its own behalf (DECISIONS 2026-09-04).
+//! request scuttlarr makes on its own behalf (DECISIONS 2026-09-04).
 
 use std::io::{BufRead, Read};
 use std::path::{Path, PathBuf};
@@ -860,7 +860,7 @@ mod tests {
     #[test]
     fn locate_finds_a_system_binary_and_not_nonsense() {
         assert!(locate("ls").is_some());
-        assert!(locate("definitely-not-a-real-binary-launcharr").is_none());
+        assert!(locate("definitely-not-a-real-binary-scuttlarr").is_none());
     }
 
     #[test]

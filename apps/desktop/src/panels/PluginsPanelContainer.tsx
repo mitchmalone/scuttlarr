@@ -4,9 +4,9 @@ import {
   Panel,
   SectionHeader,
   useListNav,
-} from '@launcharr/tui'
-import '@launcharr/tui/bar.css'
-import type { PluginState } from '@launcharr/tui/plugins'
+} from '@scuttlarr/tui'
+import '@scuttlarr/tui/bar.css'
+import type { PluginState } from '@scuttlarr/tui/plugins'
 import { invoke } from '@tauri-apps/api/core'
 import { Puzzle } from 'lucide-react'
 import { useEffect, useState } from 'react'

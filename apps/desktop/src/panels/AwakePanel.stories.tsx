@@ -1,5 +1,5 @@
-import type { AwakeStatus } from '@launcharr/core/awake'
-import { defineStories } from '@launcharr/tui'
+import type { AwakeStatus } from '@scuttlarr/core/awake'
+import { defineStories } from '@scuttlarr/tui'
 
 import { AwakePanel } from './AwakePanel'
 

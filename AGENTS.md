@@ -4,10 +4,12 @@
 >
 > **Fold in progress (DECISIONS 2026-09-11).** This repo absorbs the scuttlarr repo and is
 > renamed scuttlarr: one product — bar, launcher, universal theming, keyboard-first, plus
-> the machine setup — where the launcher is a feature. Until the rename lands
-> (`docs/plans/active/2026-09-11-unify-into-scuttlarr.md` phase 1) names, ids, and paths
-> below still say launcharr. Product shape: **install gets the bar and launcher; everything
-> else is a toggle** (desktop, theme, machine).
+> the machine setup — where the launcher is a feature. The code rename has landed
+> (`@scuttlarr/*`, `com.mitchmalone.scuttlarr`, `~/.config/scuttlarr`, `rename.rs`
+> migrates old homes); the GitHub repo, tap cask, and domain still say launcharr until
+> Mitch flips them (`docs/plans/active/2026-09-11-unify-into-scuttlarr.md` 1.1/1.5/1.6).
+> Product shape: **install gets the bar and launcher; everything else is a toggle**
+> (desktop, theme, machine).
 
 A macOS app launcher that dresses up as a shell prompt: global hotkey summons a floating
 REPL-looking panel; type to fuzzy-launch apps and System Settings panes, or `!command` to fling
@@ -40,13 +42,13 @@ pnpm monorepo:
 | Path             | What it is                                                                                                                                     |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | `apps/desktop`   | The macOS app — Tauri 2 shell (Rust) + React panel UI (WKWebView)                                                                              |
-| `apps/www`       | launcharr.com — static-export Next.js marketing site (Vercel)                                                                                  |
+| `apps/www`       | scuttlarr.com — static-export Next.js marketing site (Vercel)                                                                                  |
 | `packages/core`  | The shared engine: grammar, fuzzy matcher, ranking, rows — pure TypeScript                                                                     |
 | `packages/tui`   | The UI kit both apps render: components, bar, theme tokens (derived from `packages/theme` once it exists)                                      |
 | `packages/theme` | _(planned, phase 3)_ Omarchy model: `themes/<name>/colors.toml`, templates, pure renderer, committed per-app renders                           |
 | `packages/setup` | _(planned, phase 2)_ scuttlarr's zsh CLI: install, defaults, Brewfile, shell, Caps→Hyper, duti, migrations, remove, manifest — `docs/SETUP.md` |
 
-The only external repo is the generated satellite `mitchmalone/homebrew-tap` (shared tap; `Casks/launcharr.rb`),
+The only external repo is the generated satellite `mitchmalone/homebrew-tap` (shared tap; `Casks/scuttlarr.rb`, `launcharr.rb` deprecated),
 written by the release pipeline — fix the generator, not the output.
 
 **Rust owns the OS, TypeScript owns the experience.** Anything touching AppKit, the
@@ -100,7 +102,7 @@ it in `docs/DECISIONS.md`.
    `src/app/globals.css`, and shadcn/ui's semantic tokens are _mapped onto_ those vars,
    never imported (DECISIONS 2026-08-16). Exception: the demo renders a dark macOS desktop
    in both site themes, like a screenshot — but its panel and bar chrome are driven by the
-   app's own theme tokens (`@launcharr/tui/themes`), not hand-typed hex, so the theme
+   app's own theme tokens (`@scuttlarr/tui/themes`), not hand-typed hex, so the theme
    picker retints them exactly as the app does. Page-level design source of truth is the
    Claude Design project "Launcharr landing page design"
    (`02b1ac80-4556-43d7-810b-b5938cc2573e`) — visual changes round-trip through it, but it
@@ -174,9 +176,9 @@ Same spirit as the TypeScript rules: strict, minimal, boring.
 
 | Command                                      | What                                                                                    |
 | -------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `pnpm dev`                                   | All apps in parallel (desktop panel needs `pnpm --filter @launcharr/desktop tauri dev`) |
-| `pnpm --filter @launcharr/desktop tauri dev` | The app, for real (Tauri shell + panel)                                                 |
-| `pnpm --filter @launcharr/www dev`           | The site                                                                                |
+| `pnpm dev`                                   | All apps in parallel (desktop panel needs `pnpm --filter @scuttlarr/desktop tauri dev`) |
+| `pnpm --filter @scuttlarr/desktop tauri dev` | The app, for real (Tauri shell + panel)                                                 |
+| `pnpm --filter @scuttlarr/www dev`           | The site                                                                                |
 | `pnpm verify`                                | The gate: typecheck + lint + format + test + cargo test + clippy                        |
 | `scripts/dev-install.sh [--build]`           | Run a working-tree build: swap into `/Applications` and relaunch, quietly (no Finder)   |
 | `scripts/release.sh X.Y.Z`                   | The only way to release (see `docs/RELEASING.md`)                                       |

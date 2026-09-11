@@ -6,9 +6,9 @@ import { PANEL_INFO } from '@/lib/demo-data'
 import { VERSION } from '@/lib/site'
 
 export const metadata: Metadata = {
-  title: 'launcharr docs — scripts, config, panels',
+  title: 'scuttlarr docs — scripts, config, panels',
   description:
-    'The launcharr scripts protocol, config.json reference, panel triggers, and how to uninstall. Drop an executable in a folder and its trigger word joins the launcher grammar.',
+    'The scuttlarr scripts protocol, config.json reference, panel triggers, and how to uninstall. Drop an executable in a folder and its trigger word joins the launcher grammar.',
 }
 
 const SECTION = 'mx-auto max-w-[900px] px-8'
@@ -60,7 +60,7 @@ const QUERY_JSON = `{
 
 /* The bar block mirrors DEFAULT_BAR_LAYOUT in apps/desktop/src/lib/config.ts. */
 const CONFIG_JSON = `{
-  "theme": "launcharr",
+  "theme": "scuttlarr",
   "themes": { "my-theme": { "accent": "#ff176c" } },
   "bar": {
     "enabled": true,
@@ -79,10 +79,10 @@ const CONFIG_JSON = `{
   }
 }`
 
-const UNINSTALL = `$ rm -rf /Applications/launcharr.app \\
-     ~/.config/launcharr \\
-     ~/Library/Application\\ Support/com.mitchmalone.launcharr \\
-     ~/Library/LaunchAgents/launcharr.plist`
+const UNINSTALL = `$ rm -rf /Applications/scuttlarr.app \\
+     ~/.config/scuttlarr \\
+     ~/Library/Application\\ Support/com.mitchmalone.scuttlarr \\
+     ~/Library/LaunchAgents/scuttlarr.plist`
 
 export default function Docs() {
   return (
@@ -96,7 +96,7 @@ export default function Docs() {
         </h1>
         <p className={`m-0 mb-8 max-w-[70ch] ${PROSE}`}>
           Drop an executable into{' '}
-          <code className={CODE}>~/.config/launcharr/scripts/</code> and its
+          <code className={CODE}>~/.config/scuttlarr/scripts/</code> and its
           trigger word joins the launcher grammar — no restart, no store, no
           manifest file. Any language. The bundled scripts (
           <code className={CODE}>json</code>, <code className={CODE}>ip</code>)
@@ -157,7 +157,7 @@ export default function Docs() {
           <h2 className={H2}>Config</h2>
           <p className={`m-0 mb-6 max-w-[70ch] ${PROSE}`}>
             Everything lives in{' '}
-            <code className={CODE}>~/.config/launcharr/config.json</code> —
+            <code className={CODE}>~/.config/scuttlarr/config.json</code> —
             watched and hot-applied, in sync with the settings window both ways.
             Themes are token overlays; unknown names fall back safely so a
             hand-edit can&rsquo;t blank the UI.
@@ -174,13 +174,13 @@ export default function Docs() {
             into the head of the right zone.
           </p>
           <p className={`m-0 mt-5 max-w-[70ch] ${PROSE}`}>
-            <code className={CODE}>desktop</code> is the tiling layer: launcharr
+            <code className={CODE}>desktop</code> is the tiling layer: scuttlarr
             renders{' '}
             <code className={CODE}>~/.config/aerospace/aerospace.toml</code>{' '}
             from these few knobs and reloads AeroSpace live. Set{' '}
             <code className={CODE}>tiling.managed</code> to{' '}
             <code className={CODE}>false</code> and the file is yours —
-            launcharr never writes it again. Borders (JankyBorders) are opt-in
+            scuttlarr never writes it again. Borders (JankyBorders) are opt-in
             from Settings → Desktop and take their colours from the theme;{' '}
             <code className={CODE}>cornerRadius</code> sets macOS&rsquo;s hidden
             window-corner default (1–26, apps relaunch to pick it up).
@@ -227,7 +227,7 @@ export default function Docs() {
             alongside as a cask dependency) and JankyBorders (if you opted in)
             stay until you <code className={CODE}>brew uninstall</code> them too
             — <code className={CODE}>~/.config/aerospace</code> is only
-            launcharr&rsquo;s if its first line says so.
+            scuttlarr&rsquo;s if its first line says so.
           </p>
         </div>
       </section>
@@ -237,7 +237,7 @@ export default function Docs() {
           className={`${SECTION} flex flex-wrap items-center justify-between gap-6 py-10 text-[13px] text-(--dim2)`}
         >
           <span>
-            launcharr {VERSION} — because the apps won&rsquo;t launch
+            scuttlarr {VERSION} — because the apps won&rsquo;t launch
             themselves. Yarr.
           </span>
           <Link href="/" className="text-(--dim) hover:text-(--fg)">

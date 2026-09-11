@@ -1,4 +1,4 @@
-import { defineStories } from '@launcharr/tui'
+import { defineStories } from '@scuttlarr/tui'
 
 import { type AgentSession, AgentsPanel } from './AgentsPanel'
 
@@ -8,14 +8,14 @@ const session = (over: Partial<AgentSession>): AgentSession => ({
   session: 'aaaa1111-2222-3333-4444-555566667777',
   agent: 'claude',
   state: 'working',
-  title: 'Grow launcharr into an Omarchy-style bar',
+  title: 'Grow scuttlarr into an Omarchy-style bar',
   detail: 'PreToolUse · Bash',
   mux: 'tmux',
   muxTarget: '%23',
   updatedAt: NOW - 42,
   muxGroup: 'gogogo',
   muxIndex: 2,
-  muxLabel: 'Launcharr',
+  muxLabel: 'Scuttlarr',
   pid: 4242,
   pidComm: 'claude',
   subagents: [],

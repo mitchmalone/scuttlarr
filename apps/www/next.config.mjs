@@ -6,9 +6,9 @@ const nextConfig = {
   // generated nested pair silently competes with it.
   agentRules: false,
   transpilePackages: [
-    '@launcharr/core',
-    '@launcharr/tui',
-    '@launcharr/plugins',
+    '@scuttlarr/core',
+    '@scuttlarr/tui',
+    '@scuttlarr/plugins',
   ],
   typedRoutes: true,
   images: {

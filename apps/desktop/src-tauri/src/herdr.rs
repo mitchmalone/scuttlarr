@@ -2,7 +2,7 @@
 //!
 //! herdr (<https://herdr.dev>) is a terminal workspace server that owns panes
 //! and — unlike tmux — classifies the agents inside them itself: every pane is
-//! `working | blocked | done | idle | unknown`, which is launcharr's own
+//! `working | blocked | done | idle | unknown`, which is scuttlarr's own
 //! vocabulary. So herdr isn't a second hook source to fold into our store, it
 //! *is* a store, already authoritative about its own agents. We read it and
 //! translate; we never write agent state back.
@@ -31,7 +31,7 @@ use crate::agents::{AgentSession, MUX_HERDR};
 /// layout cache: the bar pushes at 1 Hz and must not pay a round trip per tick.
 const CACHE: Duration = Duration::from_millis(1000);
 
-/// herdr's own agent record (`AgentInfo`). Only the fields launcharr shows —
+/// herdr's own agent record (`AgentInfo`). Only the fields scuttlarr shows —
 /// herdr's schema is young and will grow; unknown fields are ignored by design.
 #[derive(Debug, Clone, Deserialize)]
 struct AgentInfo {
@@ -84,7 +84,7 @@ struct Snapshot {
     tabs: Vec<TabInfo>,
 }
 
-/// The live agents herdr knows about, as launcharr sessions. Empty — and
+/// The live agents herdr knows about, as scuttlarr sessions. Empty — and
 /// silent — when herdr isn't running: a machine without herdr must not pay for
 /// this, and must never see an error.
 pub fn list() -> Vec<AgentSession> {
@@ -154,7 +154,7 @@ fn snapshot(path: &std::path::Path) -> Option<Snapshot> {
 fn request_snapshot(path: &std::path::Path) -> Option<Snapshot> {
     let response = request(
         path,
-        r#"{"id":"launcharr","method":"session.snapshot","params":{}}"#,
+        r#"{"id":"scuttlarr","method":"session.snapshot","params":{}}"#,
     )?;
     #[derive(Deserialize)]
     struct Envelope {
@@ -189,7 +189,7 @@ fn request(path: &std::path::Path, line: &str) -> Option<String> {
     (!response.trim().is_empty()).then_some(response)
 }
 
-/// Focus a herdr pane. herdr owns the window; all launcharr does is ask, then
+/// Focus a herdr pane. herdr owns the window; all scuttlarr does is ask, then
 /// its caller brings the terminal forward.
 /// The `agent.*` methods take a `target`, not the `pane_id` that `pane.*` takes
 /// — a pane id is a valid target, but the field name differs, and inferring it
@@ -207,7 +207,7 @@ pub fn focus(session_name: &str, pane_id: &str) -> bool {
 
 fn focus_request(pane_id: &str) -> String {
     serde_json::json!({
-        "id": "launcharr-focus",
+        "id": "scuttlarr-focus",
         "method": "agent.focus",
         "params": { "target": pane_id },
     })
@@ -224,7 +224,7 @@ pub fn running() -> bool {
 
 fn ping_request() -> String {
     serde_json::json!({
-        "id": "launcharr-ping",
+        "id": "scuttlarr-ping",
         "method": "ping",
         "params": {},
     })
@@ -263,7 +263,7 @@ fn ok_response(response: Option<String>) -> Option<String> {
 
 fn tab_create_request() -> String {
     serde_json::json!({
-        "id": "launcharr-tab-create",
+        "id": "scuttlarr-tab-create",
         "method": "tab.create",
         "params": { "focus": true },
     })
@@ -272,7 +272,7 @@ fn tab_create_request() -> String {
 
 fn pane_current_request() -> String {
     serde_json::json!({
-        "id": "launcharr-pane-current",
+        "id": "scuttlarr-pane-current",
         "method": "pane.current",
         "params": {},
     })
@@ -301,7 +301,7 @@ fn parse_current_pane_id(response: &str) -> Option<String> {
 
 fn send_text_request(pane_id: &str, text: &str) -> String {
     serde_json::json!({
-        "id": "launcharr-pane-send-text",
+        "id": "scuttlarr-pane-send-text",
         "method": "pane.send_text",
         "params": { "pane_id": pane_id, "text": text },
     })
@@ -310,7 +310,7 @@ fn send_text_request(pane_id: &str, text: &str) -> String {
 
 fn send_enter_request(pane_id: &str) -> String {
     serde_json::json!({
-        "id": "launcharr-pane-send-keys",
+        "id": "scuttlarr-pane-send-keys",
         "method": "pane.send_keys",
         "params": { "pane_id": pane_id, "keys": ["Enter"] },
     })
@@ -343,7 +343,7 @@ fn parse_client_tty(ps_out: &str) -> Option<String> {
         .next()
 }
 
-/// herdr's states are launcharr's, with one rename: herdr says `blocked` where
+/// herdr's states are scuttlarr's, with one rename: herdr says `blocked` where
 /// the bar says `attention` (the breathing red cell).
 fn map_state(status: &str) -> &str {
     match status {
@@ -352,7 +352,7 @@ fn map_state(status: &str) -> &str {
     }
 }
 
-/// Translate one snapshot into launcharr sessions.
+/// Translate one snapshot into scuttlarr sessions.
 ///
 /// Ages: herdr's snapshot carries no timestamps, only a `state_change_seq` that
 /// bumps when it reclassifies an agent. We remember when each seq was first
@@ -444,12 +444,12 @@ mod tests {
     /// the protocol is days old and will move under us.
     const SNAPSHOT: &str = r#"{
       "agents": [{
-        "agent": "claude", "agent_status": "idle", "cwd": "/Users/mitch/Developer/mitch/launcharr",
+        "agent": "claude", "agent_status": "idle", "cwd": "/Users/mitch/Developer/mitch/scuttlarr",
         "focused": true, "pane_id": "w1:p1", "revision": 12, "state_change_seq": 5,
         "tab_id": "w1:t1", "terminal_id": "term_659489cfd23cc1",
         "terminal_title": "✳ L2", "terminal_title_stripped": "L2", "workspace_id": "w1"
       }],
-      "workspaces": [{"workspace_id":"w1","label":"launcharr","number":1,"agent_status":"idle"}],
+      "workspaces": [{"workspace_id":"w1","label":"scuttlarr","number":1,"agent_status":"idle"}],
       "tabs": [{"tab_id":"w1:t1","workspace_id":"w1","label":"1","number":1}]
     }"#;
 
@@ -468,10 +468,10 @@ mod tests {
         assert_eq!(s.title, "L2", "falls back to the stripped terminal title");
         assert_eq!(s.mux, MUX_HERDR);
         assert_eq!(s.mux_target, "w1:p1");
-        assert_eq!(s.mux_group.as_deref(), Some("launcharr"));
+        assert_eq!(s.mux_group.as_deref(), Some("scuttlarr"));
         assert_eq!(s.mux_index, Some(1));
         assert_eq!(s.mux_label.as_deref(), Some("1"));
-        assert_eq!(s.detail, "launcharr", "cwd basename");
+        assert_eq!(s.detail, "scuttlarr", "cwd basename");
     }
 
     #[test]
@@ -586,7 +586,7 @@ ttys000  /bin/zsh
     /// not a live server — herdr wasn't running on this machine, 2026-09-04.
     #[test]
     fn parses_the_new_panes_id_from_a_pane_current_response() {
-        let response = r#"{"id":"launcharr-pane-current","result":{"type":"pane_current","pane":{"pane_id":"w1:p2","tab_id":"w1:t2","workspace_id":"w1","focused":true}}}"#;
+        let response = r#"{"id":"scuttlarr-pane-current","result":{"type":"pane_current","pane":{"pane_id":"w1:p2","tab_id":"w1:t2","workspace_id":"w1","focused":true}}}"#;
         assert_eq!(parse_current_pane_id(response).as_deref(), Some("w1:p2"));
         assert_eq!(parse_current_pane_id(r#"{"error":{}}"#), None);
         assert_eq!(parse_current_pane_id("not json"), None);

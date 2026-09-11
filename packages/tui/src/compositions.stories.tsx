@@ -195,7 +195,7 @@ function ClipboardDemo() {
 function WizardDemo() {
   const [url, setUrl] = useState('')
   return (
-    <Panel title="launcharr" subtitle="Add a theme">
+    <Panel title="scuttlarr" subtitle="Add a theme">
       <TextPrompt
         sigil=">"
         value={url}

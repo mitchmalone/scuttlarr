@@ -1,7 +1,7 @@
 'use client'
 
-import UpdatesCell from '@launcharr/plugins/updates/cell'
-import UsageCell from '@launcharr/plugins/usage/cell'
+import UpdatesCell from '@scuttlarr/plugins/updates/cell'
+import UsageCell from '@scuttlarr/plugins/usage/cell'
 import {
   Bar,
   BarAgents,
@@ -11,8 +11,8 @@ import {
   BarWifiCell,
   BarWorkspaces,
   formatBarClock,
-} from '@launcharr/tui'
-import { NOOP_HOST, type PluginCellComponent } from '@launcharr/tui/plugins'
+} from '@scuttlarr/tui'
+import { NOOP_HOST, type PluginCellComponent } from '@scuttlarr/tui/plugins'
 import { useEffect, useState } from 'react'
 
 import { WIFI, demoSnapshot } from '@/lib/demo-data'
@@ -27,7 +27,7 @@ const PLUGIN_CELLS: Record<string, PluginCellComponent<never>> = {
 
 /**
  * The bar across the top of the demo desktop — the *actual* bar components from
- * `@launcharr/tui`, the same ones the desktop app renders. The website supplies
+ * `@scuttlarr/tui`, the same ones the desktop app renders. The website supplies
  * a fictional snapshot and its own hover feed; it owns no bar markup or CSS
  * (AGENTS invariant 10).
  */

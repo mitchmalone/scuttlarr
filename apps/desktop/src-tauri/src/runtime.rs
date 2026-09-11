@@ -5,7 +5,7 @@
 //! language still works, TS is simply the one that needs no shebang and no
 //! chmod).
 //!
-//! launcharr launched from Finder inherits a bare PATH — no nvm/Volta/brew
+//! scuttlarr launched from Finder inherits a bare PATH — no nvm/Volta/brew
 //! shims — so runtimes are located explicitly, the way deps.rs finds
 //! `aerospace`. Resolution is cached for the process: one directory walk,
 //! not one per tick.

@@ -1,5 +1,5 @@
-import type { UsageReport } from '@launcharr/tui'
-import type { PluginState } from '@launcharr/tui/plugins'
+import type { UsageReport } from '@scuttlarr/tui'
+import type { PluginState } from '@scuttlarr/tui/plugins'
 
 import manifest from './manifest.json'
 

@@ -6,8 +6,8 @@ import {
   BarCardTitle,
   BarHoverCell,
   ICON_PROPS,
-} from '@launcharr/tui'
-import type { PluginCellProps } from '@launcharr/tui/plugins'
+} from '@scuttlarr/tui'
+import type { PluginCellProps } from '@scuttlarr/tui/plugins'
 import { Hand } from 'lucide-react'
 
 import type { HelloState } from './model'
@@ -15,8 +15,8 @@ import type { HelloState } from './model'
 /**
  * The reference cell (docs/PLUGINS.md): a glyph and the tick count, a hover
  * card, click opens the panel. Only kit components — the theme, the fonts,
- * the card chrome are launcharr's, so the plugin looks native everywhere,
- * launcharr.com included.
+ * the card chrome are scuttlarr's, so the plugin looks native everywhere,
+ * scuttlarr.com included.
  */
 export default function HelloCell({
   plugin,

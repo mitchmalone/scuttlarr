@@ -236,6 +236,12 @@ pub async fn desktop_apply(
     crate::desktop::apply(req)
 }
 
+/// Theme policy inputs: active Focus, system appearance, configured modes (appearance.rs).
+#[tauri::command]
+pub async fn appearance_inputs() -> crate::appearance::AppearanceInputs {
+    crate::appearance::inputs()
+}
+
 /// Theme rung: install rendered files under the state dir and fan out reloads (theme.rs).
 #[tauri::command]
 pub async fn theme_apply(req: crate::theme::ThemeApply) -> CmdResult<crate::theme::ThemeResult> {

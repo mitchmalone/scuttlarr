@@ -8,6 +8,7 @@ import {
   Globe,
   LayoutGrid,
   type LucideIcon,
+  Palette,
   Puzzle,
   Volume2,
   Wifi,
@@ -62,6 +63,12 @@ export const PANEL_INFO: PanelInfo[] = [
     hint: 'installed & gallery ▸',
     aliases: ['plugin', 'gallery', 'extensions'],
   },
+  {
+    id: 'theme',
+    title: 'Theme',
+    hint: 'pick a theme ▸',
+    aliases: ['themes', 'appearance', 'colors', 'colours'],
+  },
   { id: 'help', title: 'Help', hint: 'commands & keys ▸' },
 ]
 
@@ -77,6 +84,7 @@ export const PANEL_ICONS: Record<string, LucideIcon> = {
   help: CircleHelp,
   plugins: Puzzle,
   aerospace: LayoutGrid,
+  theme: Palette,
 }
 
 /** Panels gated by settings; anything unlisted is always on. */

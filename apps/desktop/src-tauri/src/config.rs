@@ -286,6 +286,10 @@ pub struct AppearanceConfig {
     pub everywhere: bool,
     /// Also set macOS light/dark from the theme's mode.
     pub macos: bool,
+    /// The policy — mode (system | light | dark | schedule), schedule, pair, Focus
+    /// mappings. Opaque to Rust: `@scuttlarr/core/appearance` owns the shape.
+    #[serde(flatten)]
+    pub policy: serde_json::Map<String, serde_json::Value>,
 }
 
 impl Default for AppearanceConfig {
@@ -293,6 +297,7 @@ impl Default for AppearanceConfig {
         Self {
             everywhere: false,
             macos: true,
+            policy: serde_json::Map::new(),
         }
     }
 }

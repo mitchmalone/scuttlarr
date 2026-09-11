@@ -707,3 +707,18 @@ button {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* Settings → General ▸ Theme: pair / schedule / Focus controls sit inline. */
+.buttonrow.inline {
+  align-items: center;
+  margin-top: 6px;
+}
+.buttonrow.inline > .hint {
+  margin-top: 0;
+}
+.focusrow + .focusrow {
+  margin-top: 8px;
+}
+.focusname {
+  min-width: 96px;
+}

@@ -5,6 +5,40 @@
 
 ---
 
+### 2026-09-11 · Theme policy: pure TS resolves, Rust reports inputs, a manual pick sticks, `system` mode owns light/dark
+
+- **Decision.** _Which_ theme is active is a policy layered on top of the theme rung,
+  and Omarchy has no such layer. `@scuttlarr/core/appearance` is pure: a policy
+  (`mode: system | light | dark | schedule`, `schedule {light, dark}` clock times, a
+  `pair {light, dark}`, `focus: Record<modeId, theme | pair>`) plus inputs (active
+  macOS Focus id, system appearance, wall clock) → one theme name. Resolution: a
+  mapping for the active Focus wins, else the pair; mode picks the half. Rust
+  (`appearance.rs`) only reports inputs, both permission-free: it watches
+  `~/Library/DoNotDisturb/DB/` (Assertions.json = active Focus,
+  ModeConfigurations.json = names) and `~/Library/Preferences/` (`AppleInterfaceStyle`
+  via `defaults read` on change, never on a timer) and emits `appearance-input`. The
+  panel window — the one that lives all session — runs `useAppearancePolicy`: on any
+  input, policy edit, or schedule boundary it resolves and, only if different, writes
+  `config.theme`. Everything downstream (windows, borders, the "everywhere" fan-out)
+  already follows a theme change, so the engine has exactly one side effect. A manual
+  pick (Settings select, `theme ⏎`) goes through `withPick`, which writes the slot the
+  policy is currently reading (the pair's light or dark half, or the active Focus's
+  mapping), so it sticks instead of being undone at the next input. Focus mappings
+  are keyed by mode _identifier_, which survives a rename in System Settings.
+- **`system` vs "follow it with macOS".** When `mode = system` macOS is the source of
+  light/dark (its own sunrise/sunset schedule included) and the rung must not flip the
+  OS appearance back, or the two would chase each other; `flipsMacos` is
+  `macos && mode !== 'system'`. Our `schedule` exists for people who keep the OS
+  feature off.
+- **Why not in Rust.** Product opinion belongs in TypeScript (AGENTS); the policy is
+  a dozen pure functions with tests, and Rust would have had to learn the config's
+  policy shape (it stays `serde(flatten)` opaque). Why not a poll: two file watchers
+  cost nothing idle; polling `defaults` is a process spawn per tick.
+- **Deferred.** A global hotkey for the switcher (Omarchy's ⌥⌃⇧Space) — `theme ⏎` is
+  the keyboard path for now, and custom shortcuts can already map a key to an item.
+  Sunrise/sunset of our own: macOS does it; revisit only if `system` proves
+  insufficient.
+
 ### 2026-09-11 · Theme format is Omarchy's `colors.toml`, verbatim; renders go to a state dir; terminals retint by OSC
 
 - **Decision.** A theme is `themes/<name>/colors.toml` with Omarchy's keys unchanged

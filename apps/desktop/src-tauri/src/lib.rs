@@ -13,6 +13,7 @@ use tauri_plugin_global_shortcut::ShortcutState;
 
 mod activation;
 mod agents;
+mod appearance;
 mod ask;
 mod audio;
 mod bar;
@@ -130,6 +131,7 @@ pub fn run() {
             commands::hooks_status,
             commands::hooks_install,
             commands::setup_run,
+            commands::appearance_inputs,
             commands::theme_apply,
             commands::theme_current,
             commands::desktop_status,
@@ -248,6 +250,7 @@ pub fn run() {
             config::watch(app.handle().clone());
             apply_launch_at_login(app.handle(), cfg.launch_at_login);
             setup::boot(app.handle(), cfg.machine.enabled);
+            appearance::watch(app.handle().clone());
 
             // §7 budget: cold start → hotkey registered < 1s.
             eprintln!(

@@ -3,7 +3,7 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-09-11 (unification: phases 0–2 done, phase 3 theme package + rung in)
+> Last updated: 2026-09-11 (unification: phases 0–3 done, phase 4 policy + switcher in)
 
 ## Where we are
 

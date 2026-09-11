@@ -1,3 +1,4 @@
+import type { AppearanceMode } from '@scuttlarr/core/appearance'
 import type { Link } from '@scuttlarr/core/types'
 import type {
   BarSnapshot,
@@ -25,6 +26,15 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
+  FOCUS_OWN_PAIR,
+  FOCUS_USE_PAIR,
+  focusChoice,
+  isClock,
+  pickTheme,
+  withFocusChoice,
+  withFocusHalf,
+} from '../lib/appearance-ui'
+import {
   type AgentsConfig,
   type AppearanceConfig,
   type BarZones,
@@ -42,6 +52,10 @@ import {
   applyThemeEverywhere,
 } from '../lib/theme'
 import { applyTheme, themeNames } from '../lib/themes'
+import {
+  type AppearanceInputs,
+  appearanceInputs,
+} from '../lib/use-appearance-policy'
 import { usePlugins } from '../plugins/use-plugins'
 import DesktopTab from './DesktopTab'
 import { HooksRow } from './HooksRow'
@@ -138,8 +152,9 @@ export default function SettingsApp() {
 
   if (!config) return <div className="settings" />
 
+  const patch = (p: Partial<Config>) => setConfig({ ...config, ...p })
   const set = <K extends keyof Config>(key: K, value: Config[K]) =>
-    setConfig({ ...config, [key]: value })
+    patch({ [key]: value })
 
   return (
     <div className="settings">
@@ -160,7 +175,9 @@ export default function SettingsApp() {
 
       <main className="content">
         <div className="content-inner">
-          {tab === 'general' && <GeneralTab config={config} set={set} />}
+          {tab === 'general' && (
+            <GeneralTab config={config} set={set} patch={patch} />
+          )}
           {tab === 'menubar' && <MenubarTab config={config} set={set} />}
           {tab === 'desktop' && <DesktopTab config={config} set={set} />}
           {tab === 'agents' && <AgentsTab config={config} set={set} />}
@@ -174,6 +191,8 @@ export default function SettingsApp() {
 }
 
 type SetFn = <K extends keyof Config>(key: K, value: Config[K]) => void
+/** Several keys in one state update (`set` twice would clobber). */
+type PatchFn = (p: Partial<Config>) => void
 
 function tabFromHash(hash: string): TabId {
   const id = hash.replace(/^#/, '')
@@ -203,12 +222,22 @@ const GENERAL_SUBTABS = [
 type GeneralSubTab = (typeof GENERAL_SUBTABS)[number]['id']
 
 /** Settings → General: the basics, then the two rows that had grown into pages. */
-function GeneralTab({ config, set }: { config: Config; set: SetFn }) {
+function GeneralTab({
+  config,
+  set,
+  patch,
+}: {
+  config: Config
+  set: SetFn
+  patch: PatchFn
+}) {
   const [sub, setSub] = useState<GeneralSubTab>('general')
   return (
     <>
       <SubTabs tabs={GENERAL_SUBTABS} value={sub} onChange={setSub} />
-      {sub === 'general' && <GeneralBasics config={config} set={set} />}
+      {sub === 'general' && (
+        <GeneralBasics config={config} set={set} patch={patch} />
+      )}
       {sub === 'colorpicker' && (
         <ColorPickerSection config={config} set={set} />
       )}
@@ -217,7 +246,15 @@ function GeneralTab({ config, set }: { config: Config; set: SetFn }) {
   )
 }
 
-function GeneralBasics({ config, set }: { config: Config; set: SetFn }) {
+function GeneralBasics({
+  config,
+  set,
+  patch,
+}: {
+  config: Config
+  set: SetFn
+  patch: PatchFn
+}) {
   return (
     <>
       <Row label="Summon hotkey">
@@ -237,23 +274,7 @@ function GeneralBasics({ config, set }: { config: Config; set: SetFn }) {
         </label>
       </Row>
       <hr />
-      <Row label="Theme">
-        <select
-          value={config.theme}
-          onChange={(e) => set('theme', e.target.value)}
-        >
-          {themeNames(config.themes).map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
-        <p className="hint">
-          Add your own under <code>"themes"</code> in config.json — partial
-          overrides welcome.
-        </p>
-      </Row>
-      <ThemeRungRows config={config} set={set} />
+      <ThemeSection config={config} set={set} patch={patch} />
       <Row label="Prompt sigil">
         <input
           className="tiny"
@@ -372,14 +393,65 @@ function ConfigSection() {
   )
 }
 
-/** The theme rung (DECISIONS 2026-09-11): render the picked theme beyond the app. */
-function ThemeRungRows({ config, set }: { config: Config; set: SetFn }) {
+const MODES: { id: AppearanceMode; label: string; hint: string }[] = [
+  {
+    id: 'system',
+    label: 'system',
+    hint: 'follows macOS, including its sunrise/sunset schedule',
+  },
+  { id: 'light', label: 'light', hint: 'always the light half of the pair' },
+  { id: 'dark', label: 'dark', hint: 'always the dark half of the pair' },
+  { id: 'schedule', label: 'schedule', hint: 'our own clock' },
+]
+
+function ThemeSelect({
+  value,
+  names,
+  onChange,
+  extra,
+}: {
+  value: string
+  names: string[]
+  onChange: (name: string) => void
+  extra?: React.ReactNode
+}) {
+  return (
+    <select value={value} onChange={(e) => onChange(e.target.value)}>
+      {extra}
+      {names.map((name) => (
+        <option key={name} value={name}>
+          {name}
+        </option>
+      ))}
+    </select>
+  )
+}
+
+/**
+ * Settings → General ▸ Theme: the pick, the policy that decides which theme is
+ * active when (DECISIONS 2026-09-11, `@scuttlarr/core/appearance`), then the
+ * rung that renders it beyond the app.
+ */
+function ThemeSection({
+  config,
+  set,
+  patch,
+}: {
+  config: Config
+  set: SetFn
+  patch: PatchFn
+}) {
   const appearance = appearanceOf(config)
+  const names = themeNames(config.themes)
+  const [inputs, setInputs] = useState<AppearanceInputs | null>(null)
+  useEffect(() => {
+    appearanceInputs().then(setInputs).catch(console.error)
+  }, [])
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<ThemeResult | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const setAppearance = (patch: Partial<AppearanceConfig>) =>
-    set('appearance', { ...appearance, ...patch })
+  const setAppearance = (p: Partial<AppearanceConfig>) =>
+    set('appearance', { ...appearance, ...p })
   const applyNow = () => {
     setBusy(true)
     setError(null)
@@ -388,8 +460,154 @@ function ThemeRungRows({ config, set }: { config: Config; set: SetFn }) {
       .catch((e) => setError(String(e)))
       .finally(() => setBusy(false))
   }
+  const modeHint = MODES.find((m) => m.id === appearance.mode)?.hint
+  const activeFocus = inputs?.modes.find((m) => m.id === inputs.focusMode)
   return (
     <>
+      <Row label="Theme">
+        <ThemeSelect
+          value={config.theme}
+          names={names}
+          onChange={(name) => patch(pickTheme(config, inputs, name))}
+        />
+        <p className="hint">
+          Add your own under <code>"themes"</code> in config.json — partial
+          overrides welcome. A pick here sticks in the slot the policy below is
+          reading{activeFocus ? ` (Focus: ${activeFocus.name})` : ''}.
+        </p>
+      </Row>
+      <Row label="Mode">
+        <select
+          value={appearance.mode}
+          onChange={(e) =>
+            setAppearance({ mode: e.target.value as AppearanceMode })
+          }
+        >
+          {MODES.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.label}
+            </option>
+          ))}
+        </select>
+        {modeHint && <p className="hint">{modeHint}</p>}
+        {appearance.mode === 'schedule' && (
+          <>
+            <div className="buttonrow inline">
+              <span className="hint">light from</span>
+              <input
+                className="tiny"
+                value={appearance.schedule.light}
+                placeholder="07:00"
+                onChange={(e) =>
+                  setAppearance({
+                    schedule: { ...appearance.schedule, light: e.target.value },
+                  })
+                }
+              />
+              <span className="hint">dark from</span>
+              <input
+                className="tiny"
+                value={appearance.schedule.dark}
+                placeholder="19:00"
+                onChange={(e) =>
+                  setAppearance({
+                    schedule: { ...appearance.schedule, dark: e.target.value },
+                  })
+                }
+              />
+            </div>
+            {(!isClock(appearance.schedule.light) ||
+              !isClock(appearance.schedule.dark)) && (
+              <p className="hint error">
+                Times are HH:MM, 24h — until both parse, 07:00 / 19:00 apply.
+              </p>
+            )}
+          </>
+        )}
+      </Row>
+      <Row label="Pair">
+        <div className="buttonrow inline">
+          <span className="hint">light</span>
+          <ThemeSelect
+            value={appearance.pair.light}
+            names={names}
+            onChange={(light) =>
+              setAppearance({ pair: { ...appearance.pair, light } })
+            }
+          />
+          <span className="hint">dark</span>
+          <ThemeSelect
+            value={appearance.pair.dark}
+            names={names}
+            onChange={(dark) =>
+              setAppearance({ pair: { ...appearance.pair, dark } })
+            }
+          />
+        </div>
+        <p className="hint">The mode picks one half; a Focus can override.</p>
+      </Row>
+      <Row label="Focus">
+        {inputs === null ? (
+          <p className="hint">reading Focus modes…</p>
+        ) : inputs.modes.length === 0 ? (
+          <p className="hint">
+            No Focus modes found — set them up in System Settings → Focus.
+          </p>
+        ) : (
+          inputs.modes.map((m) => {
+            const mapping = appearance.focus[m.id]
+            const choice = focusChoice(mapping)
+            return (
+              <div key={m.id} className="focusrow">
+                <div className="buttonrow inline">
+                  <span className="focusname">{m.name}</span>
+                  <ThemeSelect
+                    value={choice}
+                    names={names}
+                    onChange={(c) =>
+                      setAppearance(withFocusChoice(appearance, m.id, c))
+                    }
+                    extra={
+                      <>
+                        <option value={FOCUS_USE_PAIR}>— (use the pair)</option>
+                        <option value={FOCUS_OWN_PAIR}>its own pair…</option>
+                      </>
+                    }
+                  />
+                  {choice === FOCUS_OWN_PAIR && typeof mapping === 'object' && (
+                    <>
+                      <span className="hint">light</span>
+                      <ThemeSelect
+                        value={mapping.light}
+                        names={names}
+                        onChange={(t) =>
+                          setAppearance(
+                            withFocusHalf(appearance, m.id, 'light', t),
+                          )
+                        }
+                      />
+                      <span className="hint">dark</span>
+                      <ThemeSelect
+                        value={mapping.dark}
+                        names={names}
+                        onChange={(t) =>
+                          setAppearance(
+                            withFocusHalf(appearance, m.id, 'dark', t),
+                          )
+                        }
+                      />
+                    </>
+                  )}
+                </div>
+                <p className="hint tiny">
+                  <code>{m.id}</code>
+                  {inputs.focusMode === m.id ? ' · active now' : ''}
+                </p>
+              </div>
+            )
+          })
+        )}
+      </Row>
       <Row label="Everywhere">
         <label className="check">
           <input
@@ -416,6 +634,10 @@ function ThemeRungRows({ config, set }: { config: Config; set: SetFn }) {
           />
           Follow it with macOS light/dark
         </label>
+        <p className="hint">
+          Only when the mode is light, dark or schedule — in system mode macOS
+          is the source and we follow it, not the other way round.
+        </p>
         <div className="buttonrow">
           <button className="ghost" disabled={busy} onClick={applyNow}>
             {busy ? 'applying…' : 'apply now'}

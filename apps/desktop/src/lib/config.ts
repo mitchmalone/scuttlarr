@@ -1,3 +1,7 @@
+import {
+  type AppearancePolicy,
+  DEFAULT_POLICY,
+} from '@scuttlarr/core/appearance'
 import type { DesktopConfig } from '@scuttlarr/core/desktop'
 import type { Link } from '@scuttlarr/core/types'
 import type { BarModule, BarZones } from '@scuttlarr/tui'
@@ -54,10 +58,16 @@ export type Config = {
 
 export type MachineConfig = { enabled: boolean }
 
-export type AppearanceConfig = { everywhere: boolean; macos: boolean }
+/** `everywhere`/`macos` are the rung; the rest is the policy
+ * (`@scuttlarr/core/appearance`), stored flat in the same object. */
+export type AppearanceConfig = {
+  everywhere: boolean
+  macos: boolean
+} & AppearancePolicy
 export const DEFAULT_APPEARANCE: AppearanceConfig = {
   everywhere: false,
   macos: true,
+  ...DEFAULT_POLICY,
 }
 
 export type BarConfig = {

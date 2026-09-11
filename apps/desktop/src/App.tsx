@@ -47,6 +47,7 @@ import { applyDesktop } from './lib/desktop'
 import { markInput, reportResultsPainted } from './lib/perf'
 import { appearanceOf, applyThemeEverywhere } from './lib/theme'
 import { applyTheme } from './lib/themes'
+import { useAppearancePolicy } from './lib/use-appearance-policy'
 import { AerospacePanelContainer } from './panels/AerospacePanelContainer'
 import { AgentsPanelContainer } from './panels/AgentsPanelContainer'
 import { AudioPanelContainer } from './panels/AudioPanelContainer'
@@ -56,6 +57,7 @@ import { DnsPanelContainer } from './panels/DnsPanelContainer'
 import { HelpPanelContainer } from './panels/HelpPanelContainer'
 import { PluginsPanelContainer } from './panels/PluginsPanelContainer'
 import { ScreenshotsPanelContainer } from './panels/ScreenshotsPanelContainer'
+import { ThemePanelContainer } from './panels/ThemePanelContainer'
 import { WifiPanelContainer } from './panels/WifiPanelContainer'
 import {
   PANEL_ICONS,
@@ -92,6 +94,7 @@ const PANEL_COMPONENTS: Record<string, React.FC<{ onClose: () => void }>> = {
   screenshots: ScreenshotsPanelContainer,
   help: HelpPanelContainer,
   plugins: PluginsPanelContainer,
+  theme: ThemePanelContainer,
 }
 
 type PanelEntry = {
@@ -223,6 +226,9 @@ export default function App() {
     () => applyTheme(config.theme, config.themes, 'panel'),
     [config.theme, config.themes],
   )
+  // Which theme is active now (Focus, macOS light/dark, schedule) — resolves and
+  // writes `config.theme`; the effects around here follow the change.
+  useAppearancePolicy(config, configLoaded)
   // The theme rung (DECISIONS 2026-09-11): a *change* of theme name, with
   // "everywhere" on, re-renders Ghostty/tmux/prompt/delta/Claude Code and reloads.
   // Not on first load — the files on disk are already the last apply.

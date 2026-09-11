@@ -30,7 +30,21 @@ export type ThemeResult = {
 const ALIASES: Record<string, string> = { launcharr: 'scuttlarr' }
 
 export function appearanceOf(config: Config): AppearanceConfig {
-  return { ...DEFAULT_APPEARANCE, ...(config.appearance ?? {}) }
+  const a: Partial<AppearanceConfig> = config.appearance ?? {}
+  return {
+    ...DEFAULT_APPEARANCE,
+    ...a,
+    schedule: { ...DEFAULT_APPEARANCE.schedule, ...(a.schedule ?? {}) },
+    pair: { ...DEFAULT_APPEARANCE.pair, ...(a.pair ?? {}) },
+    focus: { ...(a.focus ?? {}) },
+  }
+}
+
+/** Flip macOS with the theme only when *we* decide light/dark. In `system` mode the
+ * OS is the source and flipping it back would loop. */
+export function flipsMacos(config: Config): boolean {
+  const a = appearanceOf(config)
+  return a.macos && a.mode !== 'system'
 }
 
 /** Render the named built-in. Token-only custom themes (`config.themes`) have no
@@ -58,7 +72,7 @@ export async function applyThemeEverywhere(
       mode: rendered.mode,
       files,
       osc: rendered.osc,
-      appearance: appearanceOf(config).macos,
+      appearance: flipsMacos(config),
       claude: claude ?? null,
       wallpaper: null,
     },

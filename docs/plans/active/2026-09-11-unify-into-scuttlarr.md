@@ -154,21 +154,21 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
 
 ### Phase 4 — Theme policy + switcher (the original ask)
 
-- [ ] 4.1 Theme pairs: `colors.toml` may name a `pair = "<theme>"` counterpart; config
+- [x] 4.1 (`appearance.pair {light, dark}` in config; no `pair =` key in colors.toml — the pair is user policy, not theme data) Theme pairs: `colors.toml` may name a `pair = "<theme>"` counterpart; config
       `appearance.theme = { light, dark }`.
-- [ ] 4.2 `appearance.mode`: `system` (default; observe `AppleInterfaceThemeChangedNotification`
+- [x] 4.2 (`system` reads `AppleInterfaceStyle` on change of `.GlobalPreferences.plist` via a file watcher rather than an objc observer — zero unsafe; `schedule` timer at the next boundary in the panel window) `appearance.mode`: `system` (default; observe `AppleInterfaceThemeChangedNotification`
       via objc2 in a small unsafe module, letting macOS own sunrise/sunset), `light`,
       `dark`, `schedule` (`{ light: "07:00", dark: "19:00" }`, app-side timer).
-- [ ] 4.3 macOS Focus: watch `~/Library/DoNotDisturb/DB/Assertions.json` (FSEvents, no
+- [x] 4.3 (`appearance.rs`: Assertions.json + ModeConfigurations.json watched, `appearance-input` event; `@scuttlarr/core/appearance` resolves; `withPick` makes a manual pick stick; DECISIONS 2026-09-11 policy) macOS Focus: watch `~/Library/DoNotDisturb/DB/Assertions.json` (FSEvents, no
       permissions; verified readable 2026-09-11), read mode names from
       `ModeConfigurations.json`; `appearance.focus.<mode-id>` maps to a theme or a pair.
       Resolution order: manual override → Focus mapping → mode → default pair.
-- [ ] 4.4 Switcher: `theme ⏎` panel (fuzzy list with swatch, Enter applies, ⌥⏎ sets as
-      light/dark half of the pair), global hotkey default ⌥⌃⇧Space mirroring Omarchy,
-      bar cell showing current theme optional. Settings → Appearance mirrors all of it.
-      "Toggle Dark Mode" system command becomes "flip `appearance.mode`", never a naive
-      AppleScript flip.
-- [ ] 4.5 Wallpaper: Omarchy model — `themes/<name>/backgrounds/`, `background next`
+- [~] 4.4 (`theme ⏎` panel with swatches + fuzzy filter, Enter applies via `withPick`; Settings → General ▸ Theme: mode, schedule, pair, per-Focus mapping. **Open**: global hotkey (custom shortcuts can map one meanwhile), ⌥⏎ set-as-half, bar cell, "Toggle Dark Mode" still the AppleScript flip — correct under `system` mode, wrong under fixed modes) Switcher: `theme ⏎` panel (fuzzy list with swatch, Enter applies, ⌥⏎ sets as
+  light/dark half of the pair), global hotkey default ⌥⌃⇧Space mirroring Omarchy,
+  bar cell showing current theme optional. Settings → Appearance mirrors all of it.
+  "Toggle Dark Mode" system command becomes "flip `appearance.mode`", never a naive
+  AppleScript flip.
+- [ ] 4.5 (Rust `wallpaper` field exists in `theme_apply`; no `backgrounds/` in themes yet) Wallpaper: Omarchy model — `themes/<name>/backgrounds/`, `background next`
       cycles, theme switch advances. Adjust later.
 
 ### Phase 5 — Docs close-out

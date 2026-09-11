@@ -79,9 +79,9 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
 
 ### Phase 1 — Rename (one release)
 
-- [~] 1.1 Repo `mitchmalone/launcharr` → `mitchmalone/scuttlarr` (GitHub redirect keeps
-  old clones working) — **Mitch, outward-facing, pending**. Done in code: package scopes `@launcharr/*` → `@scuttlarr/*`; app name,
-  `productName`, window titles, panel hint, README, PRD.
+- [x] 1.1 Repo `mitchmalone/launcharr` → `mitchmalone/scuttlarr` (GitHub redirect keeps
+      old clones working) (Mitch, 2026-09-11: old scuttlarr repo deleted first, GitHub redirect live, local remote repointed). Done in code: package scopes `@launcharr/*` → `@scuttlarr/*`; app name,
+      `productName`, window titles, panel hint, README, PRD.
 - [x] 1.2 (`rename.rs`, 3 tests) Identifiers with a migration in Rust, run once at startup, tested as pure
       functions over paths: bundle id `com.mitchmalone.launcharr` → `.scuttlarr`
       (Application Support dir: SQLite + icon cache moved); `~/.config/launcharr` →

@@ -193,6 +193,8 @@ importers:
         specifier: ^4
         version: 4.1.10(@types/node@26.1.2)(vite@7.3.6(@types/node@26.1.2)(jiti@2.7.0)(lightningcss@1.32.0))
 
+  packages/setup: {}
+
   packages/tui:
     dependencies:
       '@scuttlarr/core':

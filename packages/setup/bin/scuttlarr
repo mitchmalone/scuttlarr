@@ -1,0 +1,77 @@
+#!/bin/zsh
+# scuttlarr — the CLI. zsh 5.9, nothing else (DEVIATIONS.md).
+#
+# Runnable from a checkout (`bin/scuttlarr doctor`) or from the installed base
+# (`~/.local/share/scuttlarr/bin/scuttlarr`); SCUTTLARR_BASE is derived from
+# this file's real location unless the environment says otherwise.
+
+emulate -L zsh
+setopt err_exit no_unset pipe_fail
+
+SCUTTLARR_BASE="${SCUTTLARR_BASE:-${0:A:h:h}}"
+export SCUTTLARR_BASE
+source "$SCUTTLARR_BASE/lib/core.zsh"
+source "$SCUTTLARR_BASE/lib/manifest.zsh"
+source "$SCUTTLARR_BASE/lib/snapshot.zsh"
+source "$SCUTTLARR_BASE/lib/defaults.zsh"
+source "$SCUTTLARR_BASE/lib/files.zsh"
+source "$SCUTTLARR_BASE/lib/doctor.zsh"
+
+usage() {
+  cat <<EOF
+scuttlarr ${SCUTTLARR_VERSION} — scuttle the ship, sail the wreck.
+
+  scuttlarr doctor                 what differs from base ⊕ overlay (read-only)
+  scuttlarr defaults               plan: every macOS default that would change
+  scuttlarr defaults --apply       apply them (snapshot first; asks once, --yes skips)
+  scuttlarr help | version
+
+Base     $(sc_tilde "$SCUTTLARR_BASE")
+Overlay  $(sc_tilde "$SCUTTLARR_OVERLAY")
+State    $(sc_tilde "$SCUTTLARR_STATE")
+EOF
+}
+
+cmd_defaults() {
+  local apply=0 yes=0 arg
+  for arg in "$@"; do
+    case "$arg" in
+      --apply) apply=1 ;;
+      --yes|-y) yes=1 ;;
+      *) sc_die "defaults: unknown option '$arg'" ;;
+    esac
+  done
+  sc_defaults_run plan
+  if (( SC_DEFAULTS_CHANGED == 0 )); then
+    sc_ok "defaults: all ${SC_DEFAULTS_SEEN} keys already as declared"
+    return 0
+  fi
+  print >&2
+  sc_log "${SC_DEFAULTS_CHANGED} of ${SC_DEFAULTS_SEEN} keys would change"
+  (( apply )) || { sc_log "run with --apply to change them"; return 0; }
+  if (( ! yes )); then
+    local reply
+    read -q "reply?apply? [y/N] " || { print >&2; sc_log "left as is"; return 0; }
+    print >&2
+  fi
+  sc_defaults_run apply
+  print >&2
+  if (( SC_DEFAULTS_FAILED > 0 )); then
+    sc_warn "${SC_DEFAULTS_CHANGED} changed, ${SC_DEFAULTS_FAILED} refused (see above)"
+    return 1
+  fi
+  sc_ok "${SC_DEFAULTS_CHANGED} changed; some take effect after logout"
+}
+
+main() {
+  local cmd="${1:-help}"; shift 2>/dev/null || true
+  case "$cmd" in
+    doctor)   sc_doctor ;;
+    defaults) cmd_defaults "$@" ;;
+    version)  print -r -- "$SCUTTLARR_VERSION" ;;
+    help|-h|--help) usage ;;
+    *) sc_err "unknown command '$cmd'"; usage; return 1 ;;
+  esac
+}
+
+main "$@"

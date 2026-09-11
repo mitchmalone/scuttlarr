@@ -1,0 +1,53 @@
+#!/bin/zsh
+# A fake `defaults` for tests: a flat store at $FAKE_DEFAULTS_STORE, one line
+# per key — <host>\t<domain>\t<key>\t<value>. Mirrors the bits of the real
+# tool lib/defaults.zsh relies on: read (exit 1 when absent; bools print 1/0;
+# arrays print the parenthesised block), write (typed), delete.
+emulate -L zsh
+setopt err_exit no_unset
+
+store="${FAKE_DEFAULTS_STORE:?FAKE_DEFAULTS_STORE unset}"
+[[ -f "$store" ]] || : > "$store"
+host='-'
+if [[ "${1-}" == -currentHost ]]; then host=currentHost; shift; fi
+verb="$1"; shift
+nl=$'\n'
+
+_get() {
+  local line parts
+  while IFS= read -r line; do
+    parts=("${(s:	:)line}")
+    if [[ "$parts[1]" == "$host" && "$parts[2]" == "$1" && "$parts[3]" == "$2" ]]; then
+      print -r -- "${parts[4]//\\n/$nl}"
+      return 0
+    fi
+  done < "$store"
+  return 1
+}
+_del() {
+  local line parts tmp
+  tmp="$(mktemp)"
+  while IFS= read -r line; do
+    parts=("${(s:	:)line}")
+    [[ "$parts[1]" == "$host" && "$parts[2]" == "$1" && "$parts[3]" == "$2" ]] || print -r -- "$line"
+  done < "$store" > "$tmp"
+  mv -f "$tmp" "$store"
+}
+
+case "$verb" in
+  read)
+    _get "$1" "$2" || { print -u2 "The domain/default pair of ($1, $2) does not exist"; exit 1; } ;;
+  write)
+    domain="$1" key="$2"; shift 2
+    if [[ "${1-}" == -* ]]; then type="${1#-}"; shift; else type=string; fi
+    case "$type" in
+      bool)  case "${(L)1}" in true|yes|1) value=1 ;; *) value=0 ;; esac ;;
+      array) value="(${nl}    ${(pj:,$nl    :)@}${nl})" ;;
+      *)     value="$1" ;;
+    esac
+    _del "$domain" "$key"
+    print -r -- "${host}	${domain}	${key}	${value//$nl/\\n}" >> "$store" ;;
+  delete)
+    _del "$1" "$2" ;;
+  *) print -u2 "fake defaults: unsupported verb '$verb'"; exit 2 ;;
+esac

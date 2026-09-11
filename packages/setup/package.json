@@ -1,0 +1,9 @@
+{
+  "name": "@scuttlarr/setup",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The machine rung: install, macOS defaults, manifest, doctor — zsh 5.9, no runtime (docs/SETUP.md)",
+  "scripts": {
+    "test": "zsh scripts/test.zsh"
+  }
+}

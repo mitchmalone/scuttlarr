@@ -104,7 +104,7 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
 
 ### Phase 2 — Port setup (packages/setup)
 
-- [ ] 2.1 Move scuttlarr `bin/`, `lib/`, `defaults/`, `test/`, `scripts/test.zsh` into
+- [x] 2.1 (2026-09-11; `@scuttlarr/setup`, `pnpm verify:shell`) Move scuttlarr `bin/`, `lib/`, `defaults/`, `test/`, `scripts/test.zsh` into
       `packages/setup/` unchanged; wire its test runner into `pnpm verify`. State dir
       `~/.local/state/scuttlarr/` (manifest, defaults.before, adopted/, migrations,
       theme name) as already designed.
@@ -203,6 +203,13 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
 - Intel.
 
 ## Risks / open questions
+
+- **One home, two writers.** The setup CLI's overlay dir is `~/.config/scuttlarr` and its
+  state dir `~/.local/state/scuttlarr` — the same dirs the app now owns (config.json,
+  plugins, hooks; agents.sock, awake). Intended: one product, one home, overlay files
+  (Brewfile, defaults.sh, zsh/, duti, themes/) sit next to config.json. But the manifest
+  must list the app's own files as owned, or `doctor` will report them as strangers
+  (it already flags `DefaultKeyBinding.dict`). Resolve in 2.4.
 
 - **Ghostty reload on macOS.** Omarchy uses `SIGUSR2`; unverified that macOS Ghostty
   honours it. If not, the terminal retints on next window until upstream offers a CLI

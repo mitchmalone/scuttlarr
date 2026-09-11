@@ -236,6 +236,15 @@ pub async fn desktop_apply(
     crate::desktop::apply(req)
 }
 
+/// Settings → Machine: one allowlisted verb of the bundled setup CLI (setup.rs).
+#[tauri::command]
+pub async fn setup_run(
+    app: tauri::AppHandle,
+    verb: crate::setup::SetupVerb,
+) -> CmdResult<crate::setup::SetupOutput> {
+    crate::setup::run(&app, verb)
+}
+
 #[tauri::command]
 pub async fn desktop_adopt() -> CmdResult<String> {
     crate::desktop::adopt()

@@ -16,6 +16,9 @@ source "$SCUTTLARR_BASE/lib/snapshot.zsh"
 source "$SCUTTLARR_BASE/lib/defaults.zsh"
 source "$SCUTTLARR_BASE/lib/files.zsh"
 source "$SCUTTLARR_BASE/lib/doctor.zsh"
+source "$SCUTTLARR_BASE/lib/link.zsh"
+source "$SCUTTLARR_BASE/lib/migrations.zsh"
+source "$SCUTTLARR_BASE/lib/remove.zsh"
 
 usage() {
   cat <<EOF
@@ -24,6 +27,9 @@ scuttlarr ${SCUTTLARR_VERSION} — scuttle the ship, sail the wreck.
   scuttlarr doctor                 what differs from base ⊕ overlay (read-only)
   scuttlarr defaults               plan: every macOS default that would change
   scuttlarr defaults --apply       apply them (snapshot first; asks once, --yes skips)
+  scuttlarr link | unlink          put scuttlarr on PATH (~/.local/bin), or take it off
+  scuttlarr migrate                run the base migrations this machine hasn't yet
+  scuttlarr remove                 undo every owned path and default; asks, --yes skips
   scuttlarr help | version
 
 Base     $(sc_tilde "$SCUTTLARR_BASE")
@@ -63,11 +69,57 @@ cmd_defaults() {
   sc_ok "${SC_DEFAULTS_CHANGED} changed; some take effect after logout"
 }
 
+cmd_link() {
+  (( $# == 0 )) || sc_die "link: takes no options"
+  sc_link_run apply
+}
+
+cmd_unlink() {
+  (( $# == 0 )) || sc_die "unlink: takes no options"
+  sc_unlink_run apply
+}
+
+cmd_migrate() {
+  (( $# == 0 )) || sc_die "migrate: takes no options"
+  sc_migrate
+}
+
+cmd_remove() {
+  local yes=0 arg
+  for arg in "$@"; do
+    case "$arg" in
+      --yes|-y) yes=1 ;;
+      *) sc_die "remove: unknown option '$arg'" ;;
+    esac
+  done
+  sc_head "remove"
+  sc_remove_run plan
+  if (( SC_REMOVE_CHANGED == 0 )); then
+    sc_ok "nothing to remove"
+    return 0
+  fi
+  print >&2
+  sc_log "${SC_REMOVE_PATHS} owned path(s) to remove, ${SC_REMOVE_RESTORED} original(s) to restore, ${SC_REMOVE_DEFAULTS} default(s) to put back"
+  sc_log "overlay $(sc_tilde "$SCUTTLARR_OVERLAY") stays; so do Homebrew and the app"
+  if (( ! yes )); then
+    local reply
+    read -q "reply?remove? [y/N] " || { print >&2; sc_log "left as is"; return 0; }
+    print >&2
+  fi
+  sc_remove_run apply
+  print >&2
+  sc_ok "removed; some defaults take effect after logout"
+}
+
 main() {
   local cmd="${1:-help}"; shift 2>/dev/null || true
   case "$cmd" in
     doctor)   sc_doctor ;;
     defaults) cmd_defaults "$@" ;;
+    link)     cmd_link "$@" ;;
+    unlink)   cmd_unlink "$@" ;;
+    migrate)  cmd_migrate "$@" ;;
+    remove)   cmd_remove "$@" ;;
     version)  print -r -- "$SCUTTLARR_VERSION" ;;
     help|-h|--help) usage ;;
     *) sc_err "unknown command '$cmd'"; usage; return 1 ;;

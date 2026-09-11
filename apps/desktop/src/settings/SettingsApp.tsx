@@ -20,6 +20,7 @@ import {
   PanelTop,
   Settings,
   Tag,
+  Wrench,
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -39,6 +40,7 @@ import { usePlugins } from '../plugins/use-plugins'
 import DesktopTab from './DesktopTab'
 import { HooksRow } from './HooksRow'
 import HotkeyRecorder from './HotkeyRecorder'
+import MachineTab from './MachineTab'
 import { PluginsSection } from './PluginsSection'
 import SubTabs from './SubTabs'
 import iconUrl from './scuttlarr.svg'
@@ -56,6 +58,7 @@ const TABS = [
   { id: 'desktop', label: 'Desktop', icon: LayoutGrid },
   { id: 'agents', label: 'Agents', icon: Bot },
   { id: 'quicklinks', label: 'Quicklinks', icon: Link2 },
+  { id: 'machine', label: 'Machine', icon: Wrench },
   { id: 'about', label: 'About', icon: Info },
 ] as const
 
@@ -156,6 +159,7 @@ export default function SettingsApp() {
           {tab === 'desktop' && <DesktopTab config={config} set={set} />}
           {tab === 'agents' && <AgentsTab config={config} set={set} />}
           {tab === 'quicklinks' && <QuicklinksTab config={config} set={set} />}
+          {tab === 'machine' && <MachineTab config={config} set={set} />}
           {tab === 'about' && <AboutTab />}
         </div>
       </main>

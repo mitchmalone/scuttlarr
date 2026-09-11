@@ -249,6 +249,9 @@ pub struct Config {
     /// Opaque to Rust — the shape and defaults live in `@scuttlarr/core/desktop`;
     /// desktop.rs only receives rendered bytes and argv.
     pub desktop: serde_json::Value,
+    /// The machine rung (DECISIONS 2026-09-11): the bundled setup CLI on PATH and
+    /// migrations at launch. Off by default — install gets the bar and launcher.
+    pub machine: MachineConfig,
     /// `colorpicker` uses the scuttlarr loupe (2×, needs Screen Recording — the toggle
     /// is the only thing that ever asks) instead of Apple's permission-free sampler.
     /// Default off (invariant 1).
@@ -264,6 +267,12 @@ pub struct Config {
     pub widgets: std::collections::HashMap<String, std::collections::HashMap<String, String>>,
     /// Plugins: disabled ids (docs/PLUGINS.md).
     pub plugins: PluginsConfig,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[serde(default, rename_all = "camelCase")]
+pub struct MachineConfig {
+    pub enabled: bool,
 }
 
 impl Default for Config {
@@ -284,6 +293,7 @@ impl Default for Config {
             bar: BarConfig::default(),
             agents: AgentsConfig::default(),
             desktop: serde_json::Value::Object(Default::default()),
+            machine: MachineConfig::default(),
             color_loupe: false,
             color_loupe_zoom: 8,
             color_loupe_size: 264,

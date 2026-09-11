@@ -32,6 +32,8 @@ export type Config = {
   /** The desktop layer (v0.4): AeroSpace tiling, JankyBorders, corner radius. Rust
    * persists it opaquely; read it through `normalizeDesktop` (partial/absent → defaults). */
   desktop: Partial<DesktopConfig> | undefined
+  /** The machine rung (Settings → Machine): setup CLI on PATH, migrations at launch. */
+  machine: MachineConfig | undefined
   /** `colorpicker` opens the scuttlarr loupe (2×) — needs Screen Recording, so it is
    * opt-in and the toggle is what triggers the prompt; off = Apple's sampler. */
   colorLoupe: boolean
@@ -46,6 +48,8 @@ export type Config = {
   /** Plugins (docs/PLUGINS.md): which are switched off. */
   plugins: { disabled: string[] }
 }
+
+export type MachineConfig = { enabled: boolean }
 
 export type BarConfig = {
   enabled: boolean

@@ -48,6 +48,7 @@ mod screenshots;
 mod scripts;
 mod settings_panes;
 mod settings_window;
+mod setup;
 mod shortcut;
 mod sysread;
 mod system_commands;
@@ -127,6 +128,7 @@ pub fn run() {
             commands::agent_forget,
             commands::hooks_status,
             commands::hooks_install,
+            commands::setup_run,
             commands::desktop_status,
             commands::desktop_apply,
             commands::desktop_adopt,
@@ -242,6 +244,7 @@ pub fn run() {
             clipboard::watch(app.handle().clone());
             config::watch(app.handle().clone());
             apply_launch_at_login(app.handle(), cfg.launch_at_login);
+            setup::boot(app.handle(), cfg.machine.enabled);
 
             // §7 budget: cold start → hotkey registered < 1s.
             eprintln!(

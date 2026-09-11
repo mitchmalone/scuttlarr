@@ -141,6 +141,7 @@ const DEFAULT_CONFIG: Config = {
   bar: { enabled: false, layout: DEFAULT_BAR_LAYOUT },
   agents: DEFAULT_AGENTS_CONFIG,
   desktop: undefined,
+  machine: undefined,
   colorLoupe: false,
   colorLoupeZoom: 8,
   colorLoupeSize: 264,

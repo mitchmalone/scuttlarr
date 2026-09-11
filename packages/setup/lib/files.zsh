@@ -19,6 +19,27 @@ sc_adopted_path() {
   print -r -- "$SCUTTLARR_STATE/adopted/${p#/}"
 }
 
+# Is an original parked for <path>?
+sc_adopted_has() {
+  local orig; orig="$(sc_adopted_path "$1")"
+  [[ -e "$orig" || -L "$orig" ]]
+}
+
+# Put a parked original back: state/adopted/<path> → <path>. Never overwrites
+# whatever is at <path> now. Status 1 if nothing is parked, 2 if in the way.
+sc_adopted_restore() {
+  emulate -L zsh
+  local target="$1" orig
+  orig="$(sc_adopted_path "$target")"
+  [[ -e "$orig" || -L "$orig" ]] || return 1
+  if [[ -e "$target" || -L "$target" ]]; then
+    sc_warn "$(sc_tilde "$target"): something is there, original left at $(sc_tilde "$orig")"
+    return 2
+  fi
+  mkdir -p "${target:h}"
+  mv -f "$orig" "$target"
+}
+
 sc_file_generated() {
   emulate -L zsh
   local target="$1" layer="$2" mode="${SC_MODE:-plan}" content tmp

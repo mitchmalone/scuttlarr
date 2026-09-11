@@ -108,13 +108,13 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
       `packages/setup/` unchanged; wire its test runner into `pnpm verify`. State dir
       `~/.local/state/scuttlarr/` (manifest, defaults.before, adopted/, migrations,
       theme name) as already designed.
-- [ ] 2.2 Rename the CLI entry to `scuttlarr` under `packages/setup/bin`, shipped inside
+- [x] 2.2 (2026-09-11: `bundle.resources` → `Contents/Resources/setup/`; `setup.rs` allowlisted runner + `setup_run`; Settings → Machine; `scuttlarr link` puts `~/.local/bin/scuttlarr` on PATH, manifest-recorded) Rename the CLI entry to `scuttlarr` under `packages/setup/bin`, shipped inside
       the app bundle and symlinked on PATH by the app (`open_path`-style, no sudo), so
       "the CLI" and "the app" are one install.
-- [ ] 2.3 Curl installer `install/install.sh` per scuttlarr's ROADMAP: preflight → brew
+- [x] 2.3 (`install/install.sh`, POSIX sh; www `prebuild` copies it to `public/install`) Curl installer `install/install.sh` per scuttlarr's ROADMAP: preflight → brew
       → `brew install mitchmalone/tap/scuttlarr` → launch app → app offers the
       "Machine" rung. Served at scuttlarr.com/install.
-- [ ] 2.4 Migrations runner + `update`/`doctor`/`remove` per ARCHITECTURE, now callable
+- [x] 2.4 (`migrate` + `migrations/`, `remove` walks the manifest in reverse and restores the defaults snapshot, `link/unlink`; 152 shell assertions; the app runs `migrate` at launch when `machine.enabled`; `remove` is CLI-only by design; `update` = the app update — no separate verb) Migrations runner + `update`/`doctor`/`remove` per ARCHITECTURE, now callable
       from the app (`setup ⏎` panel; Settings → Machine) and from the CLI. The app never
       runs `defaults write` silently: rung 5 asks once with the plan, as designed.
 - [ ] 2.5 Retire the scuttlarr repo: archive with the banner from 0.2.

@@ -26,6 +26,9 @@ source "$SCUTTLARR_BASE/lib/snapshot.zsh"
 source "$SCUTTLARR_BASE/lib/defaults.zsh"
 source "$SCUTTLARR_BASE/lib/files.zsh"
 source "$SCUTTLARR_BASE/lib/doctor.zsh"
+source "$SCUTTLARR_BASE/lib/link.zsh"
+source "$SCUTTLARR_BASE/lib/migrations.zsh"
+source "$SCUTTLARR_BASE/lib/remove.zsh"
 
 _t_where() { print -r -- "${funcfiletrace[2]:-?}"; }
 

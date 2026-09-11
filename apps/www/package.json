@@ -5,6 +5,7 @@
   "description": "Marketing site for scuttlarr \u2014 an app launcher for pirates",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "cp ../../install/install.sh public/install",
     "build": "next build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

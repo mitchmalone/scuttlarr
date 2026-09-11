@@ -55,3 +55,14 @@ sc_write_atomic() {
   tmp="$(mktemp "${target:h}/.sc.XXXXXX")" || return 1
   cat > "$tmp" && mv -f "$tmp" "$target"
 }
+
+# Point a symlink at a target atomically (link beside it, then rename). Refuses
+# a directory: rename would drop the link inside it instead.
+sc_symlink_atomic() {
+  local source="$1" target="$2" tmp
+  if [[ -d "$target" && ! -L "$target" ]]; then
+    sc_err "$(sc_tilde "$target"): is a directory, not linking over it"; return 1
+  fi
+  tmp="${target:h}/.sc.link.$$"
+  ln -s "$source" "$tmp" && mv -f "$tmp" "$target"
+}

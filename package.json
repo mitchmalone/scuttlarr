@@ -11,7 +11,7 @@
     "dev": "pnpm --filter \"./apps/*\" --parallel dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
+    "test": "pnpm -r --filter '!@scuttlarr/setup' test",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

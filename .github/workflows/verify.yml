@@ -37,6 +37,9 @@ jobs:
         with:
           workspaces: apps/desktop/src-tauri
       - run: pnpm install --frozen-lockfile
+      # The setup CLI is zsh 5.9 (DEVIATIONS) and its tests fake macOS `defaults`;
+      # they run where zsh ships — here, on macOS — not in the Linux node job.
+      - run: pnpm verify:shell
       # generate_context! embeds frontendDist at compile time — build the panel first.
       - run: pnpm --filter @scuttlarr/desktop build
       - run: pnpm verify:rust

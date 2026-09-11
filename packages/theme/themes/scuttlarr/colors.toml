@@ -1,0 +1,30 @@
+# scuttlarr — the house theme. Ink-blue ground, coral accent; ANSI in the same key.
+# Shades not listed (bright_*, brown) derive by Omarchy's rules.
+mode = "dark"
+
+accent = "#ff6b8c"
+selection = "#393b54"
+muted = "#565873"
+
+background = "#1c1d2a"
+dark_background = "#151620"
+darker_background = "#0e0f15"
+lighter_background = "#262838"
+
+foreground = "#b5b9d9"
+dark_foreground = "#73747c"
+light_foreground = "#cbcfe8"
+bright_foreground = "#e0e3f5"
+
+red = "#f85149"
+yellow = "#d29922"
+orange = "#f0883e"
+green = "#3fb950"
+cyan = "#39c5cf"
+blue = "#58a6ff"
+magenta = "#bc8cff"
+
+[launcher]
+# The prompt sigil is the accent, and rows highlight with the text tone, not the accent.
+sigil = "#ff6b8c"
+selected = "rgba(181, 185, 217, 0.12)"

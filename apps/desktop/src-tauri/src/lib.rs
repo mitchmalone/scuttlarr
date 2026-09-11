@@ -53,6 +53,7 @@ mod shortcut;
 mod sysread;
 mod system_commands;
 mod terminal;
+mod theme;
 mod tray;
 mod updates;
 mod usage;
@@ -129,6 +130,8 @@ pub fn run() {
             commands::hooks_status,
             commands::hooks_install,
             commands::setup_run,
+            commands::theme_apply,
+            commands::theme_current,
             commands::desktop_status,
             commands::desktop_apply,
             commands::desktop_adopt,

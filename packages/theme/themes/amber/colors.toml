@@ -1,0 +1,31 @@
+# amber — amber phosphor on black. Monochrome by design; the ANSI slots stay warm,
+# stepping through the same amber so nothing reads as a foreign colour.
+mode = "dark"
+
+accent = "#ffb000"
+selection = "#4a3200"
+muted = "#8a5f00"
+
+background = "#000000"
+dark_background = "#000000"
+darker_background = "#000000"
+lighter_background = "#140d00"
+
+foreground = "#ffb000"
+dark_foreground = "#8a5f00"
+light_foreground = "#ffc040"
+bright_foreground = "#ffd97a"
+
+red = "#ff5533"
+yellow = "#ffcf60"
+orange = "#ff8c00"
+green = "#e0a800"
+cyan = "#ffd27a"
+blue = "#cc8e00"
+magenta = "#ff9a3c"
+
+[launcher]
+# The sigil is the phosphor itself; the panel is nearly opaque over a black ground.
+glass = "rgba(0, 0, 0, 0.93)"
+sigil = "#ffb000"
+selected = "rgba(255, 176, 0, 0.12)"

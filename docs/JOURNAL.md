@@ -6,6 +6,19 @@
 
 ---
 
+### 2026-09-11 · Ghostty 1.3 grew an AppleScript dictionary — and SIGUSR2 reload is Linux-only
+
+DECISIONS 2026-09-04 said Ghostty "has no AppleScript dictionary". True for 1.2; 1.3.1
+(installed here) ships an sdef: `application`, `window`, `tab`, `terminal` classes and
+`new window`, `new tab`, `split`, `input text`, `send key`, `perform action`, `focus`.
+`perform action "reload_config"` is therefore a way to make Ghostty re-read its config
+from outside, at the price of one Automation consent prompt. Omarchy's
+`killall -SIGUSR2 ghostty` is GTK-only (1.2.0 release notes) — never send it on macOS
+without checking the handler exists; an unhandled SIGUSR2 terminates the process, and
+that process is every terminal the user has open. The terminal hand-off decision stands
+(herdr/tmux first); the new dictionary is an option for `!` and for theme reload, not a
+default.
+
 ### 2026-09-11 · A blanket rename sed rewrote the _legacy_ path too — the one string that had to stay
 
 The launcharr → scuttlarr rename (DECISIONS 2026-09-11) was a global `s/launcharr/scuttlarr/`

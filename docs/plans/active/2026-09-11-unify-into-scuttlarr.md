@@ -121,30 +121,30 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
 
 ### Phase 3 — Theme package (packages/theme), Omarchy model
 
-- [ ] 3.1 Format decision (DECISIONS): adopt Omarchy's `colors.toml` key names verbatim
+- [x] 3.1 (DECISIONS 2026-09-11, theme format) Format decision (DECISIONS): adopt Omarchy's `colors.toml` key names verbatim
       (`mode`, `accent`, `selection`, `muted`, `background`/`dark_background`/…,
       `foreground`/…, 8 named colours + `bright_*`) so Omarchy themes port by copying the
       file. Our extra tokens (glass, sigil, bang, selected) are derived, overridable in a
       `[launcher]` table.
-- [ ] 3.2 Pure TS renderer in `packages/theme` (TDD): parse + derive (mix, luminance →
+- [x] 3.2 (`@scuttlarr/theme`: toml, color, palette/resolve, template, tokens, osc, render; 104 tests; `themes.generated.ts` + `verify:themes`) Pure TS renderer in `packages/theme` (TDD): parse + derive (mix, luminance →
       mode, legacy aliases), `{{ key }}` / `{{ key_rgb }}` / `{{ mix a b n% }}`
       substitution, no logic in templates. `BUILTIN_THEMES` in `@launcharr/tui` becomes
       generated from `themes/*/colors.toml` at build time — one source of truth, the site
       demo keeps importing tokens.
-- [ ] 3.3 Templates for v1 surfaces: ghostty, tmux (colours + OSC payload), p10k, bat
-      tmTheme, delta, borders/aerospace (replaces the ad-hoc `bordersArgs` colour inputs),
-      macOS (`accent`, `highlight`, appearance), wallpaper pointer, Claude Code
-      (`~/.claude/themes/<name>.json`, as Omarchy does), VS Code/Cursor name only.
-- [ ] 3.4 Committed renders under `themes/<name>/` (usable without the CLI, publishable
+- [~] 3.3 (done: ghostty, tmux.conf, p10k-colors.zsh, delta.gitconfig, claude.json; **open**: borders/aerospace from the palette, macOS accent, wallpaper, VS Code name, bat beyond `ansi`) Templates for v1 surfaces: ghostty, tmux (colours + OSC payload), p10k, bat
+  tmTheme, delta, borders/aerospace (replaces the ad-hoc `bordersArgs` colour inputs),
+  macOS (`accent`, `highlight`, appearance), wallpaper pointer, Claude Code
+  (`~/.claude/themes/<name>.json`, as Omarchy does), VS Code/Cursor name only.
+- [x] 3.4 (reinterpreted: the committed artefact is `themes.generated.ts` + `builtin.generated.ts`, stale-checked; per-app renders live only in the state dir like Omarchy — a theme dir is still one file, so "usable without the CLI" holds) Committed renders under `themes/<name>/` (usable without the CLI, publishable
       standalone). `pnpm verify` fails if renders are stale.
-- [ ] 3.5 `theme set` in the app (Rust command, thin): stage into
-      `~/.local/state/scuttlarr/next-theme/`, atomic swap to `current/theme/`, write
-      `theme.name`, then fan out reloads in parallel: own windows (hot, exists), borders
-      re-apply (exists), `killall -SIGUSR2 ghostty` (verify on macOS; fallback: Ghostty
-      reload-config keybind is not scriptable, document), tmux OSC into every pane +
-      SIGWINCH, `osascript` for appearance/accent/wallpaper, `theme-set.d/` user hooks.
-      Base configs shipped by setup import from the state path (Ghostty `config-file`,
-      tmux `source-file`, zsh sources p10k colours).
+- [~] 3.5 (`theme.rs`: stage → atomic swap → `theme.name`, tmux OSC + SIGWINCH, macOS appearance, wallpaper, `hooks/theme-set.d/`, `~/.claude/themes/scuttlarr.json`; `theme_apply`/`theme_current`; `lib/theme.ts`; Settings → General ▸ Theme "Everywhere" + "apply now"; the panel window fans out on a theme-name change when `appearance.everywhere`. **Open**: base configs that import from the state path do not exist yet — `packages/setup` has no shell base (see STATUS); live proof of the tmux retint) `theme set` in the app (Rust command, thin): stage into
+  `~/.local/state/scuttlarr/next-theme/`, atomic swap to `current/theme/`, write
+  `theme.name`, then fan out reloads in parallel: own windows (hot, exists), borders
+  re-apply (exists), `killall -SIGUSR2 ghostty` (verify on macOS; fallback: Ghostty
+  reload-config keybind is not scriptable, document), tmux OSC into every pane +
+  SIGWINCH, `osascript` for appearance/accent/wallpaper, `theme-set.d/` user hooks.
+  Base configs shipped by setup import from the state path (Ghostty `config-file`,
+  tmux `source-file`, zsh sources p10k colours).
 - [ ] 3.6 User themes: `~/.config/scuttlarr/themes/<name>/` overlays file-by-file on a
       same-named built-in; `theme install <git-url>` with Omarchy's name rules and the
       staging filter (drop symlinks and executable-shaped files from cloned themes).

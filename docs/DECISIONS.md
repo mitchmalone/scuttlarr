@@ -5,6 +5,38 @@
 
 ---
 
+### 2026-09-11 · Theme format is Omarchy's `colors.toml`, verbatim; renders go to a state dir; terminals retint by OSC
+
+- **Decision.** A theme is `themes/<name>/colors.toml` with Omarchy's keys unchanged
+  (`mode`, `accent`, `selection`, `muted`, `background`/`dark_`/`darker_`/`lighter_`,
+  `foreground`/`dark_`/`light_`/`bright_`, the eight named colours and their `bright_*`),
+  plus an optional `[launcher]` table pinning any of our twelve UI tokens. Derivation
+  (mixes, luminance → mode, aliases) matches `omarchy-theme-color` so an Omarchy theme
+  ports by copying one file. Everything else is rendered from templates by
+  `packages/theme` (pure TS: tiny TOML subset parser, `{{ key }}` / `{{ key_rgb }}` /
+  `{{ mix a b N% }}`); `@scuttlarr/tui`'s built-in tokens are **generated** from those
+  files (`themes.generated.ts`, stale-checked by `pnpm verify:themes`), never hand-typed
+  again. Renders live under `~/.local/state/scuttlarr/current/theme/`, staged and
+  atomically swapped, with `theme.name` beside them; base configs shipped by setup
+  import from that path (Ghostty `config-file`, tmux `source-file`, zsh sources the p10k
+  colours). Running terminals retint through OSC 10/11/12/17/19/4 written into every
+  tmux pane plus SIGWINCH, exactly Omarchy's `omarchy-theme-set-tmux`; new Ghostty
+  windows read the config file. Ghostty's own reload is **not** on the default path.
+- **Why.** Omarchy converged on this after two format rewrites (hand-written per-app
+  files → templates, 2.x → 3.4) and its theme catalogue is the largest one that exists
+  for this shape; matching the keys buys every one of them for free and keeps
+  "hackable" honest (a theme is one text file). Generating the tui tokens closes the
+  last hand-copy of colours in the repo (invariant 10's spirit). OSC over reload: Ghostty
+  1.3.1 on macOS reloads config only from its own keybind or, new in 1.3, AppleScript
+  (`perform action "reload_config"` — the sdef now exists, JOURNAL 2026-09-11), and
+  AppleScript means an Automation consent prompt (invariant 1). OSC needs nothing and
+  reaches every pane under tmux/herdr, which is where scuttlarr users live; a bare
+  Ghostty window without tmux retints on its next open. The AppleScript reload can be
+  offered as an opt-in later, the same way the loupe is.
+- **Also.** `~/.config/scuttlarr/themes/<name>/` overlays a same-named built-in
+  file-by-file (Omarchy's `cp -r` order), which is where Dracula Pro and other paid
+  themes live — never in the repo (scuttlarr invariant 8 carries over).
+
 ### 2026-09-11 · launcharr and scuttlarr fold into one product, named scuttlarr; the launcher is a feature
 
 - **Decision.** The two repos become one: this monorepo absorbs scuttlarr and is renamed

@@ -26,6 +26,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   type AgentsConfig,
+  type AppearanceConfig,
   type BarZones,
   type ClaudeAccountConfig,
   type Config,
@@ -35,6 +36,11 @@ import {
   notchedZones,
   widgetModuleId,
 } from '../lib/config'
+import {
+  type ThemeResult,
+  appearanceOf,
+  applyThemeEverywhere,
+} from '../lib/theme'
 import { applyTheme, themeNames } from '../lib/themes'
 import { usePlugins } from '../plugins/use-plugins'
 import DesktopTab from './DesktopTab'
@@ -247,6 +253,7 @@ function GeneralBasics({ config, set }: { config: Config; set: SetFn }) {
           overrides welcome.
         </p>
       </Row>
+      <ThemeRungRows config={config} set={set} />
       <Row label="Prompt sigil">
         <input
           className="tiny"
@@ -360,6 +367,72 @@ function ConfigSection() {
           <code>~/.config/scuttlarr/config.json</code> — edit either place,
           changes apply live.
         </p>
+      </Row>
+    </>
+  )
+}
+
+/** The theme rung (DECISIONS 2026-09-11): render the picked theme beyond the app. */
+function ThemeRungRows({ config, set }: { config: Config; set: SetFn }) {
+  const appearance = appearanceOf(config)
+  const [busy, setBusy] = useState(false)
+  const [result, setResult] = useState<ThemeResult | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const setAppearance = (patch: Partial<AppearanceConfig>) =>
+    set('appearance', { ...appearance, ...patch })
+  const applyNow = () => {
+    setBusy(true)
+    setError(null)
+    applyThemeEverywhere(config)
+      .then(setResult)
+      .catch((e) => setError(String(e)))
+      .finally(() => setBusy(false))
+  }
+  return (
+    <>
+      <Row label="Everywhere">
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={appearance.everywhere}
+            onChange={(e) => {
+              setAppearance({ everywhere: e.target.checked })
+              if (e.target.checked) applyNow()
+            }}
+          />
+          Render this theme into Ghostty, tmux, the prompt, delta and Claude
+          Code
+        </label>
+        <p className="hint">
+          Files land in <code>~/.local/state/scuttlarr/current/theme/</code>;
+          running tmux panes retint at once, new terminal windows read them.
+          Themes you add in config.json are token-only and stay app-only.
+        </p>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={appearance.macos}
+            onChange={(e) => setAppearance({ macos: e.target.checked })}
+          />
+          Follow it with macOS light/dark
+        </label>
+        <div className="buttonrow">
+          <button className="ghost" disabled={busy} onClick={applyNow}>
+            {busy ? 'applying…' : 'apply now'}
+          </button>
+        </div>
+        {error && <p className="hint error">{error}</p>}
+        {result && (
+          <p className="hint tiny">
+            {result.reloaded.length > 0 &&
+              `reloaded: ${result.reloaded.join(', ')}`}
+            {result.failed.length > 0 &&
+              ` · failed: ${result.failed.map(([w, why]) => `${w} (${why})`).join('; ')}`}
+            {result.reloaded.length === 0 &&
+              result.failed.length === 0 &&
+              'rendered'}
+          </p>
+        )}
       </Row>
     </>
   )

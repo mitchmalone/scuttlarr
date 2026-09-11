@@ -236,6 +236,18 @@ pub async fn desktop_apply(
     crate::desktop::apply(req)
 }
 
+/// Theme rung: install rendered files under the state dir and fan out reloads (theme.rs).
+#[tauri::command]
+pub async fn theme_apply(req: crate::theme::ThemeApply) -> CmdResult<crate::theme::ThemeResult> {
+    crate::theme::apply(req)
+}
+
+/// The name in `<state>/current/theme.name`, if a theme was ever rendered.
+#[tauri::command]
+pub async fn theme_current() -> Option<String> {
+    crate::theme::current_name(&crate::config::state_dir())
+}
+
 /// Settings → Machine: one allowlisted verb of the bundled setup CLI (setup.rs).
 #[tauri::command]
 pub async fn setup_run(

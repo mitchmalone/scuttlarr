@@ -15,7 +15,8 @@
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify:node": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
+    "verify:themes": "node packages/theme/bin/generate.ts --check",
+    "verify:node": "pnpm verify:themes && pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
     "verify:rust": "cargo test --quiet --manifest-path apps/desktop/src-tauri/Cargo.toml && cargo clippy --quiet --manifest-path apps/desktop/src-tauri/Cargo.toml --all-targets -- -D warnings",
     "verify:shell": "zsh packages/setup/scripts/test.zsh",
     "verify": "pnpm verify:shell && pnpm verify:node && pnpm verify:rust"

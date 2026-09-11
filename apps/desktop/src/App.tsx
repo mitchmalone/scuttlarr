@@ -45,6 +45,7 @@ import {
 } from './lib/config'
 import { applyDesktop } from './lib/desktop'
 import { markInput, reportResultsPainted } from './lib/perf'
+import { appearanceOf, applyThemeEverywhere } from './lib/theme'
 import { applyTheme } from './lib/themes'
 import { AerospacePanelContainer } from './panels/AerospacePanelContainer'
 import { AgentsPanelContainer } from './panels/AgentsPanelContainer'
@@ -142,6 +143,7 @@ const DEFAULT_CONFIG: Config = {
   agents: DEFAULT_AGENTS_CONFIG,
   desktop: undefined,
   machine: undefined,
+  appearance: undefined,
   colorLoupe: false,
   colorLoupeZoom: 8,
   colorLoupeSize: 264,
@@ -221,6 +223,20 @@ export default function App() {
     () => applyTheme(config.theme, config.themes, 'panel'),
     [config.theme, config.themes],
   )
+  // The theme rung (DECISIONS 2026-09-11): a *change* of theme name, with
+  // "everywhere" on, re-renders Ghostty/tmux/prompt/delta/Claude Code and reloads.
+  // Not on first load — the files on disk are already the last apply.
+  const lastThemeName = useRef<string | null>(null)
+  useEffect(() => {
+    if (!configLoaded) return
+    const previous = lastThemeName.current
+    lastThemeName.current = config.theme
+    if (previous === null || previous === config.theme) return
+    if (!appearanceOf(config).everywhere) return
+    applyThemeEverywhere(config).catch((e) =>
+      console.error('[scuttlarr theme] apply everywhere failed:', e),
+    )
+  }, [configLoaded, config])
   // Desktop layer (v0.4): this webview lives for the whole session, so it is the
   // one place that keeps aerospace.toml / borders / theme in step. A foreign toml
   // (someone's hand-written AeroSpace config) is never overwritten — the settings

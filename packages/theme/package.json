@@ -1,0 +1,22 @@
+{
+  "name": "@scuttlarr/theme",
+  "private": true,
+  "type": "module",
+  "description": "The scuttlarr theme model — Omarchy's colors.toml palettes, derivation, template rendering, and the generator that bakes @scuttlarr/tui's built-in tokens. Pure TypeScript, no runtime deps.",
+  "//exports": "'./tokens' is the import-free ThemeTokens type: @scuttlarr/tui imports it without its typecheck crawling the parser (whose .ts specifiers need allowImportingTsExtensions).",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens": "./src/theme-tokens.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "node bin/generate.ts",
+    "check": "node bin/generate.ts --check"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "typescript": "~5.8.3",
+    "vitest": "^4"
+  }
+}

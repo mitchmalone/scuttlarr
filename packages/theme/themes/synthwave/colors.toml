@@ -1,0 +1,31 @@
+# SynthWave '84 — from github.com/robb0wen/synthwave-vscode (MIT); shades derived.
+mode = "dark"
+
+accent = "#ff7edb"
+selection = "#495495"
+muted = "#848bbd"
+
+background = "#262335"
+dark_background = "#241b2f"
+darker_background = "#1a1626"
+lighter_background = "#34294f"
+
+foreground = "#f0eff1"
+dark_foreground = "#848bbd"
+light_foreground = "#ffffff"
+bright_foreground = "#ffffff"
+
+red = "#fe4450"
+yellow = "#fede5d"
+orange = "#ff8b39"
+green = "#72f1b8"
+cyan = "#36f9f6"
+blue = "#03edf9"
+magenta = "#ff7edb"
+
+bright_red = "#fe4450"
+bright_yellow = "#fede5d"
+bright_green = "#72f1b8"
+bright_cyan = "#36f9f6"
+bright_blue = "#03edf9"
+bright_magenta = "#ff7edb"

@@ -1,0 +1,36 @@
+# Monokai — classic palette (monokai.pro/classic; MIT terminal ports).
+mode = "dark"
+
+accent = "#f92672"
+selection = "#49483e"
+muted = "#75715e"
+
+background = "#272822"
+dark_background = "#1e1f1c"
+darker_background = "#141411"
+lighter_background = "#34352d"
+
+foreground = "#f8f8f2"
+dark_foreground = "#75715e"
+light_foreground = "#f8f8f2"
+bright_foreground = "#f9f8f5"
+
+red = "#f92672"
+yellow = "#e6db74"
+orange = "#fd971f"
+green = "#a6e22e"
+cyan = "#66d9ef"
+blue = "#66d9ef"
+magenta = "#ae81ff"
+brown = "#7f4c10"
+
+bright_red = "#f92672"
+bright_yellow = "#e6db74"
+bright_green = "#a6e22e"
+bright_cyan = "#66d9ef"
+bright_blue = "#66d9ef"
+bright_magenta = "#ae81ff"
+
+[launcher]
+# Pink is the accent, so danger takes Monokai Pro's softer red to stay distinct.
+danger = "#ff6188"

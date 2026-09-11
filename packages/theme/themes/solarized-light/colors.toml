@@ -1,0 +1,37 @@
+# Solarized Light — from ethanschoonover.com/solarized (MIT).
+mode = "light"
+
+accent = "#268bd2"
+selection = "#eee8d5"
+muted = "#93a1a1"
+
+background = "#fdf6e3"
+dark_background = "#f3ecd8"
+darker_background = "#eee8d5"
+lighter_background = "#eee8d5"
+
+foreground = "#657b83"
+dark_foreground = "#93a1a1"
+light_foreground = "#586e75"
+bright_foreground = "#073642"
+
+red = "#dc322f"
+yellow = "#b58900"
+orange = "#cb4b16"
+green = "#859900"
+cyan = "#2aa198"
+blue = "#268bd2"
+magenta = "#d33682"
+brown = "#66260b"
+
+bright_red = "#cb4b16"
+bright_yellow = "#b58900"
+bright_green = "#859900"
+bright_cyan = "#2aa198"
+bright_blue = "#268bd2"
+bright_magenta = "#6c71c4"
+
+[launcher]
+# base2 is the surface, so the border drops a further step; light rows want less tint.
+border = "#d3cbb7"
+selected = "rgba(38, 139, 210, 0.12)"

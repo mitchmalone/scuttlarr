@@ -34,6 +34,9 @@ export type Config = {
   desktop: Partial<DesktopConfig> | undefined
   /** The machine rung (Settings → Machine): setup CLI on PATH, migrations at launch. */
   machine: MachineConfig | undefined
+  /** The theme rung: render the theme beyond the app (Ghostty, tmux, prompt, delta,
+   * Claude Code) and follow it with macOS light/dark. */
+  appearance: AppearanceConfig | undefined
   /** `colorpicker` opens the scuttlarr loupe (2×) — needs Screen Recording, so it is
    * opt-in and the toggle is what triggers the prompt; off = Apple's sampler. */
   colorLoupe: boolean
@@ -50,6 +53,12 @@ export type Config = {
 }
 
 export type MachineConfig = { enabled: boolean }
+
+export type AppearanceConfig = { everywhere: boolean; macos: boolean }
+export const DEFAULT_APPEARANCE: AppearanceConfig = {
+  everywhere: false,
+  macos: true,
+}
 
 export type BarConfig = {
   enabled: boolean

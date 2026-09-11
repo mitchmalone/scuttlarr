@@ -1,0 +1,32 @@
+# terminal — green phosphor on black. Monochrome by design; the ANSI slots are
+# saturated primaries so a terminal using this palette still has distinct colours.
+mode = "dark"
+
+accent = "#33ff33"
+selection = "#123f12"
+muted = "#0f7f0f"
+
+background = "#000000"
+dark_background = "#000000"
+darker_background = "#000000"
+lighter_background = "#0a120a"
+
+foreground = "#33ff33"
+dark_foreground = "#0f7f0f"
+light_foreground = "#66ff66"
+bright_foreground = "#99ff99"
+
+red = "#ff3333"
+yellow = "#ffff33"
+orange = "#ff9933"
+green = "#33ff33"
+cyan = "#33ffff"
+blue = "#3399ff"
+magenta = "#ff33ff"
+
+[launcher]
+# Everything glows the one phosphor; the panel is nearly opaque over a black ground.
+glass = "rgba(0, 0, 0, 0.93)"
+bang = "#33ff33"
+warn = "#33ff33"
+selected = "rgba(51, 255, 51, 0.12)"

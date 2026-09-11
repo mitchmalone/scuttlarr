@@ -1,0 +1,33 @@
+# Gruvbox Dark (medium) — classic palette from github.com/morhetz/gruvbox (MIT).
+# Omarchy ships the gruvbox-material variant instead; this file keeps its layout.
+mode = "dark"
+
+accent = "#fe8019"
+selection = "#504945"
+muted = "#928374"
+
+background = "#282828"
+dark_background = "#1d2021"
+darker_background = "#141617"
+lighter_background = "#3c3836"
+
+foreground = "#ebdbb2"
+dark_foreground = "#928374"
+light_foreground = "#d5c4a1"
+bright_foreground = "#fbf1c7"
+
+red = "#fb4934"
+yellow = "#fabd2f"
+orange = "#fe8019"
+green = "#b8bb26"
+cyan = "#8ec07c"
+blue = "#83a598"
+magenta = "#d3869b"
+brown = "#d65d0e"
+
+bright_red = "#fb4934"
+bright_yellow = "#fabd2f"
+bright_green = "#b8bb26"
+bright_cyan = "#8ec07c"
+bright_blue = "#83a598"
+bright_magenta = "#d3869b"

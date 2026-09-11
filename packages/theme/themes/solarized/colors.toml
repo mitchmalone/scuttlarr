@@ -1,0 +1,37 @@
+# Solarized Dark — from ethanschoonover.com/solarized (MIT).
+# Bright ANSI slots that Solarized fills with base tones instead mirror the accents.
+mode = "dark"
+
+accent = "#268bd2"
+selection = "#073642"
+muted = "#586e75"
+
+background = "#002b36"
+dark_background = "#00212b"
+darker_background = "#001a20"
+lighter_background = "#073642"
+
+foreground = "#93a1a1"
+dark_foreground = "#586e75"
+light_foreground = "#eee8d5"
+bright_foreground = "#fdf6e3"
+
+red = "#dc322f"
+yellow = "#b58900"
+orange = "#cb4b16"
+green = "#859900"
+cyan = "#2aa198"
+blue = "#268bd2"
+magenta = "#d33682"
+brown = "#66260b"
+
+bright_red = "#cb4b16"
+bright_yellow = "#b58900"
+bright_green = "#859900"
+bright_cyan = "#2aa198"
+bright_blue = "#268bd2"
+bright_magenta = "#6c71c4"
+
+[launcher]
+# base02 vanishes as a hairline on base03; the launcher's border sits a step lighter.
+border = "#175263"

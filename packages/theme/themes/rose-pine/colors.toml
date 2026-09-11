@@ -1,0 +1,38 @@
+# Rosé Pine (main) — from rosepinetheme.com/palette (MIT).
+# Omarchy ships the Dawn (light) variant; this is the dark one the launcher had.
+mode = "dark"
+
+accent = "#ebbcba"
+selection = "#403d52"
+muted = "#6e6a86"
+
+background = "#191724"
+dark_background = "#13111b"
+darker_background = "#0d0c12"
+lighter_background = "#26233a"
+
+foreground = "#e0def4"
+dark_foreground = "#6e6a86"
+light_foreground = "#908caa"
+bright_foreground = "#e0def4"
+
+red = "#eb6f92"
+yellow = "#f6c177"
+orange = "#ea9a97"
+green = "#31748f"
+cyan = "#ebbcba"
+blue = "#9ccfd8"
+magenta = "#c4a7e7"
+brown = "#754d4b"
+
+bright_red = "#eb6f92"
+bright_yellow = "#f6c177"
+bright_green = "#31748f"
+bright_cyan = "#ebbcba"
+bright_blue = "#9ccfd8"
+bright_magenta = "#c4a7e7"
+
+[launcher]
+# Pine is too deep for a prompt sigil; the launcher uses foam, and a quieter selection.
+sigil = "#9ccfd8"
+selected = "rgba(235, 188, 186, 0.12)"

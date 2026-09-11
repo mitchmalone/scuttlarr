@@ -252,6 +252,10 @@ pub struct Config {
     /// The machine rung (DECISIONS 2026-09-11): the bundled setup CLI on PATH and
     /// migrations at launch. Off by default — install gets the bar and launcher.
     pub machine: MachineConfig,
+    /// The theme rung (DECISIONS 2026-09-11): render the active theme beyond the app's
+    /// own windows — Ghostty, tmux, prompt, delta, Claude Code — and optionally flip
+    /// macOS light/dark with it. Off by default; the app windows always theme.
+    pub appearance: AppearanceConfig,
     /// `colorpicker` uses the scuttlarr loupe (2×, needs Screen Recording — the toggle
     /// is the only thing that ever asks) instead of Apple's permission-free sampler.
     /// Default off (invariant 1).
@@ -275,6 +279,24 @@ pub struct MachineConfig {
     pub enabled: bool,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(default, rename_all = "camelCase")]
+pub struct AppearanceConfig {
+    /// Render the theme into `~/.local/state/scuttlarr/current/theme/` and reload.
+    pub everywhere: bool,
+    /// Also set macOS light/dark from the theme's mode.
+    pub macos: bool,
+}
+
+impl Default for AppearanceConfig {
+    fn default() -> Self {
+        Self {
+            everywhere: false,
+            macos: true,
+        }
+    }
+}
+
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -294,6 +316,7 @@ impl Default for Config {
             agents: AgentsConfig::default(),
             desktop: serde_json::Value::Object(Default::default()),
             machine: MachineConfig::default(),
+            appearance: AppearanceConfig::default(),
             color_loupe: false,
             color_loupe_zoom: 8,
             color_loupe_size: 264,
@@ -311,6 +334,20 @@ pub fn config_dir() -> PathBuf {
     dirs::home_dir()
         .unwrap_or_else(|| PathBuf::from("/tmp"))
         .join(".config")
+        .join("scuttlarr")
+}
+
+/// `~/.local/state/scuttlarr` (XDG_STATE_HOME honoured): the manifest, the agents
+/// socket, and the rendered current theme live here — shared with the setup CLI.
+pub fn state_dir() -> PathBuf {
+    std::env::var_os("XDG_STATE_HOME")
+        .map(PathBuf::from)
+        .filter(|p| p.is_absolute())
+        .unwrap_or_else(|| {
+            dirs::home_dir()
+                .unwrap_or_else(|| PathBuf::from("/tmp"))
+                .join(".local/state")
+        })
         .join("scuttlarr")
 }
 

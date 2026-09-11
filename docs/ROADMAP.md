@@ -102,19 +102,23 @@ Candidates carried over from v0.4, to be cut down in the 0.5 scope session:
 - **PRD revision pass** — predates the control-surface direction (DECISIONS 2026-08-15 is
   the scope source until then).
 
-## scuttlarr contract (DECISIONS 2026-08-25)
+## Unification into scuttlarr (DECISIONS 2026-09-11)
 
-What launcharr owes its distro sibling, so scuttlarr can render themes and desktop opinions
-through `config.json` alone. Trigger for each: scuttlarr's theme/desktop rendering reaches it.
+One repo, one product, renamed scuttlarr; the launcher is a feature. Plan and phases:
+`plans/active/2026-09-11-unify-into-scuttlarr.md` — record → rename → port setup →
+theme package (Omarchy model) → theme policy + switcher (macOS Focus, light/dark by
+system or schedule) → docs. Retires the "scuttlarr contract" below; its open items map to
+plan steps.
 
-- **Light mode** — lift the non-goal; make the token model render a light palette (Solarized Light is the test).
-- **Ghostty hand-off** — ✅ default bang-mode/agent-jump target (2026-09-04, DECISIONS,
-  `plans/active/ghostty-handoff.md`): reached through herdr's socket or tmux (no
-  AppleScript dictionary, no safe `open -na` once a window exists), iTerm2/Terminal.app
-  the fallback chain if it isn't installed. Left: live-prove `!echo hi ⏎` and the updates
-  `a` upgrade path against a running herdr server, then move the plan to `done/` (Mitch).
-- **Typed `desktop` schema** — replace the `serde_json::Value` block with a documented struct; document `themes.<name>` tokens as the theme contract.
-- **Dark-mode delegation** — the `dark mode` system command calls `scuttlarr theme` when present.
+<details><summary>Retired: scuttlarr contract (DECISIONS 2026-08-25)</summary>
+
+- **Light mode** — now plan step 3.7 (Solarized Light + Catppuccin Latte render every surface).
+- **Ghostty hand-off** — ✅ 2026-09-04 (DECISIONS, `plans/active/ghostty-handoff.md`). Left:
+  live-prove `!echo hi ⏎` and the updates `a` upgrade path against a running herdr server (Mitch).
+- **Typed `desktop` schema** — now plan step 3.3 (borders/aerospace rendered from the palette).
+- **Dark-mode delegation** — now plan step 4.4 ("Toggle Dark Mode" flips `appearance.mode`).
+
+</details>
 
 ## v2 horizon (recorded now, built later — PRD §10)
 

@@ -3,9 +3,18 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-09-10 (plugin permissions: declare, ask first, block on denial)
+> Last updated: 2026-09-11 (unification into scuttlarr: decided and recorded, phase 0)
 
 ## Where we are
+
+**Unification into scuttlarr, 2026-09-11 (phase 0 done, phase 1 next):** launcharr and
+scuttlarr fold into this repo, renamed scuttlarr; the launcher is a feature (DECISIONS
+2026-09-11, plan `plans/active/2026-09-11-unify-into-scuttlarr.md`). Recorded: decision
+here and mirrored in scuttlarr; `docs/THEMES.md` + `docs/SETUP.md` moved across; AGENTS
+invariant 11 (one owner per outside path, manifest, adopt never overwrites); ROADMAP
+"scuttlarr contract" retired into plan steps. Next: phase 1, the rename — repo, scopes,
+bundle id, config dir, plist, hook signatures, generated-file markers, cask, site — as
+one release with an adopt-old-paths migration.
 
 **Plugin permissions, 2026-09-10 (working tree, uncommitted — built, not yet
 reinstalled):** the generic answer to the amaran kill below. `manifest.permissions`

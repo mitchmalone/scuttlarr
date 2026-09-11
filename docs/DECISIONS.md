@@ -5,6 +5,47 @@
 
 ---
 
+### 2026-09-11 · launcharr and scuttlarr fold into one product, named scuttlarr; the launcher is a feature
+
+- **Decision.** The two repos become one: this monorepo absorbs scuttlarr and is renamed
+  **scuttlarr**. The runtime-vs-provisioning boundary between them is retired as a _repo_
+  boundary and kept only as _package_ boundaries: `apps/desktop` (runtime — bar, launcher,
+  panels, settings, live reloads, theme policy), `packages/theme` (new — the Omarchy model:
+  `themes/<name>/colors.toml` + templates + a pure renderer + committed per-app renders;
+  `@launcharr/tui` tokens derive from it), `packages/setup` (new — scuttlarr's zsh `lib/`,
+  `defaults/`, tests, ported as-is: install, defaults, Brewfile, shell, Caps→Hyper, duti,
+  migrations, remove, the manifest). Product shape: **install gets the bar and launcher;
+  everything else is a toggle** — desktop (tiling, borders), theme (rendered beyond our own
+  windows: Ghostty, tmux, prompt, macOS accent/appearance, wallpaper; policy for macOS
+  Focus and light/dark by system or schedule), machine (de-shine defaults, shell,
+  Caps→Hyper, default apps, Brewfile — asks once with a plan). Plan:
+  `plans/active/2026-09-11-unify-into-scuttlarr.md`; rename first, port second, build third.
+- **Why.** Every runtime feature that touched the machine — bar, tiling, borders, dark
+  mode, and now theme switching — drifted to whichever side was resident, and the
+  "scuttlarr contract" (2026-08-25) kept being renegotiated instead of built; progress on
+  themes hit zero. scuttlarr was a CLI with no interface, so "scuttlarr owns themes" only
+  ever meant "owns the files"; a switcher, Focus reactions, and time-of-day are runtime
+  acts and need the resident process. Omarchy has no such split: one name, the shell is
+  just another themed surface. The name follows the product: this is a desktop
+  environment, and "launcharr" undersells it the moment the bar is what people see.
+  Mitch, 2026-09-11: sunk cost in the launcharr name, tap, bundle id, and domain is
+  irrelevant; it never gets cheaper than pre-1.0 with one user.
+- **Retired by this.** ROADMAP "scuttlarr contract" (its items become plan steps: light
+  mode → 3.7, typed `desktop` → 3.3, dark-mode delegation → 4.4); the PRD non-goals
+  "theming beyond the built-in look" and the AGENTS.md line "anything distro-shaped".
+  scuttlarr's DECISIONS 2026-08-25 (boundary) and 2026-08-28 (launcharr handshake) are
+  superseded — no handshake is needed between two packages in one repo; whoever renders
+  a file still marks it, but the marker is one product's.
+- **New invariant (AGENTS.md).** A path outside our own config has exactly one owner,
+  recorded in a manifest; adopt moves, never overwrites. This was scuttlarr's
+  ARCHITECTURE rule; it now governs app-side writes too (`aerospace.toml`, borders, the
+  Claude hook entries, theme renders). `TomlState`'s adopt-or-leave is the existing
+  instance, not a special case.
+- **Alternatives.** (a) Keep two repos, scuttlarr a thin installer depending on launcharr
+  — rejected, it _is_ the boundary that stalled work. (b) Fold under the launcharr name —
+  rejected on product grounds above. (c) Rename last — rejected: every migration,
+  decision, and file written in between would carry the wrong name.
+
 ### 2026-09-04 · Ghostty is the default terminal, reached through its multiplexer (herdr/tmux), never AppleScript
 
 - **Decision.** `Terminal::Ghostty` (`"Ghostty"` on the wire) is a new bang-mode/agent-jump

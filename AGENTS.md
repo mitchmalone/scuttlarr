@@ -1,6 +1,13 @@
-# AGENTS.md — launcharr
+# AGENTS.md — launcharr (becoming scuttlarr)
 
 > _An app launcher for pirates._ Always lowercase.
+>
+> **Fold in progress (DECISIONS 2026-09-11).** This repo absorbs the scuttlarr repo and is
+> renamed scuttlarr: one product — bar, launcher, universal theming, keyboard-first, plus
+> the machine setup — where the launcher is a feature. Until the rename lands
+> (`docs/plans/active/2026-09-11-unify-into-scuttlarr.md` phase 1) names, ids, and paths
+> below still say launcharr. Product shape: **install gets the bar and launcher; everything
+> else is a toggle** (desktop, theme, machine).
 
 A macOS app launcher that dresses up as a shell prompt: global hotkey summons a floating
 REPL-looking panel; type to fuzzy-launch apps and System Settings panes, or `!command` to fling
@@ -30,11 +37,14 @@ record decisions/gotchas as they happen; at close update `STATUS.md` and move th
 
 pnpm monorepo:
 
-| Path            | What it is                                                                 |
-| --------------- | -------------------------------------------------------------------------- |
-| `apps/desktop`  | The macOS app — Tauri 2 shell (Rust) + React panel UI (WKWebView)          |
-| `apps/www`      | launcharr.com — static-export Next.js marketing site (Vercel)              |
-| `packages/core` | The shared engine: grammar, fuzzy matcher, ranking, rows — pure TypeScript |
+| Path             | What it is                                                                                                                                     |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/desktop`   | The macOS app — Tauri 2 shell (Rust) + React panel UI (WKWebView)                                                                              |
+| `apps/www`       | launcharr.com — static-export Next.js marketing site (Vercel)                                                                                  |
+| `packages/core`  | The shared engine: grammar, fuzzy matcher, ranking, rows — pure TypeScript                                                                     |
+| `packages/tui`   | The UI kit both apps render: components, bar, theme tokens (derived from `packages/theme` once it exists)                                      |
+| `packages/theme` | _(planned, phase 3)_ Omarchy model: `themes/<name>/colors.toml`, templates, pure renderer, committed per-app renders                           |
+| `packages/setup` | _(planned, phase 2)_ scuttlarr's zsh CLI: install, defaults, Brewfile, shell, Caps→Hyper, duti, migrations, remove, manifest — `docs/SETUP.md` |
 
 The only external repo is the generated satellite `mitchmalone/homebrew-tap` (shared tap; `Casks/launcharr.rb`),
 written by the release pipeline — fix the generator, not the output.
@@ -113,6 +123,11 @@ it in `docs/DECISIONS.md`.
     stays invisible until someone who knows the app looks at it. This scales the wrong way
     with complexity: every new surface doubles the copies, and each one drifts silently.
     Generalises invariant 5 from the matcher to the entire UI.
+11. **A path outside our own config has exactly one owner, recorded in a manifest; adopt
+    moves, never overwrites.** Applies to everything the app or setup writes into the
+    user's home — `aerospace.toml`, borders, the Claude hook entries, theme renders,
+    macOS defaults — not just the machine rung. `TomlState`'s adopt-or-leave is the
+    existing instance. `docs/SETUP.md` (DECISIONS 2026-09-11).
 
 ## Performance budgets (requirements, not aspirations)
 

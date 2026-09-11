@@ -43,8 +43,10 @@ describe('pickTheme', () => {
       NOON,
     )
     expect(out.theme).toBe('dracula')
+    // No policy on disk yet: the pair was seeded from the current theme, and the
+    // pick fills the half the policy is reading (dark, the Mac is dark).
     expect(out.appearance?.pair).toEqual({
-      light: DEFAULT_POLICY.pair.light,
+      light: config().theme,
       dark: 'dracula',
     })
     expect(out.appearance?.everywhere).toBe(false)

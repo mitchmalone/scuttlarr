@@ -6,6 +6,19 @@
 
 ---
 
+### 2026-09-11 · The theme policy restyled the machine on first launch — a default pair is a decision, not a default
+
+First dev-install with the policy engine: `config.theme` was `launcharr` (aliased),
+the Mac was in light mode, the default policy said `system` with pair
+`{ solarized-light, scuttlarr }` — so the engine did its one job and wrote
+`solarized-light`. Correct by its own rules, and exactly what an upgrade must never
+do. Fix: the engine is inert until `config.appearance` exists on disk (a policy is
+something the user wrote), and until then `appearanceOf` seeds the pair with the
+current theme on both halves, so the first "turn it on" changes nothing until a light
+or dark theme is actually chosen. Rule: any engine whose output is a _write to the
+user's config_ needs an explicit opt-in that survives upgrades — a `serde(default)`
+is not consent.
+
 ### 2026-09-11 · Ghostty 1.3 grew an AppleScript dictionary — and SIGUSR2 reload is Linux-only
 
 DECISIONS 2026-09-04 said Ghostty "has no AppleScript dictionary". True for 1.2; 1.3.1

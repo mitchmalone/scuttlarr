@@ -29,15 +29,28 @@ export type ThemeResult = {
 /** The pre-rename default theme name still found in configs (`resolveTheme` aliases it too). */
 const ALIASES: Record<string, string> = { launcharr: 'scuttlarr' }
 
+/** Merged with defaults. Until the user has touched the policy (`config.appearance`
+ * absent) the pair is seeded with the current theme on both halves, so turning the
+ * engine on changes nothing until a light or dark theme is actually chosen. */
 export function appearanceOf(config: Config): AppearanceConfig {
   const a: Partial<AppearanceConfig> = config.appearance ?? {}
+  const seeded = config.appearance
+    ? DEFAULT_APPEARANCE.pair
+    : { light: config.theme, dark: config.theme }
   return {
     ...DEFAULT_APPEARANCE,
     ...a,
     schedule: { ...DEFAULT_APPEARANCE.schedule, ...(a.schedule ?? {}) },
-    pair: { ...DEFAULT_APPEARANCE.pair, ...(a.pair ?? {}) },
+    pair: { ...seeded, ...(a.pair ?? {}) },
     focus: { ...(a.focus ?? {}) },
   }
+}
+
+/** The engine only runs once the user has a policy on disk (Settings → General ▸
+ * Theme or `theme ⏎` write one). An upgrade must never restyle a machine by itself
+ * (JOURNAL 2026-09-11). */
+export function policyConfigured(config: Config): boolean {
+  return config.appearance !== undefined
 }
 
 /** Flip macOS with the theme only when *we* decide light/dark. In `system` mode the

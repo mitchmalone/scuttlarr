@@ -8,7 +8,7 @@ import { listen } from '@tauri-apps/api/event'
 import { useEffect, useRef } from 'react'
 
 import type { Config } from './config'
-import { appearanceOf } from './theme'
+import { appearanceOf, policyConfigured } from './theme'
 
 /** Mirrors `AppearanceInputs` in appearance.rs. */
 export type AppearanceInputs = {
@@ -53,6 +53,7 @@ export function useAppearancePolicy(config: Config, loaded: boolean): void {
 
     const settle = () => {
       const cfg = latest.current
+      if (!policyConfigured(cfg)) return
       const policy = appearanceOf(cfg)
       const seen = inputs.current
       if (!seen) return

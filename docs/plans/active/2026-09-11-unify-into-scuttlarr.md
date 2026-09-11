@@ -131,13 +131,13 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
       substitution, no logic in templates. `BUILTIN_THEMES` in `@launcharr/tui` becomes
       generated from `themes/*/colors.toml` at build time — one source of truth, the site
       demo keeps importing tokens.
-- [~] 3.3 (done: ghostty, tmux.conf, p10k-colors.zsh, delta.gitconfig, claude.json; **open**: borders/aerospace from the palette, macOS accent, wallpaper, VS Code name, bat beyond `ansi`) Templates for v1 surfaces: ghostty, tmux (colours + OSC payload), p10k, bat
-  tmTheme, delta, borders/aerospace (replaces the ad-hoc `bordersArgs` colour inputs),
-  macOS (`accent`, `highlight`, appearance), wallpaper pointer, Claude Code
-  (`~/.claude/themes/<name>.json`, as Omarchy does), VS Code/Cursor name only.
+- [x] 3.3 (ghostty, tmux.conf, p10k-colors.zsh, delta.gitconfig, claude.json, vscode-theme.json, zed-theme.json, neovim.lua, btop.theme; still no macOS accent or bat beyond `ansi` — borders already render from tokens) Templates for v1 surfaces: ghostty, tmux (colours + OSC payload), p10k, bat
+      tmTheme, delta, borders/aerospace (replaces the ad-hoc `bordersArgs` colour inputs),
+      macOS (`accent`, `highlight`, appearance), wallpaper pointer, Claude Code
+      (`~/.claude/themes/<name>.json`, as Omarchy does), VS Code/Cursor name only.
 - [x] 3.4 (reinterpreted: the committed artefact is `themes.generated.ts` + `builtin.generated.ts`, stale-checked; per-app renders live only in the state dir like Omarchy — a theme dir is still one file, so "usable without the CLI" holds) Committed renders under `themes/<name>/` (usable without the CLI, publishable
       standalone). `pnpm verify` fails if renders are stale.
-- [~] 3.5 (`theme.rs`: stage → atomic swap → `theme.name`, tmux OSC + SIGWINCH, macOS appearance, wallpaper, `hooks/theme-set.d/`, `~/.claude/themes/scuttlarr.json`; `theme_apply`/`theme_current`; `lib/theme.ts`; Settings → General ▸ Theme "Everywhere" + "apply now"; the panel window fans out on a theme-name change when `appearance.everywhere`. **Open**: base configs that import from the state path do not exist yet — `packages/setup` has no shell base (see STATUS); live proof of the tmux retint) `theme set` in the app (Rust command, thin): stage into
+- [~] 3.5 (`theme.rs`: stage → atomic swap → `theme.name`, tmux OSC + SIGWINCH, macOS appearance, wallpaper, `hooks/theme-set.d/`, `~/.claude/themes/scuttlarr.json`; `theme_apply`/`theme_current`; `lib/theme.ts`; Settings → General ▸ Theme "Everywhere" + "apply now"; the panel window fans out on a theme-name change when `appearance.everywhere`. **Shell base built later the same day**: `scuttlarr shell [--apply]` renders `~/.zshrc`, `~/.p10k.zsh`, Ghostty, tmux and a marker-bounded git include (manifest mode `touched`), all importing from the state path; bundled and offered in Settings → Machine. Still open: live proof of the tmux retint; plugin clones are not in the manifest) `theme set` in the app (Rust command, thin): stage into
   `~/.local/state/scuttlarr/next-theme/`, atomic swap to `current/theme/`, write
   `theme.name`, then fan out reloads in parallel: own windows (hot, exists), borders
   re-apply (exists), `killall -SIGUSR2 ghostty` (verify on macOS; fallback: Ghostty
@@ -145,7 +145,7 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
   SIGWINCH, `osascript` for appearance/accent/wallpaper, `theme-set.d/` user hooks.
   Base configs shipped by setup import from the state path (Ghostty `config-file`,
   tmux `source-file`, zsh sources p10k colours).
-- [ ] 3.6 User themes: `~/.config/scuttlarr/themes/<name>/` overlays file-by-file on a
+- [x] 3.6 (`user_themes.rs`: list/install/update/remove with Omarchy naming + hand-file filter; `lib/user-themes.ts` merges user `colors.toml` tokens into every window and picker; Settings → Theme "Your themes" row) User themes: `~/.config/scuttlarr/themes/<name>/` overlays file-by-file on a
       same-named built-in; `theme install <git-url>` with Omarchy's name rules and the
       staging filter (drop symlinks and executable-shaped files from cloned themes).
 - [ ] 3.7 Light mode first-class: Solarized Light and Catppuccin Latte render every
@@ -163,12 +163,12 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
       permissions; verified readable 2026-09-11), read mode names from
       `ModeConfigurations.json`; `appearance.focus.<mode-id>` maps to a theme or a pair.
       Resolution order: manual override → Focus mapping → mode → default pair.
-- [~] 4.4 (`theme ⏎` panel with swatches + fuzzy filter, Enter applies via `withPick`; Settings → General ▸ Theme: mode, schedule, pair, per-Focus mapping. **Open**: global hotkey (custom shortcuts can map one meanwhile), ⌥⏎ set-as-half, bar cell, "Toggle Dark Mode" still the AppleScript flip — correct under `system` mode, wrong under fixed modes) Switcher: `theme ⏎` panel (fuzzy list with swatch, Enter applies, ⌥⏎ sets as
-  light/dark half of the pair), global hotkey default ⌥⌃⇧Space mirroring Omarchy,
-  bar cell showing current theme optional. Settings → Appearance mirrors all of it.
-  "Toggle Dark Mode" system command becomes "flip `appearance.mode`", never a naive
-  AppleScript flip.
-- [ ] 4.5 (Rust `wallpaper` field exists in `theme_apply`; no `backgrounds/` in themes yet) Wallpaper: Omarchy model — `themes/<name>/backgrounds/`, `background next`
+- [x] 4.4 (`theme ⏎` panel with swatches + fuzzy filter, Enter applies via `withPick`; Settings → General ▸ Theme: mode, schedule, pair, per-Focus mapping. **Done later the same day**: `scuttlarr — Theme switcher` is an index row, so a custom shortcut binds it (Settings → General ▸ Shortcuts, e.g. ⌥⌃⇧Space → "scuttlarr — Theme switcher"); ⌥⏎ in the panel sets the row as the half the policy is _not_ reading (`withPickSlot`); "Toggle Dark Mode" flips the policy (`toggleMode`) when the mode is fixed or scheduled and the OS when it is `system`. Bar cell: not built) Switcher: `theme ⏎` panel (fuzzy list with swatch, Enter applies, ⌥⏎ sets as
+      light/dark half of the pair), global hotkey default ⌥⌃⇧Space mirroring Omarchy,
+      bar cell showing current theme optional. Settings → Appearance mirrors all of it.
+      "Toggle Dark Mode" system command becomes "flip `appearance.mode`", never a naive
+      AppleScript flip.
+- [x] 4.5 (a user theme's `backgrounds/*` images; each apply advances, remembered in `<state>/current/background`; `scuttlarr — Next wallpaper` row cycles; built-ins ship no images — the repo stays lean) Wallpaper: Omarchy model — `themes/<name>/backgrounds/`, `background next`
       cycles, theme switch advances. Adjust later.
 
 ### Phase 5 — Docs close-out

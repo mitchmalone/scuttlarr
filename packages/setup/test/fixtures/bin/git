@@ -1,0 +1,16 @@
+#!/bin/zsh
+# A fake `git` for tests: `clone <url> <dest>` makes the directory and logs the
+# call to $FAKE_GIT_LOG, one line per clone. Anything else is refused, so a
+# test that reaches the network fails loudly instead of quietly.
+emulate -L zsh
+setopt err_exit no_unset
+log="${FAKE_GIT_LOG:?FAKE_GIT_LOG unset}"
+verb="${1-}"; shift
+case "$verb" in
+  clone)
+    local -a args; args=("$@")
+    dest="${args[-1]}"
+    mkdir -p "$dest/.git"
+    print -r -- "clone ${args[-2]} $dest" >> "$log" ;;
+  *) print -u2 "fake git: unsupported verb '$verb'"; exit 2 ;;
+esac

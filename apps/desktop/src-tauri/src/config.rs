@@ -286,6 +286,9 @@ pub struct AppearanceConfig {
     pub everywhere: bool,
     /// Also set macOS light/dark from the theme's mode.
     pub macos: bool,
+    /// Hot editors: VS Code/Cursor, Zed, Neovim, Helix, btop (theme_editors.rs). Off by
+    /// default — it edits files outside our config.
+    pub editors: bool,
     /// The policy — mode (system | light | dark | schedule), schedule, pair, Focus
     /// mappings. Opaque to Rust: `@scuttlarr/core/appearance` owns the shape.
     #[serde(flatten)]
@@ -297,6 +300,7 @@ impl Default for AppearanceConfig {
         Self {
             everywhere: false,
             macos: true,
+            editors: false,
             policy: serde_json::Map::new(),
         }
     }

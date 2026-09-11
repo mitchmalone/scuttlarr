@@ -41,9 +41,12 @@ import {
   notchedZones,
 } from '../lib/config'
 import { applyTheme } from '../lib/themes'
+import { useMergedThemes } from '../lib/user-themes'
 import { PluginCellHost } from '../plugins/components'
 import './bar.css'
 import { useBarHover } from './hover'
+
+const EMPTY_THEMES = { themes: {} }
 
 /**
  * The bar window: a thin container around `@scuttlarr/tui`'s bar components.
@@ -83,6 +86,12 @@ function useNotched(): boolean {
  * config, following edits live. */
 function useBarConfig(): Config | null {
   const [cfg, setCfg] = useState<Config | null>(null)
+  // User colors.toml themes: the first paint uses built-ins (fast); this
+  // re-applies once the list is known or changes.
+  const merged = useMergedThemes(cfg ?? EMPTY_THEMES)
+  useEffect(() => {
+    if (cfg) applyTheme(cfg.theme, merged, 'panel')
+  }, [cfg, merged])
   useEffect(() => {
     const apply = (c: Config) => {
       applyTheme(c.theme, c.themes, 'panel')

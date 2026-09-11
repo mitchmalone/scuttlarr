@@ -48,6 +48,7 @@ import { markInput, reportResultsPainted } from './lib/perf'
 import { appearanceOf, applyThemeEverywhere } from './lib/theme'
 import { applyTheme } from './lib/themes'
 import { useAppearancePolicy } from './lib/use-appearance-policy'
+import { useMergedThemes } from './lib/user-themes'
 import { AerospacePanelContainer } from './panels/AerospacePanelContainer'
 import { AgentsPanelContainer } from './panels/AgentsPanelContainer'
 import { AudioPanelContainer } from './panels/AudioPanelContainer'
@@ -222,9 +223,11 @@ export default function App() {
     }, TOAST_MS)
     return () => clearTimeout(t)
   }, [toast])
+  // User `colors.toml` themes (lib/user-themes.ts) join config's token overrides.
+  const themes = useMergedThemes(config)
   useEffect(
-    () => applyTheme(config.theme, config.themes, 'panel'),
-    [config.theme, config.themes],
+    () => applyTheme(config.theme, themes, 'panel'),
+    [config.theme, themes],
   )
   // Which theme is active now (Focus, macOS light/dark, schedule) — resolves and
   // writes `config.theme`; the effects around here follow the change.

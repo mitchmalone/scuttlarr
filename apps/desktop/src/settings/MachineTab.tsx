@@ -27,6 +27,7 @@ export default function MachineTab({
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [planned, setPlanned] = useState(false)
+  const [shellPlanned, setShellPlanned] = useState(false)
 
   const run = useCallback(async (verb: SetupVerb) => {
     setBusy(verb)
@@ -36,6 +37,8 @@ export default function MachineTab({
       setLast({ verb, out })
       if (verb === 'defaults-plan') setPlanned(out.ok)
       if (verb === 'defaults-apply') setPlanned(false)
+      if (verb === 'shell-plan') setShellPlanned(out.ok)
+      if (verb === 'shell-apply') setShellPlanned(false)
     } catch (e) {
       setError(String(e))
     } finally {
@@ -73,7 +76,9 @@ export default function MachineTab({
       <p className="hint">
         Puts <code>scuttlarr</code> on your PATH (<code>~/.local/bin</code>,
         recorded in the manifest) and runs pending migrations at every launch.
-        Nothing else changes until you apply defaults below.
+        Nothing else changes until you apply defaults or the shell base below.
+        The shell base is what makes the Theme rung reach Ghostty, tmux, your
+        prompt and delta: its files import the current theme.
       </p>
 
       <div className="buttonrow">
@@ -102,6 +107,25 @@ export default function MachineTab({
           onClick={() => run('defaults-apply')}
         >
           {busy === 'defaults-apply' ? 'applying…' : 'apply defaults'}
+        </button>
+        <button
+          className="ghost"
+          disabled={busy !== null}
+          onClick={() => run('shell-plan')}
+        >
+          {busy === 'shell-plan' ? 'planning…' : 'plan shell'}
+        </button>
+        <button
+          className="ghost"
+          disabled={busy !== null || !shellPlanned}
+          title={
+            shellPlanned
+              ? 'Write ~/.zshrc, ~/.p10k.zsh, Ghostty, tmux and the git include; yours are moved aside, never overwritten'
+              : 'Plan first'
+          }
+          onClick={() => run('shell-apply')}
+        >
+          {busy === 'shell-apply' ? 'applying…' : 'apply shell'}
         </button>
         <button
           className="ghost"

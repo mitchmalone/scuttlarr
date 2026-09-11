@@ -2,6 +2,7 @@ import {
   type PolicyInputs,
   minutesToNextBoundary,
   resolveAppearance,
+  toggleMode,
 } from '@scuttlarr/core/appearance'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
@@ -91,11 +92,29 @@ export function useAppearancePolicy(config: Config, loaded: boolean): void {
       inputs.current = e.payload
       settle()
     })
+    // "Toggle Dark Mode" while the policy owns light/dark (Rust only emits this
+    // when mode ≠ system; under system it flips the OS and we follow).
+    const unToggle = listen('appearance-toggle', () => {
+      const cfg = latest.current
+      if (!policyConfigured(cfg)) return
+      const policy = appearanceOf(cfg)
+      const seen = inputs.current
+      const next = toggleMode(policy, {
+        focusMode: seen?.focusMode ?? null,
+        systemDark: seen?.systemDark ?? false,
+        now: clock(),
+      })
+      if (next.mode === policy.mode) return
+      invoke('write_config', {
+        config: { ...cfg, appearance: { ...cfg.appearance, ...next } },
+      }).catch((e) => console.error('[scuttlarr appearance] toggle failed:', e))
+    })
     return () => {
       disposed = true
       settleRef.current = () => {}
       if (timer) clearTimeout(timer)
       un.then((f) => f())
+      unToggle.then((f) => f())
     }
     // `config` is read through the ref: re-subscribing on every settings keystroke
     // would be waste. Policy edits re-settle through `policyKey` above.

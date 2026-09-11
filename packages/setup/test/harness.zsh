@@ -16,6 +16,10 @@ export SCUTTLARR_STATE="$T/state"
 export SCUTTLARR_OVERLAY="$T/overlay"
 export SCUTTLARR_DEFAULTS_BIN="$SCUTTLARR_BASE/test/fixtures/bin/defaults"
 export FAKE_DEFAULTS_STORE="$T/defaults.store"
+export SCUTTLARR_GIT_BIN="$SCUTTLARR_BASE/test/fixtures/bin/git"
+export FAKE_GIT_LOG="$T/git.log"
+# The shell layer resolves XDG paths itself; keep them under $T's HOME.
+unset XDG_CONFIG_HOME XDG_DATA_HOME XDG_STATE_HOME XDG_CACHE_HOME ZDOTDIR
 export SCUTTLARR_NO_KILLALL=1
 export NO_COLOR=1
 mkdir -p "$HOME"
@@ -28,6 +32,7 @@ source "$SCUTTLARR_BASE/lib/files.zsh"
 source "$SCUTTLARR_BASE/lib/doctor.zsh"
 source "$SCUTTLARR_BASE/lib/link.zsh"
 source "$SCUTTLARR_BASE/lib/migrations.zsh"
+source "$SCUTTLARR_BASE/lib/shell.zsh"
 source "$SCUTTLARR_BASE/lib/remove.zsh"
 
 _t_where() { print -r -- "${funcfiletrace[2]:-?}"; }

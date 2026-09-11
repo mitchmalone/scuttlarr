@@ -2,6 +2,7 @@
  * Render one theme into every surface: tokens for the app, one file per template,
  * and the OSC payload. Pure — the caller supplies texts and writes the results.
  */
+import { type EditorThemes, editorThemesFor } from './editors.ts'
 import { oscSequences } from './osc.ts'
 import { type ResolvedPalette, parseThemeFile, resolve } from './palette.ts'
 import { TemplateError, render } from './template.ts'
@@ -25,6 +26,8 @@ export type RenderedTheme = {
   /** Output file name (template key without `.tpl`) → rendered text. */
   files: Record<string, string>
   osc: string
+  /** Names for editors that pick a theme by name (`editors.ts`); also template keys. */
+  editors: EditorThemes
 }
 
 /**
@@ -37,10 +40,12 @@ export const DEFAULT_BAT_THEME = 'ansi'
 export function renderTheme(input: RenderInput): RenderedTheme {
   const { palette: raw, launcher } = parseThemeFile(input.text)
   const resolved = resolve(raw)
+  const editors = editorThemesFor(input.name, resolved)
   const extended: ResolvedPalette = {
     ...resolved,
     name: input.name,
     bat_theme: resolved.bat_theme || DEFAULT_BAT_THEME,
+    ...editors,
   }
 
   const files: Record<string, string> = {}
@@ -64,5 +69,6 @@ export function renderTheme(input: RenderInput): RenderedTheme {
     tokens: toTokens(resolved, launcher),
     files,
     osc: oscSequences(resolved),
+    editors,
   }
 }

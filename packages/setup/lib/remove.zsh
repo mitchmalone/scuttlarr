@@ -1,7 +1,7 @@
 # remove.zsh — leave the machine the way it was found (docs/SETUP.md, "Reversal").
 #
 # The manifest in reverse: symlinks unlinked, generated files deleted, adopted
-# originals moved back. Then every defaults key back to its snapshot (a key
+# originals moved back, touched stanzas stripped. Then every defaults key back to its snapshot (a key
 # that had no value is deleted). Then the manifest, the snapshot and the
 # migrations record go. The overlay is never touched — it's yours — and the
 # app's own files in the state directory stay. Homebrew, the app and the base
@@ -54,6 +54,17 @@ _sc_remove_paths() {
         if [[ -L "$target" || -f "$target" ]]; then
           (( SC_REMOVE_PATHS++, SC_REMOVE_CHANGED++ ))
           if [[ "$mode" == apply ]]; then rm -f "$target"; sc_ok "$shown: removed"; else sc_log "$shown: remove"; fi
+        fi ;;
+      touched)
+        if sc_touched_block "$target" >/dev/null; then
+          (( SC_REMOVE_PATHS++, SC_REMOVE_CHANGED++ ))
+          if [[ "$mode" == apply ]]; then
+            sc_touched_revert "$target" && sc_ok "$shown: scuttlarr include stripped"
+          else
+            sc_log "$shown: strip the scuttlarr include"
+          fi
+        elif [[ "$mode" == apply ]]; then
+          rm -f "$(sc_touched_copy_path "$target")"
         fi ;;
       *) sc_warn "$shown: unknown manifest mode '$m' — left alone" ;;
     esac
@@ -120,9 +131,11 @@ _sc_remove_state() {
     (( SC_REMOVE_CHANGED++ ))
     if [[ "$mode" == apply ]]; then rm -f "$f"; sc_ok "$(sc_tilde "$f"): removed"; else sc_log "$(sc_tilde "$f"): remove"; fi
   done
-  # adopted/ is empty once every original is back; drop the empty tree.
-  if [[ "$mode" == apply && -d "$SCUTTLARR_STATE/adopted" ]]; then
-    find "$SCUTTLARR_STATE/adopted" -type d -empty -delete 2>/dev/null || true
-  fi
+  # adopted/ and touched/ are empty once every original is back; drop the trees.
+  local d
+  for d in "$SCUTTLARR_STATE/adopted" "$SCUTTLARR_STATE/touched"; do
+    [[ "$mode" == apply && -d "$d" ]] || continue
+    find "$d" -type d -empty -delete 2>/dev/null || true
+  done
   return 0
 }

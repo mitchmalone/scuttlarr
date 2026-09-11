@@ -9,7 +9,9 @@ import {
   type FocusMapping,
   type PolicyInputs,
   parseClock,
+  resolveAppearance,
   withPick,
+  withPickSlot,
 } from '@scuttlarr/core/appearance'
 
 import type { Config } from './config'
@@ -34,6 +36,25 @@ export function policyInputs(
 }
 
 /** A manual pick: `config.theme` plus the policy slot it should stick in. */
+/** ⌥⏎: set `theme` as the half the policy is *not* reading; the active theme
+ * stays as it is. */
+export function pickThemeOther(
+  config: Config,
+  inputs: AppearanceInputs | null,
+  theme: string,
+  now?: PolicyInputs['now'],
+): Pick<Config, 'appearance'> {
+  const appearance = appearanceOf(config)
+  const pin = policyInputs(inputs, now)
+  const other = resolveAppearance(appearance, pin).dark ? 'light' : 'dark'
+  return {
+    appearance: {
+      ...appearance,
+      ...withPickSlot(appearance, pin, theme, other),
+    },
+  }
+}
+
 export function pickTheme(
   config: Config,
   inputs: AppearanceInputs | null,

@@ -4,7 +4,9 @@
 #
 # One line per path; adding a path that is already listed replaces its line.
 # Modes: symlink (→ base), generated (rendered; hash recorded), adopted (the
-# original was moved to state/adopted/). This file is the whole basis for
+# original was moved to state/adopted/), touched (a marker-bounded stanza we
+# appended to a file that stays the user's; the stanza's hash is recorded and
+# remove strips it). This file is the whole basis for
 # `doctor` and `remove` — a write that isn't here didn't happen, as far as
 # scuttlarr is concerned.
 
@@ -42,7 +44,7 @@ sc_manifest_get() {
   return 1
 }
 
-# sc_manifest_mode <path> → symlink | generated | adopted, or status 1.
+# sc_manifest_mode <path> → symlink | generated | adopted | touched, or status 1.
 sc_manifest_mode() {
   local line
   line="$(sc_manifest_get "$1")" || return 1

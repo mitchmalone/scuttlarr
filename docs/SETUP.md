@@ -7,10 +7,18 @@
 > files, doctor, link, migrations, remove), `defaults/`, `bin/scuttlarr` with
 > `doctor | defaults [--apply] | link | unlink | migrate | remove`, shipped inside the
 > app under `Contents/Resources/setup/` and driven from Settings → Machine (`setup.rs`).
-> **Not built:** `install` as a CLI verb (the curl installer only installs the app),
-> `update` (the app's own update is the update), the shell/terminal/theme _layers_ that
-> write the base configs — so the base dir below is the bundle's `setup/`, not a clone,
-> and the "base ⊕ overlay" render of `.zshrc`, Ghostty, tmux is still ahead. Pre-fold
+> **Shell base built 2026-09-11:** `scuttlarr shell` (plan) / `shell --apply [--yes]`
+> render `shell/zshrc` + `shell/NN-*.zsh`, `prompt/p10k.zsh`, `terminal/ghostty`,
+> `terminal/tmux.conf`, `git/scuttlarr.gitconfig` into `~/.zshrc`, `~/.p10k.zsh`,
+> `~/.config/ghostty/config`, `~/.config/tmux/tmux.conf`, `~/.config/git/scuttlarr.gitconfig`
+> (all `generated`, foreign originals adopted), append one `[include]` stanza to your
+> `~/.config/git/config` (manifest mode `touched`: marker-bounded, stripped by `remove`),
+> and clone the zsh plugins under `~/.local/share/zsh/plugins`. Every generated file
+> imports the current theme from `~/.local/state/scuttlarr/current/theme/` (THEMES.md,
+> Surfaces); `doctor` re-renders and diffs them. Overlay: `zsh/*.zsh` sourced after the
+> base, `ghostty` and `tmux.conf` fragments appended. **Not built:** `install` as a CLI
+> verb (the curl installer only installs the app), `update` (the app's own update is the
+> update) — so the base dir below is the bundle's `setup/`, not a clone. Pre-fold
 > wording remains where it says "scuttlarr" (the CLI) vs "launcharr" (the app): they are
 > one product now, and the "launcharr handshake" section is history — one marker, no
 > handshake.
@@ -33,7 +41,8 @@ it a system instead of a script.
   bin/scuttlarr                the CLI
   lib/                         zsh helpers: log, defaults wrapper, manifest, snapshot, render
   defaults/                    macOS defaults, one file per concern, idempotent
-  shell/                       base zsh (env, path, prompt, completion, tools, plugins)
+  shell/                       base zsh: the zshrc loader + NN-*.zsh (env, path, prompt, completion, tools, plugins)
+  prompt/ terminal/ git/       p10k.zsh; ghostty, tmux.conf; scuttlarr.gitconfig — each imports the current theme
   themes/<name>/               palette.toml + rendered per-app files (committed)
   templates/<app>/             what themes render through
   migrations/                  YYYY-MM-DD-slug.sh, run once each by update
@@ -44,6 +53,7 @@ it a system instead of a script.
   Brewfile                     extra packages
   defaults.sh                  defaults flipped back or added
   zsh/*.zsh                    sourced after shell/
+  ghostty, tmux.conf           fragments appended to the rendered Ghostty / tmux configs
   duti                         default-app overrides
   themes/<name>/               private themes (Dracula Pro lives here)
   desktop/                     aerospace / borders overrides
@@ -68,11 +78,12 @@ scuttlarr targets the **standard** locations — `~/.zshrc`, `~/.config/ghostty`
 `defaults`, Homebrew — so every other tool keeps working with no knowledge of scuttlarr.
 Each owned path has exactly one mode, recorded in the manifest:
 
-| Mode               | For                                                                                      | Update / doctor                                       |
-| ------------------ | ---------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| **symlink → base** | Pure-base files: `tmux.conf`, a rendered theme file                                      | Update changes them for free; doctor checks the link  |
-| **generated**      | Base ⊕ overlay merges: `.zshrc`, the Brewfile, `launcharr/config.json`, `aerospace.toml` | Rendered by the CLI; doctor re-renders and diffs      |
-| **adopted**        | A file that existed before scuttlarr                                                     | Moved to `state/adopted/`, never overwritten silently |
+| Mode               | For                                                                                      | Update / doctor                                        |
+| ------------------ | ---------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| **symlink → base** | Pure-base files: `tmux.conf`, a rendered theme file                                      | Update changes them for free; doctor checks the link   |
+| **generated**      | Base ⊕ overlay merges: `.zshrc`, the Brewfile, `launcharr/config.json`, `aerospace.toml` | Rendered by the CLI; doctor re-renders and diffs       |
+| **adopted**        | A file that existed before scuttlarr                                                     | Moved to `state/adopted/`, never overwritten silently  |
+| **touched**        | A file that stays yours but carries one stanza of ours (`~/.config/git/config`)          | Marker-bounded; doctor hashes the block, remove strips |
 
 Adopt **moves, never overwrites**. Where it makes sense the original is offered back as
 an overlay (an old `.zshrc` → `zsh/99-adopted.zsh`, off by default).

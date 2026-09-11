@@ -25,9 +25,11 @@ export interface ThemePanelProps {
   themes: CustomThemes
   /** Policy mode, for the header line. */
   mode: string
+  /** Which half the policy is reading right now. */
+  dark: boolean
   /** Active macOS Focus name, if any. */
   focusName: string | null
-  onPick: (name: string) => void
+  onPick: (name: string, how: 'now' | 'other') => void
   onClose: () => void
 }
 
@@ -66,10 +68,12 @@ export function ThemePanel({
   current,
   themes,
   mode,
+  dark,
   focusName,
   onPick,
   onClose,
 }: ThemePanelProps) {
+  const other = dark ? 'light theme' : 'dark theme'
   const [filter, setFilter] = useState('')
   const names = useMemo(() => themeNames(themes), [themes])
   const visible = useMemo(() => {
@@ -78,9 +82,9 @@ export function ThemePanel({
   }, [names, filter])
 
   const nav = useListNav(visible.length, {
-    onActivate: (i) => {
+    onActivate: (i, event) => {
       const name = visible[i]
-      if (name) onPick(name)
+      if (name) onPick(name, event.altKey ? 'other' : 'now')
     },
     onBack: () => (filter ? setFilter('') : onClose()),
   })
@@ -103,6 +107,7 @@ export function ThemePanel({
           hints={[
             { keys: '↑↓', label: 'move' },
             { keys: '⏎', label: 'apply' },
+            { keys: '⌥⏎', label: `set as ${other}` },
             { keys: 'esc', label: 'close' },
           ]}
         />
@@ -128,7 +133,7 @@ export function ThemePanel({
             label={name}
             right={name === current ? '● current' : undefined}
             selected={i === nav.index}
-            onClick={() => onPick(name)}
+            onClick={() => onPick(name, 'now')}
             onHover={() => nav.setIndex(i)}
           />
         ))}

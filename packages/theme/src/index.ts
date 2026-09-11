@@ -33,6 +33,13 @@ export type {
   ResolvedPalette,
   ThemeFile,
 } from './palette.ts'
+export {
+  DEFAULT_EDITOR_THEMES,
+  EDITOR_THEME_KEYS,
+  RENDERED_EDITOR_THEME,
+  editorThemesFor,
+} from './editors.ts'
+export type { EditorThemes } from './editors.ts'
 export { oscSequences } from './osc.ts'
 export { DEFAULT_BAT_THEME, renderTheme } from './render.ts'
 export type { RenderInput, RenderedTheme } from './render.ts'

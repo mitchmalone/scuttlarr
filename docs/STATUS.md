@@ -46,9 +46,21 @@ repo, renamed scuttlarr; the launcher is a feature (DECISIONS 2026-09-11 ×3, pl
   shell. **Live-proven:** migration, bundled CLI, the engine resolving on launch.
   **Not yet:** a Focus flip or appearance toggle changing the theme, the tmux retint,
   "apply now" — need a hand on the machine.
-- **Open:** 3.6 user `colors.toml` overlays + `theme install`; 3.7 light-mode proof;
-  4.4 hotkey / ⌥⏎ / bar cell / "Toggle Dark Mode" under fixed modes; 4.5 wallpaper;
-  the shell base; phase 5 docs.
+- **Later the same day, all green (238 Rust, 110 theme, 168 core, 67 desktop, 227
+  shell):** the **shell base** (`scuttlarr shell [--apply]`: `~/.zshrc`, `~/.p10k.zsh`,
+  Ghostty, tmux, a marker-bounded git include, all importing the current theme; Settings
+  → Machine "plan/apply shell"); **hot editors** (VS Code + Cursor, Zed, Neovim, Helix,
+  btop — each verified hot against source or docs, `appearance.editors` toggle); **user
+  themes** (`~/.config/scuttlarr/themes/<name>/colors.toml` merged into every window,
+  `theme install <git-url>`, update, remove, watched); **switcher polish** ("scuttlarr —
+  Theme switcher" row for a custom hotkey, ⌥⏎ sets the other half, "Toggle Dark Mode"
+  flips the policy under fixed modes); **wallpaper** (`backgrounds/` per user theme,
+  advances per apply, "Next wallpaper" row). Docs: README, THEMES, SETUP rewritten; PRD,
+  API docs, site copy swept.
+- **Still not live-proven** (needs a hand): the tmux retint, an editor retint, a Focus
+  flip, the shell base applied on a real home. **Open:** bar theme cell; macOS accent
+  colour; bat beyond `ansi`; plugin clones aren't in the manifest; 2.5 archive the old
+  repo and the tap/Vercel/domain steps (Mitch).
 
 **Plugin permissions, 2026-09-10 (working tree, uncommitted — built, not yet
 reinstalled):** the generic answer to the amaran kill below. `manifest.permissions`

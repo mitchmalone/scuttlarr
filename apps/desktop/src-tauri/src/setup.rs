@@ -28,6 +28,10 @@ pub enum SetupVerb {
     Unlink,
     /// Run unrun migrations once.
     Migrate,
+    /// Plan the shell base: ~/.zshrc, ~/.p10k.zsh, Ghostty, tmux, the git include.
+    ShellPlan,
+    /// Apply it (foreign files adopted, never overwritten).
+    ShellApply,
     Version,
 }
 
@@ -41,6 +45,8 @@ pub fn argv(verb: SetupVerb) -> &'static [&'static str] {
         SetupVerb::Link => &["link"],
         SetupVerb::Unlink => &["unlink"],
         SetupVerb::Migrate => &["migrate"],
+        SetupVerb::ShellPlan => &["shell"],
+        SetupVerb::ShellApply => &["shell", "--apply", "--yes"],
         SetupVerb::Version => &["version"],
     }
 }
@@ -133,6 +139,8 @@ mod tests {
     fn every_verb_is_non_interactive() {
         // `defaults --apply` would `read -q` without --yes; a settings button has no tty.
         assert!(argv(SetupVerb::DefaultsApply).contains(&"--yes"));
+        assert!(argv(SetupVerb::ShellApply).contains(&"--yes"));
+        assert!(!argv(SetupVerb::ShellPlan).contains(&"--apply"));
         assert!(!argv(SetupVerb::DefaultsPlan).contains(&"--apply"));
     }
 

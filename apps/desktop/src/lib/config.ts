@@ -63,10 +63,13 @@ export type MachineConfig = { enabled: boolean }
 export type AppearanceConfig = {
   everywhere: boolean
   macos: boolean
+  /** Hot editors: VS Code/Cursor, Zed, Neovim, Helix, btop retint at theme set. */
+  editors: boolean
 } & AppearancePolicy
 export const DEFAULT_APPEARANCE: AppearanceConfig = {
   everywhere: false,
   macos: true,
+  editors: false,
   ...DEFAULT_POLICY,
 }
 

@@ -1,14 +1,18 @@
+import { resolveAppearance } from '@scuttlarr/core/appearance'
 import { invoke } from '@tauri-apps/api/core'
 import { useEffect, useState } from 'react'
 
-import { pickTheme } from '../lib/appearance-ui'
+import { pickTheme, pickThemeOther, policyInputs } from '../lib/appearance-ui'
 import type { Config } from '../lib/config'
 import { appearanceOf } from '../lib/theme'
 import {
   type AppearanceInputs,
   appearanceInputs,
 } from '../lib/use-appearance-policy'
+import { useMergedThemes } from '../lib/user-themes'
 import { ThemePanel } from './ThemePanel'
+
+const EMPTY_THEMES = { themes: {} }
 
 /** One fetch of config + policy inputs on open; ⏎ writes the pick and closes. */
 export function ThemePanelContainer({ onClose }: { onClose: () => void }) {
@@ -20,6 +24,7 @@ export function ThemePanelContainer({ onClose }: { onClose: () => void }) {
     appearanceInputs().then(setInputs).catch(console.error)
   }, [])
 
+  const merged = useMergedThemes(config ?? EMPTY_THEMES)
   if (!config) return null
   const appearance = appearanceOf(config)
   const focusName =
@@ -30,11 +35,15 @@ export function ThemePanelContainer({ onClose }: { onClose: () => void }) {
   return (
     <ThemePanel
       current={config.theme}
-      themes={config.themes}
+      themes={merged}
       mode={appearance.mode}
       focusName={focusName}
-      onPick={(name) => {
-        const next = { ...config, ...pickTheme(config, inputs, name) }
+      dark={resolveAppearance(appearance, policyInputs(inputs)).dark}
+      onPick={(name, how) => {
+        const next =
+          how === 'other'
+            ? { ...config, ...pickThemeOther(config, inputs, name) }
+            : { ...config, ...pickTheme(config, inputs, name) }
         invoke('write_config', { config: next })
           .then(onClose)
           .catch(console.error)

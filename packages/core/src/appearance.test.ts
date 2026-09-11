@@ -7,7 +7,9 @@ import {
   minutesToNextBoundary,
   parseClock,
   resolveAppearance,
+  toggleMode,
   withPick,
+  withPickSlot,
 } from './appearance'
 
 const at = (hour: number, minute = 0) => ({ hour, minute })
@@ -165,5 +167,63 @@ describe('minutesToNextBoundary', () => {
     expect(minutesToNextBoundary(p, at(12))).toBe(7 * 60)
     expect(minutesToNextBoundary(p, at(20))).toBe(11 * 60)
     expect(minutesToNextBoundary(p, at(6, 30))).toBe(30)
+  })
+})
+
+describe('withPickSlot', () => {
+  it('writes the other half without touching the reading one', () => {
+    const p = withPickSlot(
+      DEFAULT_POLICY,
+      inputs({ systemDark: false }),
+      'nord',
+      'dark',
+    )
+    expect(p.pair).toEqual({ light: 'solarized-light', dark: 'nord' })
+  })
+  it('turns a single-theme Focus mapping into a pair when the other half is set', () => {
+    const base: AppearancePolicy = {
+      ...DEFAULT_POLICY,
+      focus: { dnd: 'terminal' },
+    }
+    expect(
+      withPickSlot(
+        base,
+        inputs({ focusMode: 'dnd', systemDark: true }),
+        'amber',
+        'light',
+      ).focus.dnd,
+    ).toEqual({ dark: 'terminal', light: 'amber' })
+    expect(
+      withPickSlot(
+        base,
+        inputs({ focusMode: 'dnd', systemDark: true }),
+        'amber',
+        'dark',
+      ).focus.dnd,
+    ).toBe('amber')
+  })
+})
+
+describe('toggleMode', () => {
+  it('flips fixed modes, pins the opposite under schedule, leaves system alone', () => {
+    expect(
+      toggleMode({ ...DEFAULT_POLICY, mode: 'light' }, inputs()).mode,
+    ).toBe('dark')
+    expect(toggleMode({ ...DEFAULT_POLICY, mode: 'dark' }, inputs()).mode).toBe(
+      'light',
+    )
+    expect(
+      toggleMode(
+        { ...DEFAULT_POLICY, mode: 'schedule' },
+        inputs({ now: at(22) }),
+      ).mode,
+    ).toBe('light')
+    expect(
+      toggleMode(
+        { ...DEFAULT_POLICY, mode: 'schedule' },
+        inputs({ now: at(12) }),
+      ).mode,
+    ).toBe('dark')
+    expect(toggleMode(DEFAULT_POLICY, inputs()).mode).toBe('system')
   })
 })

@@ -7,7 +7,7 @@ cd "${0:A:h:h}"
 
 typeset -i failed=0
 print "syntax"
-for f in bin/scuttlarr lib/*.zsh defaults/*.zsh migrations/*.zsh(N) test/*.zsh test/fixtures/bin/* scripts/*.zsh; do
+for f in bin/scuttlarr lib/*.zsh defaults/*.zsh shell/zshrc shell/*.zsh prompt/*.zsh migrations/*.zsh(N) test/*.zsh test/fixtures/bin/* scripts/*.zsh; do
   if zsh -n "$f"; then :; else print "  FAIL zsh -n $f"; failed=1; fi
 done
 print "  ok"

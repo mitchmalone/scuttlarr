@@ -48,7 +48,11 @@
       "../../../packages/setup/bin/": "setup/bin/",
       "../../../packages/setup/lib/": "setup/lib/",
       "../../../packages/setup/defaults/": "setup/defaults/",
-      "../../../packages/setup/migrations/": "setup/migrations/"
+      "../../../packages/setup/migrations/": "setup/migrations/",
+      "../../../packages/setup/shell/": "setup/shell/",
+      "../../../packages/setup/prompt/": "setup/prompt/",
+      "../../../packages/setup/terminal/": "setup/terminal/",
+      "../../../packages/setup/git/": "setup/git/"
     }
   }
 }

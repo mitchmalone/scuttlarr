@@ -7,6 +7,7 @@ import {
   focusChoice,
   isClock,
   pickTheme,
+  pickThemeOther,
   policyInputs,
   withFocusChoice,
   withFocusHalf,
@@ -56,6 +57,7 @@ describe('pickTheme', () => {
       config({
         everywhere: false,
         macos: true,
+        editors: false,
         ...DEFAULT_POLICY,
         focus: { [WORK]: 'terminal' },
       }),
@@ -132,5 +134,21 @@ describe('isClock', () => {
     expect(isClock('24:00')).toBe(false)
     expect(isClock('7')).toBe(false)
     expect(isClock('')).toBe(false)
+  })
+})
+
+describe('pickThemeOther', () => {
+  it('sets the half not being read and leaves the active theme alone', () => {
+    const out = pickThemeOther(
+      config(),
+      { focusMode: null, systemDark: true, modes: [] },
+      'solarized-light',
+      NOON,
+    )
+    expect('theme' in out).toBe(false)
+    expect(out.appearance?.pair).toEqual({
+      light: 'solarized-light',
+      dark: config().theme,
+    })
   })
 })

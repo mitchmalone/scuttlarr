@@ -7,7 +7,7 @@ import { moveSelection } from './nav/list'
 export interface ListNavOptions {
   wrap?: boolean
   /** Enter / Return on the current row. */
-  onActivate?: (index: number) => void
+  onActivate?: (index: number, event: KeyboardEvent) => void
   /** Escape, or ArrowLeft when `leftIsBack` — the drill-out gesture. */
   onBack?: () => void
   /** ArrowRight on the current row — the drill-in gesture. */
@@ -49,7 +49,7 @@ export function useListNav(count: number, opts: ListNavOptions = {}): ListNav {
         case 'Enter':
           if (onActivate && index >= 0) {
             event.preventDefault()
-            onActivate(index)
+            onActivate(index, event)
           }
           return
         case 'ArrowRight':

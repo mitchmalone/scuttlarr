@@ -114,16 +114,47 @@ export function withPick(
   theme: string,
 ): AppearancePolicy {
   const res = resolveAppearance(policy, inputs)
-  const slot = res.dark ? 'dark' : 'light'
+  return withPickSlot(policy, inputs, theme, res.dark ? 'dark' : 'light')
+}
+
+/** Write a theme into one half — the reading one (`withPick`) or the other, so
+ * you can choose tonight's dark theme while it is still light (⌥⏎). Under a
+ * mapped Focus the mapping is what changes; a single-theme mapping becomes a
+ * pair when the other half is set. */
+export function withPickSlot(
+  policy: AppearancePolicy,
+  inputs: PolicyInputs,
+  theme: string,
+  slot: 'light' | 'dark',
+): AppearancePolicy {
+  const res = resolveAppearance(policy, inputs)
+  const reading = res.dark ? 'dark' : 'light'
   if (res.via === 'focus' && inputs.focusMode) {
     const current = policy.focus[inputs.focusMode]
-    const next: FocusMapping =
-      typeof current === 'string' || current === undefined
-        ? theme
-        : { ...current, [slot]: theme }
+    let next: FocusMapping
+    if (current === undefined) next = theme
+    else if (typeof current === 'string')
+      next =
+        slot === reading
+          ? theme
+          : ({ [reading]: current, [slot]: theme } as ThemePair)
+    else next = { ...current, [slot]: theme }
     return { ...policy, focus: { ...policy.focus, [inputs.focusMode]: next } }
   }
   return { ...policy, pair: { ...policy.pair, [slot]: theme } }
+}
+
+/** "Toggle Dark Mode" while the policy owns light/dark: light ↔ dark; under
+ * `schedule`, pin the opposite of what the clock says (a fixed mode) — the
+ * user's intent wins until they set the mode back. Under `system` the caller
+ * flips the OS instead, and this returns the policy unchanged. */
+export function toggleMode(
+  policy: AppearancePolicy,
+  inputs: PolicyInputs,
+): AppearancePolicy {
+  if (policy.mode === 'system') return policy
+  const dark = isDark(policy, inputs)
+  return { ...policy, mode: dark ? 'light' : 'dark' }
 }
 
 /** Minutes until the next schedule boundary (for a wake-up timer); null when unscheduled. */

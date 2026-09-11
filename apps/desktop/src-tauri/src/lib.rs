@@ -55,9 +55,11 @@ mod sysread;
 mod system_commands;
 mod terminal;
 mod theme;
+mod theme_editors;
 mod tray;
 mod updates;
 mod usage;
+mod user_themes;
 mod widget_secrets;
 mod widgets;
 mod wifi;
@@ -134,6 +136,10 @@ pub fn run() {
             commands::appearance_inputs,
             commands::theme_apply,
             commands::theme_current,
+            commands::theme_user_list,
+            commands::theme_install,
+            commands::theme_update,
+            commands::theme_remove,
             commands::desktop_status,
             commands::desktop_apply,
             commands::desktop_adopt,
@@ -251,6 +257,7 @@ pub fn run() {
             apply_launch_at_login(app.handle(), cfg.launch_at_login);
             setup::boot(app.handle(), cfg.machine.enabled);
             appearance::watch(app.handle().clone());
+            user_themes::watch(app.handle().clone());
 
             // §7 budget: cold start → hotkey registered < 1s.
             eprintln!(

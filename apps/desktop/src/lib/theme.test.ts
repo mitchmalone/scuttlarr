@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import type { Config } from './config'
-import { appearanceOf, flipsMacos, policyConfigured } from './theme'
+import {
+  appearanceOf,
+  flipsMacos,
+  policyConfigured,
+  renderBuiltin,
+  themeApplyRequest,
+} from './theme'
 
 const cfg = (over: Partial<Config>): Config =>
   ({ theme: 'dracula', themes: {}, ...over }) as Config
@@ -36,5 +42,41 @@ describe('flipsMacos', () => {
     expect(
       flipsMacos(cfg({ appearance: { macos: false, mode: 'dark' } as never })),
     ).toBe(false)
+  })
+})
+
+describe('themeApplyRequest', () => {
+  const rendered = renderBuiltin('dracula')
+  it('keeps the editor payloads out of the theme dir and off unless enabled', () => {
+    const req = themeApplyRequest(rendered, cfg({ appearance: undefined }))
+    expect(req.editors).toBe(false)
+    expect(req.vscode).toBeNull()
+    expect(req.zed).toBeNull()
+    expect(req.btop).toBeNull()
+    expect(req.neovimColorscheme).toBeNull()
+    expect(req.helixTheme).toBeNull()
+    expect(req.claude).toContain('"name": "scuttlarr — dracula"')
+    for (const gone of [
+      'claude.json',
+      'vscode-theme.json',
+      'zed-theme.json',
+      'btop.theme',
+    ])
+      expect(req.files).not.toHaveProperty(gone)
+    expect(req.files['neovim.lua']).toContain('colorscheme = "dracula"')
+    expect(req.files.ghostty).toBeDefined()
+  })
+  it('sends every editor payload when appearance.editors is on', () => {
+    const req = themeApplyRequest(
+      rendered,
+      cfg({ appearance: { editors: true } as never }),
+    )
+    expect(req.editors).toBe(true)
+    expect(req.mode).toBe('dark')
+    expect(JSON.parse(req.vscode!).type).toBe('dark')
+    expect(JSON.parse(req.zed!).themes[0].name).toBe('scuttlarr')
+    expect(req.btop).toContain('theme[main_bg]="#282a36"')
+    expect(req.neovimColorscheme).toBe('dracula')
+    expect(req.helixTheme).toBe('dracula')
   })
 })

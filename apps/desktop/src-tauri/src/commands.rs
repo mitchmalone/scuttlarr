@@ -254,6 +254,29 @@ pub async fn theme_current() -> Option<String> {
     crate::theme::current_name(&crate::config::state_dir())
 }
 
+/// User themes (`~/.config/scuttlarr/themes/<name>/colors.toml`, user_themes.rs).
+#[tauri::command]
+pub async fn theme_user_list() -> Vec<crate::user_themes::UserTheme> {
+    crate::user_themes::list(&crate::config::config_dir())
+}
+
+/// `theme install <git-url>`: clone into the themes dir with Omarchy's naming rules.
+#[tauri::command]
+pub async fn theme_install(url: String) -> CmdResult<crate::user_themes::UserTheme> {
+    crate::user_themes::install(&crate::config::config_dir(), &url)
+}
+
+/// `git pull` every installed theme; the names that changed.
+#[tauri::command]
+pub async fn theme_update() -> Vec<String> {
+    crate::user_themes::update(&crate::config::config_dir())
+}
+
+#[tauri::command]
+pub async fn theme_remove(name: String) -> CmdResult<()> {
+    crate::user_themes::remove(&crate::config::config_dir(), &name)
+}
+
 /// Settings → Machine: one allowlisted verb of the bundled setup CLI (setup.rs).
 #[tauri::command]
 pub async fn setup_run(
@@ -365,13 +388,38 @@ pub fn execute(
             Command::new("open").arg(&item.path).spawn()?;
         }
         ItemKind::Command => {
-            crate::system_commands::run(item.id.trim_start_matches("cmd:"))?;
+            let slug = item.id.trim_start_matches("cmd:");
+            // "Toggle Dark Mode" while the theme policy owns light/dark: flip the
+            // policy, not the OS (DECISIONS 2026-09-11, policy). Rust reads one string;
+            // the flip itself is TypeScript's (use-appearance-policy).
+            let policy_owns_mode = slug == "toggle-dark-mode"
+                && state
+                    .config
+                    .read()
+                    .unwrap()
+                    .appearance
+                    .policy
+                    .get("mode")
+                    .and_then(|m| m.as_str())
+                    .is_some_and(|m| m != "system");
+            if policy_owns_mode {
+                use tauri::Emitter;
+                app.emit("appearance-toggle", ())
+                    .map_err(|e| CmdError::Internal(e.to_string()))?;
+            } else {
+                crate::system_commands::run(slug)?;
+            }
         }
         ItemKind::Scuttlarr => match item.id.as_str() {
             "scuttlarr:quit" => app.exit(0),
             "scuttlarr:settings" => crate::settings_window::open(&app)?,
             "scuttlarr:reindex" => crate::indexer::refresh(&app),
             "scuttlarr:colorpicker" => crate::colorpicker::pick(&app),
+            // A launchable row (so a custom shortcut can bind it): summon into `theme ⏎`.
+            "scuttlarr:theme" => open_panel(app.clone(), "theme".into())?,
+            "scuttlarr:wallpaper" => {
+                crate::theme::wallpaper_next_current()?;
+            }
             "scuttlarr:config" => {
                 Command::new("open")
                     .arg(crate::config::config_path())

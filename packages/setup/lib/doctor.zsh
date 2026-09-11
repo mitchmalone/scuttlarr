@@ -31,9 +31,20 @@ sc_doctor() {
     (( problems += SC_DEFAULTS_CHANGED ))
   fi
 
+  # Shell layer: every generated config, re-rendered and compared.
+  sc_shell_run check
+  if (( SC_SHELL_CHANGED == 0 )); then
+    sc_ok "shell: ${SC_SHELL_SEEN} files as rendered"
+  else
+    local plugins=''; (( SC_SHELL_PLUGINS )) && plugins=", ${SC_SHELL_PLUGINS} plugin(s) not cloned"
+    sc_warn "shell: $(( SC_SHELL_CHANGED - SC_SHELL_PLUGINS )) of ${SC_SHELL_SEEN} files differ${plugins} — \`scuttlarr shell\` shows the plan, \`--apply\` fixes"
+    (( problems += SC_SHELL_CHANGED ))
+  fi
+
   # Manifest: every owned path.
   sc_head "owned paths"
-  local line parts mode target source
+  local -i before=$problems
+  local line parts mode target source block
   local -i checked=0
   while IFS= read -r line; do
     [[ -n "$line" ]] || continue
@@ -56,11 +67,17 @@ sc_doctor() {
         if [[ ! -e "$source" ]]; then
           sc_warn "$(sc_tilde "$target"): its adopted original is gone from $(sc_tilde "$source")"; (( problems++ ))
         fi ;;
+      touched)
+        if ! block="$(sc_touched_block "$target")"; then
+          sc_warn "$(sc_tilde "$target"): the scuttlarr include is gone"; (( problems++ ))
+        elif [[ "$(print -r -- "$block" | shasum -a 256 | cut -d' ' -f1)" != "$source" ]]; then
+          sc_warn "$(sc_tilde "$target"): the scuttlarr include was edited"; (( problems++ ))
+        fi ;;
       *) sc_warn "$(sc_tilde "$target"): unknown manifest mode '$mode'"; (( problems++ )) ;;
     esac
   done < <(sc_manifest_list)
   (( checked == 0 )) && sc_log "none yet"
-  (( checked > 0 && problems == SC_DEFAULTS_CHANGED )) && sc_ok "$checked owned paths intact"
+  (( checked > 0 && problems == before )) && sc_ok "$checked owned paths intact"
 
   # Desktop layer.
   sc_head "desktop layer"

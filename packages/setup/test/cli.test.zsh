@@ -14,8 +14,13 @@ assert_match "plan mentions the keybinding file" "$out" "DefaultKeyBinding.dict:
 assert_match "plan says how to apply" "$out" "--apply"
 assert_no_file "$(sc_snapshot_path)" "plan is read-only"
 
-# Apply, then doctor is clean and a second apply changes nothing.
+# Apply defaults and the shell layer, then doctor is clean and a second apply
+# changes nothing. (Defaults alone leave the shell files as drift.)
 "$cli" defaults --apply --yes >/dev/null 2>&1
+assert_fails "doctor still drifts without the shell layer" "$cli" doctor 2>/dev/null
+out="$("$cli" doctor 2>&1)"
+assert_match "doctor names the shell layer" "$out" "shell: 6 of 6 files differ"
+"$cli" shell --apply --yes >/dev/null 2>&1
 assert_ok "doctor clean after apply" "$cli" doctor 2>/dev/null
 assert_file "$(sc_snapshot_path)" "snapshot taken"
 assert_file "$(sc_manifest_path)" "manifest written"

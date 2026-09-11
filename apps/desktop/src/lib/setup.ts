@@ -8,6 +8,8 @@ export type SetupVerb =
   | 'link'
   | 'unlink'
   | 'migrate'
+  | 'shell-plan'
+  | 'shell-apply'
   | 'version'
 
 export type SetupOutput = {

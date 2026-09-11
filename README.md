@@ -34,10 +34,11 @@ the first is on by default.
    from your theme. Wrapped, never rebuilt; hand your own `aerospace.toml` back any time.
 4. **Theme** — one palette, [Omarchy's `colors.toml` format](docs/THEMES.md) verbatim, so
    any Omarchy theme ports by copying one file. It styles the app, then — when you turn
-   the rung on — Ghostty, tmux, your prompt, delta and Claude Code, with running tmux
-   panes retinting on the spot. A light/dark **pair** follows macOS (sunrise and sunset
-   included) or a schedule of your own; a **macOS Focus** can have its own theme or pair.
-   `theme ⏎` is the switcher.
+   the rung on — Ghostty, tmux, your prompt, delta, Claude Code, and (one more toggle)
+   VS Code, Cursor, Zed, Neovim, Helix and btop, running instances retinting on the
+   spot. A light/dark **pair** follows macOS (sunrise and sunset included) or a
+   schedule of your own; a **macOS Focus** can have its own theme or pair. `theme ⏎` is
+   the switcher; your own themes and wallpapers live in `~/.config/scuttlarr/themes/`.
 5. **Machine** — the setup CLI shipped inside the app: macOS defaults with the shine
    scraped off, a manifest of every file scuttlarr writes outside its own config, adopt
    never overwrite, migrations, and `scuttlarr remove` to put it all back. It shows you a

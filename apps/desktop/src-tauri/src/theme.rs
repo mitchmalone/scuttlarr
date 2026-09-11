@@ -35,13 +35,32 @@ pub struct ThemeApply {
     /// Flip macOS light/dark to match `mode`.
     #[serde(default)]
     pub appearance: bool,
-    /// Absolute path of a wallpaper to set, if the theme ships one.
+    /// Absolute image paths the theme ships; each apply advances to the next one
+    /// (Omarchy's `theme-bg-next`), remembered in `<state>/current/background`.
     #[serde(default)]
-    pub wallpaper: Option<String>,
+    pub backgrounds: Vec<String>,
     /// A Claude Code custom theme (rendered `claude.json`), written to
     /// `~/.claude/themes/scuttlarr.json` — the one file outside the state dir.
     #[serde(default)]
     pub claude: Option<String>,
+    /// Hot editors (theme_editors.rs): off unless `config.appearance.editors`.
+    #[serde(default)]
+    pub editors: bool,
+    /// Rendered `vscode-theme.json` — installed as a local extension for VS Code and Cursor.
+    #[serde(default)]
+    pub vscode: Option<String>,
+    /// Rendered `zed-theme.json` → `~/.config/zed/themes/scuttlarr.json`.
+    #[serde(default)]
+    pub zed: Option<String>,
+    /// Rendered `btop.theme` → `~/.config/btop/themes/scuttlarr.theme`.
+    #[serde(default)]
+    pub btop: Option<String>,
+    /// `:colorscheme` for running Neovim servers.
+    #[serde(default)]
+    pub neovim_colorscheme: Option<String>,
+    /// `theme = "…"` for Helix's config.toml.
+    #[serde(default)]
+    pub helix_theme: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -52,6 +71,9 @@ pub struct ThemeResult {
     pub reloaded: Vec<String>,
     /// (surface, why) — shown, never swallowed.
     pub failed: Vec<(String, String)>,
+    /// Editors not installed or not running — nothing to do, not a failure.
+    #[serde(default)]
+    pub skipped: Vec<String>,
 }
 
 /// `<state>/current/theme` — what base configs import from.
@@ -183,6 +205,67 @@ fn set_appearance(dark: bool) -> Result<(), String> {
     ))
 }
 
+fn short_name(path: &str) -> String {
+    Path::new(path)
+        .file_name()
+        .map(|n| n.to_string_lossy().into_owned())
+        .unwrap_or_else(|| path.to_string())
+}
+
+/// The next background after the remembered one (wrapping); the first when none
+/// is remembered or it left the list. Pure.
+pub fn pick_next<'a>(backgrounds: &'a [String], current: Option<&str>) -> Option<&'a String> {
+    if backgrounds.is_empty() {
+        return None;
+    }
+    let idx = current
+        .and_then(|c| backgrounds.iter().position(|b| b == c))
+        .map(|i| (i + 1) % backgrounds.len())
+        .unwrap_or(0);
+    backgrounds.get(idx)
+}
+
+/// Advance the wallpaper: remember the list (`backgrounds.txt`, for `scuttlarr:wallpaper`)
+/// and the choice (`background`), then set it.
+pub fn wallpaper_next(state: &Path, backgrounds: &[String]) -> Result<String, String> {
+    let current_dir = state.join("current");
+    std::fs::create_dir_all(&current_dir).map_err(|e| e.to_string())?;
+    let remembered = std::fs::read_to_string(current_dir.join("background"))
+        .ok()
+        .map(|s| s.trim().to_string());
+    let next = pick_next(backgrounds, remembered.as_deref())
+        .ok_or_else(|| "no backgrounds".to_string())?
+        .clone();
+    std::fs::write(
+        current_dir.join("backgrounds.txt"),
+        backgrounds.join("\n") + "\n",
+    )
+    .map_err(|e| e.to_string())?;
+    set_wallpaper(&next)?;
+    std::fs::write(current_dir.join("background"), format!("{next}\n"))
+        .map_err(|e| e.to_string())?;
+    Ok(next)
+}
+
+/// `scuttlarr — Next wallpaper`: cycle within the current theme's list.
+pub fn wallpaper_next_current() -> CmdResult<String> {
+    let state = crate::config::state_dir();
+    let list: Vec<String> = std::fs::read_to_string(state.join("current").join("backgrounds.txt"))
+        .map(|s| {
+            s.lines()
+                .filter(|l| !l.trim().is_empty())
+                .map(str::to_string)
+                .collect()
+        })
+        .unwrap_or_default();
+    if list.is_empty() {
+        return Err(crate::error::CmdError::NotFound(
+            "the current theme ships no backgrounds".into(),
+        ));
+    }
+    wallpaper_next(&state, &list).map_err(crate::error::CmdError::Internal)
+}
+
 fn set_wallpaper(path: &str) -> Result<(), String> {
     if !Path::new(path).is_file() {
         return Err(format!("no such file: {path}"));
@@ -232,6 +315,35 @@ fn run_hooks(config_dir: &Path, name: &str) -> Vec<(String, String)> {
     failed
 }
 
+/// Fan out to the hot editors, each independent (theme_editors.rs).
+fn apply_editors(req: &ThemeApply, res: &mut ThemeResult) {
+    use crate::theme_editors as ed;
+    let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("/tmp"));
+    let xdg = home.join(".config");
+    let mut fold = |surface: &str, outcome: ed::Outcome| match outcome {
+        ed::Outcome::Done(what) => res.reloaded.push(what),
+        ed::Outcome::Skipped(why) => res.skipped.push(why),
+        ed::Outcome::Failed(why) => res.failed.push((surface.into(), why)),
+    };
+    if let Some(body) = req.vscode.as_deref() {
+        for flavour in ed::vscode_flavours(&home) {
+            fold(flavour.label, ed::apply_vscode(&flavour, body, &req.mode));
+        }
+    }
+    if let Some(body) = req.zed.as_deref() {
+        fold("zed", ed::apply_zed(&xdg.join("zed"), body));
+    }
+    if let Some(scheme) = req.neovim_colorscheme.as_deref() {
+        fold("neovim", ed::apply_neovim(scheme, &req.mode));
+    }
+    if let Some(theme) = req.helix_theme.as_deref() {
+        fold("helix", ed::apply_helix(&xdg.join("helix"), theme));
+    }
+    if let Some(body) = req.btop.as_deref() {
+        fold("btop", ed::apply_btop(&xdg.join("btop"), body));
+    }
+}
+
 pub fn apply(req: ThemeApply) -> CmdResult<ThemeResult> {
     let state = crate::config::state_dir();
     let path = install(&state, &req.name, &req.files)?;
@@ -253,17 +365,22 @@ pub fn apply(req: ThemeApply) -> CmdResult<ThemeResult> {
             Err(e) => res.failed.push(("macOS appearance".into(), e)),
         }
     }
-    if let Some(wp) = req.wallpaper.as_deref() {
-        match set_wallpaper(wp) {
-            Ok(()) => res.reloaded.push("wallpaper".into()),
+    if !req.backgrounds.is_empty() {
+        match wallpaper_next(&state, &req.backgrounds) {
+            Ok(p) => res.reloaded.push(format!("wallpaper ({})", short_name(&p))),
             Err(e) => res.failed.push(("wallpaper".into(), e)),
         }
+    } else {
+        let _ = std::fs::remove_file(state.join("current").join("backgrounds.txt"));
     }
     if let Some(body) = req.claude.as_deref() {
         match write_claude_theme(body) {
             Ok(p) => res.reloaded.push(format!("claude code ({})", p.display())),
             Err(e) => res.failed.push(("claude code".into(), e.to_string())),
         }
+    }
+    if req.editors {
+        apply_editors(&req, &mut res);
     }
     let hook_failures = run_hooks(&crate::config::config_dir(), &req.name);
     if hook_failures.is_empty() {
@@ -331,6 +448,16 @@ mod tests {
         assert!(!dir.join("old").exists());
         assert!(dir.join("new").exists());
         assert_eq!(current_name(&s).as_deref(), Some("b"));
+    }
+
+    #[test]
+    fn pick_next_cycles_and_recovers() {
+        let bg = vec!["a".to_string(), "b".to_string(), "c".to_string()];
+        assert_eq!(pick_next(&bg, None).map(String::as_str), Some("a"));
+        assert_eq!(pick_next(&bg, Some("a")).map(String::as_str), Some("b"));
+        assert_eq!(pick_next(&bg, Some("c")).map(String::as_str), Some("a"));
+        assert_eq!(pick_next(&bg, Some("gone")).map(String::as_str), Some("a"));
+        assert_eq!(pick_next(&[], Some("a")), None);
     }
 
     #[test]

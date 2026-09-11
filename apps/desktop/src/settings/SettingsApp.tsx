@@ -56,6 +56,13 @@ import {
   type AppearanceInputs,
   appearanceInputs,
 } from '../lib/use-appearance-policy'
+import {
+  installTheme,
+  removeTheme,
+  updateThemes,
+  useMergedThemes,
+  useUserThemes,
+} from '../lib/user-themes'
 import { usePlugins } from '../plugins/use-plugins'
 import DesktopTab from './DesktopTab'
 import { HooksRow } from './HooksRow'
@@ -71,6 +78,8 @@ import iconUrl from './scuttlarr.svg'
  * bookmarks). The file stays the source of truth — hand-edits keep working and update
  * this window while it's open.
  */
+
+const EMPTY_THEMES = { themes: {} }
 
 const TABS = [
   { id: 'general', label: 'General', icon: Settings },
@@ -107,6 +116,7 @@ export default function SettingsApp() {
     }
   }, [])
   const [error, setError] = useState<string | null>(null)
+  const mergedThemes = useMergedThemes(config ?? EMPTY_THEMES)
 
   // Autosave plumbing: don't write back what we just loaded or received from the
   // watcher (echo), and don't let our own write's config-changed event clobber
@@ -147,8 +157,8 @@ export default function SettingsApp() {
   }, [config])
 
   useEffect(() => {
-    if (config) applyTheme(config.theme, config.themes, 'settings')
-  }, [config])
+    if (config) applyTheme(config.theme, mergedThemes, 'settings')
+  }, [config, mergedThemes])
 
   if (!config) return <div className="settings" />
 
@@ -432,6 +442,87 @@ function ThemeSelect({
  * active when (DECISIONS 2026-09-11, `@scuttlarr/core/appearance`), then the
  * rung that renders it beyond the app.
  */
+/** `~/.config/scuttlarr/themes/<name>/colors.toml`: list, install from git, update, remove. */
+function UserThemesRow() {
+  const user = useUserThemes()
+  const [url, setUrl] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [note, setNote] = useState<string | null>(null)
+  const run = (p: Promise<string>) => {
+    setBusy(true)
+    setNote(null)
+    p.then(setNote)
+      .catch((e) => setNote(String(e)))
+      .finally(() => setBusy(false))
+  }
+  return (
+    <Row label="Your themes">
+      {user.length === 0 && (
+        <p className="hint">
+          None yet. Drop a <code>colors.toml</code> in{' '}
+          <code>~/.config/scuttlarr/themes/&lt;name&gt;/</code> (Omarchy's
+          format — any Omarchy theme works as-is), or install one from git
+          below. A theme named after a built-in replaces it.
+        </p>
+      )}
+      {user.map((t) => (
+        <div key={t.name} className="focusrow">
+          <span className="focusname">
+            {t.name}
+            {t.installed ? ' · installed from git' : ''}
+          </span>
+          <button
+            className="ghost"
+            disabled={busy}
+            onClick={() =>
+              run(removeTheme(t.name).then(() => `removed ${t.name}`))
+            }
+          >
+            remove
+          </button>
+        </div>
+      ))}
+      <div className="buttonrow inline">
+        <input
+          value={url}
+          placeholder="https://github.com/…/omarchy-<name>-theme"
+          onChange={(e) => setUrl(e.target.value)}
+        />
+        <button
+          className="ghost"
+          disabled={busy || !url.trim()}
+          onClick={() =>
+            run(
+              installTheme(url.trim()).then((t) => {
+                setUrl('')
+                return `installed ${t.name}`
+              }),
+            )
+          }
+        >
+          {busy ? 'working…' : 'install'}
+        </button>
+        {user.some((t) => t.installed) && (
+          <button
+            className="ghost"
+            disabled={busy}
+            onClick={() =>
+              run(
+                updateThemes().then((n) =>
+                  n.length ? `updated ${n.join(', ')}` : 'all up to date',
+                ),
+              )
+            }
+          >
+            update installed
+          </button>
+        )}
+      </div>
+      {note && <p className="hint tiny">{note}</p>}
+    </Row>
+  )
+}
+
 function ThemeSection({
   config,
   set,
@@ -442,7 +533,8 @@ function ThemeSection({
   patch: PatchFn
 }) {
   const appearance = appearanceOf(config)
-  const names = themeNames(config.themes)
+  const merged = useMergedThemes(config)
+  const names = themeNames(merged)
   const [inputs, setInputs] = useState<AppearanceInputs | null>(null)
   useEffect(() => {
     appearanceInputs().then(setInputs).catch(console.error)
@@ -608,6 +700,7 @@ function ThemeSection({
           })
         )}
       </Row>
+      <UserThemesRow />
       <Row label="Everywhere">
         <label className="check">
           <input
@@ -634,6 +727,19 @@ function ThemeSection({
           />
           Follow it with macOS light/dark
         </label>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={appearance.editors}
+            onChange={(e) => setAppearance({ editors: e.target.checked })}
+          />
+          Also retint editors: VS Code, Cursor, Zed, Neovim, Helix, btop
+        </label>
+        <p className="hint">
+          Installs a generated theme for each and switches to it in their own
+          settings files (a one-time <code>.bak-scuttlarr</code> beside each).
+          Running instances change on the spot; ones not installed are skipped.
+        </p>
         <p className="hint">
           Only when the mode is light, dark or schedule — in system mode macOS
           is the source and we follow it, not the other way round.

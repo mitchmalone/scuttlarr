@@ -140,6 +140,16 @@ pub fn scan(links: &[crate::config::Link], include_bookmarks: bool) -> Vec<Index
             "scuttlarr — Open config",
             "config settings preferences",
         ),
+        (
+            "theme",
+            "scuttlarr — Theme switcher",
+            "theme themes appearance switcher colors colours",
+        ),
+        (
+            "wallpaper",
+            "scuttlarr — Next wallpaper",
+            "wallpaper background desktop picture next",
+        ),
         ("quit", "scuttlarr — Quit", "quit exit"),
     ] {
         items.push(IndexItem {

@@ -1,13 +1,19 @@
 # Setup: base, overlay, manifest
 
 > Moved from the scuttlarr repo (its `ARCHITECTURE.md`) 2026-09-11 (DECISIONS). This is
-> the design for `packages/setup` — the "machine" rung — and the source of the repo-wide
-> invariant that a path outside our config has one owner, recorded in a manifest, and
-> adopt moves rather than overwrites. Pre-fold wording: "scuttlarr" below means the
-> setup CLI shipped inside the app; "launcharr" means the app. The "launcharr handshake"
-> section is historical — with one product there is no handshake, only one marker.
-> `lib/` (core, manifest, snapshot, defaults, files, doctor), `defaults/` and the
-> hermetic zsh tests already exist and port as-is (plan phase 2).
+> the design for `packages/setup` — the Machine rung — and the source of AGENTS invariant
+> 11 (a path outside our config has one owner, recorded in a manifest; adopt moves, never
+> overwrites). **Built as of 2026-09-11:** `lib/` (core, manifest, snapshot, defaults,
+> files, doctor, link, migrations, remove), `defaults/`, `bin/scuttlarr` with
+> `doctor | defaults [--apply] | link | unlink | migrate | remove`, shipped inside the
+> app under `Contents/Resources/setup/` and driven from Settings → Machine (`setup.rs`).
+> **Not built:** `install` as a CLI verb (the curl installer only installs the app),
+> `update` (the app's own update is the update), the shell/terminal/theme _layers_ that
+> write the base configs — so the base dir below is the bundle's `setup/`, not a clone,
+> and the "base ⊕ overlay" render of `.zshrc`, Ghostty, tmux is still ahead. Pre-fold
+> wording remains where it says "scuttlarr" (the CLI) vs "launcharr" (the app): they are
+> one product now, and the "launcharr handshake" section is history — one marker, no
+> handshake.
 
 How setup is put together: a read-only base, a user overlay, and a manifest of every
 write — so `install`, `update`, `doctor` and `remove` are all the same walk. Decided

@@ -1,32 +1,34 @@
-# launcharr — v1 Product Requirements Document
+# scuttlarr — Product Requirements Document
 
-> _An app launcher for pirates._
+> _Scuttle the ship. Sail the wreck._
 
-|              |                                                           |
-| ------------ | --------------------------------------------------------- |
-| **Project**  | launcharr (always lowercase)                              |
-| **Version**  | v1.1 (v1 shipped 8 Aug 2026; v1.1 scope decided same day) |
-| **Owner**    | Mitch Malone                                              |
-| **Status**   | Revised — 8 Aug 2026                                      |
-| **Platform** | macOS (Apple Silicon first; Intel if free)                |
+|              |                                                                     |
+| ------------ | ------------------------------------------------------------------- |
+| **Project**  | scuttlarr (always lowercase; launcharr until 11 Sep 2026)           |
+| **Version**  | v1.1 (v1 shipped 8 Aug 2026; v1.1 scope decided same day)           |
+| **Owner**    | Mitch Malone                                                        |
+| **Status**   | Revised 11 Sep 2026 — folded with scuttlarr, renamed; see DECISIONS |
+| **Platform** | macOS (Apple Silicon first; Intel if free)                          |
 
 ---
 
 ## 1. Vision
 
-launcharr is a macOS app launcher for terminal nerds. Where Alfred and Raycast dress up as polished macOS utility apps, launcharr dresses up as a shell prompt: summon it with a hotkey, type into something that looks and feels like a REPL, and either launch an app or fling a command at your terminal without breaking flow.
+scuttlarr is an opinionated macOS desktop for developers who live in the terminal: a menubar replacement, a launcher that dresses up as a shell prompt, one theme rendered into everything, keyboard-first — with tiling, de-shined defaults and a fast shell a toggle away. It is the Omarchy shape without taking on Linux to get it. Install gets the bar and the launcher; everything else is a rung you turn on — Desktop, Theme, Machine (README "The rungs"; `docs/THEMES.md`, `docs/SETUP.md`; DECISIONS 2026-09-11). The launcher is a feature, not the brand.
+
+The launcher is where it started and its temperament still governs the whole: where Alfred and Raycast dress up as polished macOS utility apps, the panel dresses up as a shell prompt — summon it with a hotkey, type into something that looks and feels like a REPL, and either launch an app or fling a command at your terminal without breaking flow.
 
 Two values govern every decision:
 
-1. **Lightweight.** launcharr should idle invisibly and summon instantly. When a feature and the weight budget conflict, the feature loses.
-2. **Hackable.** The long-term differentiator is that extending launcharr feels like scripting, not like app development. v1 lays the input-grammar and architecture groundwork for that; the full script/plugin protocol is deliberately v2.
+1. **Lightweight.** scuttlarr should idle invisibly and summon instantly. When a feature and the weight budget conflict, the feature loses.
+2. **Hackable.** The long-term differentiator is that extending scuttlarr feels like scripting, not like app development: a script is an executable in a folder, a theme is one text file, a plugin is a directory. v1 laid the input-grammar and architecture groundwork; the script, widget and plugin protocols followed (`docs/SCRIPTS.md`, `docs/WIDGETS.md`, `docs/PLUGINS.md`).
 
-v1's definition of success is simple: **launcharr replaces whatever Mitch currently uses to launch apps, every day, and stays out of the way.**
+History: v1 shipped 8 Aug 2026 as launcharr, and its definition of success was simple — **launcharr replaces whatever Mitch currently uses to launch apps, every day, and stays out of the way.** It did. The bar arrived in v0.4 (DECISIONS 2026-08-15), and on 11 Sep 2026 the launcher repo and the scuttlarr distro repo folded into one product under the scuttlarr name.
 
 ## 2. Target user
 
-- Primary (v1): Mitch. A JS/TS developer who lives in the terminal (iTerm2), values speed and minimalism, and wants a launcher that feels like a tool he owns rather than a product he rents.
-- Secondary (post-v1, if released): developers and terminal-first users who find Raycast heavy and Alfred dated, and who would rather write a shell script than browse an extension store.
+- Primary (v1): Mitch. A JS/TS developer who lives in the terminal (Ghostty under tmux/herdr — DECISIONS 2026-09-04; iTerm2 in v1), values speed and minimalism, and wants a launcher that feels like a tool he owns rather than a product he rents.
+- Secondary (post-v1, if released): developers and terminal-first users who find Raycast heavy and Alfred dated, who would rather write a shell script than browse an extension store — and who look at Omarchy and want that on a Mac.
 
 ## 3. Scope
 
@@ -64,13 +66,19 @@ v1's definition of success is simple: **launcharr replaces whatever Mitch curren
 ### Out of scope (non-goals)
 
 File search (deferred by choice, 9 Aug 2026 — Spotlight's `mdfind` is the route if demand
-appears), window management, snippets, theming beyond the built-in look, Windows/Linux, and
-anything requiring Accessibility permissions
-(this is why clipboard "paste" is copy-on-Enter: auto-⌘V needs Accessibility). launcharr runs
-with **zero granted permissions** (the one exception: sending to iTerm2 triggers macOS's
-standard Automation consent prompt on first use) and **sends no telemetry**. (The v1 "zero network requests" rule was retired 4 Sep 2026 —
-DECISIONS — once usage limits, plugins, and app-update checks made it a fiction; the
-surviving rule is that no request exists to report on the user.)
+appears), snippets, Windows/Linux, and anything requiring Accessibility permissions
+(this is why clipboard "paste" is copy-on-Enter: auto-⌘V needs Accessibility). scuttlarr runs
+with **zero granted permissions** (the one exception: macOS's standard Automation consent
+prompt, only when a feature you turned on needs one — e.g. the terminal falling back to
+iTerm2; Ghostty needs none) and **sends no telemetry**. (The v1 "zero network requests" rule
+was retired 4 Sep 2026 — DECISIONS — once usage limits, plugins, and app-update checks made
+it a fiction; the surviving rule is that no request exists to report on the user.)
+
+Two former non-goals left this list: window management arrives _wrapped_ (AeroSpace brings
+its own Accessibility grant; scuttlarr itself still requests nothing — the Desktop rung,
+DECISIONS 2026-08-15/17), and "theming beyond the built-in look" and "anything
+distro-shaped" became the Theme and Machine rungs (DECISIONS 2026-09-11; `docs/THEMES.md`,
+`docs/SETUP.md`).
 
 **Deferred, not rejected** (triggers in `docs/DECISIONS.md`): Google Translate and public-IP
 lookup (need network), Calendar (needs EventKit consent).
@@ -103,16 +111,16 @@ The panel is a terminal prompt cosplay, not an Alfred knock-off:
 
 ### 4.4 Bang mode (`!`)
 
-- If the **first character** of the input is `!`, launcharr switches to bang mode for the rest of that invocation. The prompt sigil changes (e.g. `❯` → `$`) and the results list is replaced by a single action line: `run in iTerm2 ▸ <command>` — an unambiguous visual signal that Enter will not launch an app.
-- **Enter** hands everything after the `!` to **iTerm2**: launcharr opens a new iTerm2 window (default profile) — or reuses the current session if a setting says so — and runs the command there. Output, interactivity, and lifetime all belong to iTerm2; launcharr dismisses immediately after hand-off.
+- If the **first character** of the input is `!`, scuttlarr switches to bang mode for the rest of that invocation. The prompt sigil changes (e.g. `❯` → `$`) and the results list is replaced by a single action line: `run in iTerm2 ▸ <command>` — an unambiguous visual signal that Enter will not launch an app.
+- **Enter** hands everything after the `!` to **iTerm2**: scuttlarr opens a new iTerm2 window (default profile) — or reuses the current session if a setting says so — and runs the command there. Output, interactivity, and lifetime all belong to iTerm2; scuttlarr dismisses immediately after hand-off.
 - Implementation: iTerm2's AppleScript API (`create window with default profile` / `write text`). If iTerm2 isn't installed, fall back to Terminal.app; the target is a setting, but Ghostty is the blessed default (reached through herdr or tmux — Ghostty has no AppleScript dictionary — falling back to iTerm2, then Terminal.app, if it isn't installed).
-- The command string is passed through verbatim — no shell parsing, no quoting games, no environment munging by launcharr. What you typed is what runs.
+- The command string is passed through verbatim — no shell parsing, no quoting games, no environment munging by scuttlarr. What you typed is what runs.
 - `!` alone (empty command) opens a new iTerm2 window and nothing else. Free feature, feels right.
 - **Grammar note:** `!` is the first-char entry in the dispatch table; v1.1 added first-token entries — script trigger words and the built-in `clip` — to the same table, as this note always intended.
 
 ### 4.5 First run
 
-On first launch: register the default hotkey, build the app index, show the panel once with a one-line hint ("⌥space to summon · `!` to run in terminal"). No onboarding wizard, no account, no network calls. launcharr runs as an accessory app (no Dock icon) with a small menubar presence — a template pirate-flag icon whose menu covers summon/config/scripts/reindex/quit and is the gateway for future settings UI (added v1.1, 9 Aug 2026). Everything in the menu stays reachable through the prompt itself (type `launcharr` — it self-indexes); the panel is always the primary surface.
+On first launch: register the default hotkey, build the app index, show the panel once with a one-line hint ("⌥space to summon · `!` to run in terminal"). No onboarding wizard, no account, no network calls. scuttlarr runs as an accessory app (no Dock icon) with a small menubar presence — a template pirate-flag icon whose menu covers summon/config/scripts/reindex/quit and is the gateway for future settings UI (added v1.1, 9 Aug 2026). Everything in the menu stays reachable through the prompt itself (type `scuttlarr` — it self-indexes); the panel is always the primary surface.
 
 ## 5. Core behaviors (functional requirements)
 
@@ -137,11 +145,11 @@ On first launch: register the default hotkey, build the app index, show the pane
 
 ### 5.4 Settings (minimal)
 
-A JSON file in `~/.config/launcharr/config.json` — hand-editable, watched for changes, no settings UI beyond what the prompt itself exposes. Contents: hotkey, terminal target (iTerm2/Terminal.app), new-window-vs-current-session for bang mode, prompt sigils, launch-at-login, custom links, custom shortcuts. A config file you edit in your editor _is_ the terminal-nerd settings UI.
+A JSON file in `~/.config/scuttlarr/config.json` — hand-editable, watched for changes, no settings UI beyond what the prompt itself exposes. Contents: hotkey, terminal target (iTerm2/Terminal.app), new-window-vs-current-session for bang mode, prompt sigils, launch-at-login, custom links, custom shortcuts. A config file you edit in your editor _is_ the terminal-nerd settings UI.
 
 ### 5.5 Scripts (v1.1)
 
-Executables in `~/.config/launcharr/scripts/` declare a trigger word (`<script> manifest`) and answer queries (`<script> query <args>`) with JSON items launcharr renders as results; actions are copy/open/none. Discovery is FSEvents-watched — drop a file in, its trigger is live. Full contract: `docs/SCRIPTS.md`. Bundled reference scripts: `lorem`, `json`, `ip`.
+Executables in `~/.config/scuttlarr/scripts/` declare a trigger word (`<script> manifest`) and answer queries (`<script> query <args>`) with JSON items scuttlarr renders as results; actions are copy/open/none. Discovery is FSEvents-watched — drop a file in, its trigger is live. Full contract: `docs/SCRIPTS.md`. Bundled reference scripts: `lorem`, `json`, `ip`.
 
 ### 5.6 Clipboard history (v1.1)
 
@@ -179,7 +187,7 @@ Guiding split: **Rust owns the OS, TypeScript owns the experience.** Anything to
 | ------------------------------------------------ | -------------------------------------------------------------------------------------- |
 | Hotkey press → panel visible and accepting input | **< 100 ms** (target 50)                                                               |
 | Keystroke → updated results on screen            | **< 16 ms** (one frame)                                                                |
-| Enter → app launch initiated + panel dismissed   | **< 50 ms** launcharr-side                                                             |
+| Enter → app launch initiated + panel dismissed   | **< 50 ms** scuttlarr-side                                                             |
 | Idle memory (resident, panel hidden)             | **< 120 MB** (WKWebView floor makes ~sub-100 heroic; 120 is the ceiling, not the goal) |
 | Cold app start → hotkey registered               | **< 1 s**                                                                              |
 | Full index rebuild                               | **< 500 ms** for ~300 apps                                                             |
@@ -206,7 +214,7 @@ If a budget can't be met, the feature causing the miss gets cut or moved behind 
 
 ## 10. v2 horizon (recorded now, built later)
 
-The differentiating bet — **scripts as first-class citizens** — shipped early in v1.1 (§5.5). Still on the horizon: script-declared richer rendering (beyond result rows), bang mode's inline-output variant, per-query learned bindings, richer bangs (`!!` = repeat last, project-scoped commands), theming, and — if launcharr goes to the wild — signing, notarization, updates, and a real README with a pirate flag on it.
+The differentiating bet — **scripts as first-class citizens** — shipped early in v1.1 (§5.5). Theming left the horizon on 11 Sep 2026 — it is the Theme rung (`docs/THEMES.md`); signing, notarization and the README shipped with v0.2–v0.4 (`docs/RELEASING.md`). Still on the horizon: script-declared richer rendering (beyond result rows), bang mode's inline-output variant, per-query learned bindings, richer bangs (`!!` = repeat last, project-scoped commands), and the open unification items in `docs/STATUS.md` (user theme overlays + `theme install`, the shell base).
 
 ## 11. Open questions
 
@@ -217,4 +225,4 @@ The differentiating bet — **scripts as first-class citizens** — shipped earl
 
 ---
 
-_launcharr: because the apps won't launch themselves. Yarr._
+_scuttlarr: Scuttle the ship. Sail the wreck. Yarr._

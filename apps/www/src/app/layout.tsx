@@ -16,9 +16,9 @@ const ibmPlexSans = IBM_Plex_Sans({
   variable: '--font-ibm-plex-sans',
 })
 
-const TITLE = 'scuttlarr — the keyboard control surface for macOS'
+const TITLE = 'scuttlarr — the terminal developer’s desktop for macOS'
 const DESCRIPTION =
-  'A macOS launcher that dresses up as a shell prompt, plus a menubar replacement, keyboard-driven TUI panels and agent monitoring. Hit ⌥Space and run your Mac without touching the mouse. Free and open source.'
+  'An opinionated macOS desktop for terminal developers: a menubar replacement, a launcher that dresses up as a shell prompt, one theme rendered into everything, keyboard-first — tiling and a de-shined Mac a toggle away. The Omarchy shape, without Linux. Free and open source.'
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: TITLE,
     description:
-      'A macOS launcher that dresses up as a shell prompt — plus the bar, TUI panels and agent monitoring. Free and open source.',
+      'An opinionated macOS desktop for terminal developers — bar, launcher, one theme everywhere, keyboard-first. The Omarchy shape, without Linux. Free and open source.',
     images: ['/og.png'],
   },
 }

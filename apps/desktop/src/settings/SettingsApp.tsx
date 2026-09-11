@@ -1793,7 +1793,7 @@ function AboutTab() {
       </p>
       <p className="hint">The keyboard control surface for macOS.</p>
       <p className="hint">
-        An app launcher for pirates — by{' '}
+        Scuttle the ship. Sail the wreck. — by{' '}
         <button className="linkish" onClick={() => open(X_URL)}>
           Mitch Malone
         </button>

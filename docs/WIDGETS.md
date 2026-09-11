@@ -1,4 +1,4 @@
-# launcharr widgets
+# scuttlarr widgets
 
 > **Widgets are the no-UI plugin.** Since 2026-08-27 a plugin (`docs/PLUGINS.md`) is a
 > directory that may add its own `cell.tsx` / `panel.tsx` in React on the kit; a
@@ -7,7 +7,7 @@
 > `PLUGINS.md` when the card isn't enough.
 
 Widgets are the bar's scripts: drop a **TypeScript file** into
-`~/.config/launcharr/widgets/` and it owns a cell in the menubar — a glyph, an optional
+`~/.config/scuttlarr/widgets/` and it owns a cell in the menubar — a glyph, an optional
 short label, a tone, a click, and a hover card of rows. No build, no shebang, no chmod,
 no restart: `.ts` runs under **Bun** (or Node when Bun is absent — DECISIONS 2026-08-19).
 Any other executable in any language works too. The reference widgets in
@@ -15,8 +15,8 @@ Any other executable in any language works too. The reference widgets in
 yours to copy and edit; the shape is deliberately the same as `docs/SCRIPTS.md`.
 
 ```ts
-// ~/.config/launcharr/widgets/hello.ts
-import type { WidgetView } from '@launcharr/tui/bar/types'
+// ~/.config/scuttlarr/widgets/hello.ts
+import type { WidgetView } from '@scuttlarr/tui/bar/types'
 
 // erased at run time
 
@@ -34,10 +34,10 @@ if (process.argv[2] === 'manifest') {
 }
 ```
 
-**Widgets are data, never code.** A widget prints JSON; launcharr renders it with one
+**Widgets are data, never code.** A widget prints JSON; scuttlarr renders it with one
 generic cell and card, in the theme, on every display. Nothing a widget says can put
 markup or script in the bar — which is also why the same widget renders identically on
-launcharr.com's demo.
+scuttlarr.com's demo.
 
 ## The contract
 
@@ -127,7 +127,7 @@ Every field is optional; `{}` is a valid blank cell.
 own login (`gh auth token`, the Vercel CLI's store), which the CLI keeps fresh. Declare it
 in `requires`, and when it's missing or stale answer with `setup` (above) so the user is
 told and handed the fix. Declared **settings** are the override for users without the CLI:
-launcharr collects them in **Settings → Menubar → Custom widgets** and hands them to every
+scuttlarr collects them in **Settings → Menubar → Custom widgets** and hands them to every
 `tick` as **environment variables**. The widget never touches a store (try-out, 2026-08-19/20;
 plan `docs/plans/active/widget-settings.md`).
 
@@ -141,7 +141,7 @@ Keep it to what a user must type. One token is the norm; a widget that needs a p
 (an id, a list) can declare it, but defaults in the file beat fields in the UI.
 
 - `key` — the env-var name (`[A-Z][A-Z0-9_]*`, ≤ 40). `label`/`hint` are the field copy.
-- `secret: true` — stored in the **macOS Keychain** (service `launcharr`, account
+- `secret: true` — stored in the **macOS Keychain** (service `scuttlarr`, account
   `widget/<id>/<KEY>`), masked in the UI, never sent to the settings webview or written to
   `config.json`. Plain settings live in `config.json` under `widgets.<id>.<KEY>` — edit
   either place.
@@ -153,7 +153,7 @@ Keep it to what a user must type. One token is the norm; a widget that needs a p
 ### `<widget> auth` (optional)
 
 A widget can own an OAuth / device flow. Declare `"auth": { "label": "Sign in with X" }`
-and answer `auth`: launcharr runs it (same env as a tick; up to 15 minutes; **cancel**
+and answer `auth`: scuttlarr runs it (same env as a tick; up to 15 minutes; **cancel**
 kills it) and reads **one JSON object per stdout line**:
 
 - `{"url": "https://github.com/login/device", "code": "ABCD-1234"}` — shown with an
@@ -165,13 +165,13 @@ kills it) and reads **one JSON object per stdout line**:
 
 Exit 0 = signed in (the widget ticks at once); non-zero = the stderr tail is the error.
 `github-actions.ts` carries the worked example (GitHub's device flow), **dormant** until a
-launcharr OAuth App client id is baked into the widget — with no client id it offers no
+scuttlarr OAuth App client id is baked into the widget — with no client id it offers no
 button, and the CLI piggyback above is the story. A client id is public; it only names the
 app being approved. When a token expires the widget answers `setup`, not `error`.
 
 ## Refresh, failure, and the rules of the road
 
-- **On demand:** `touch ~/.config/launcharr/triggers/widget.<id>` ticks a widget now —
+- **On demand:** `touch ~/.config/scuttlarr/triggers/widget.<id>` ticks a widget now —
   wire it to a git hook, a cron, a keybinding, anything.
 - **Live:** the dir is watched. Drop a widget in and its cell appears within a second;
   edit it and it re-ticks; delete it and the cell goes.
@@ -184,7 +184,7 @@ app being approved. When a token expires the widget answers `setup`, not `error`
 - **Network is the widget's business.** What your widget fetches, and with which
   credential, is yours (DECISIONS 2026-08-15). Credentials come
   from declared **settings** (above) or wherever you like (env, the CLI's own store,
-  `secret`); launcharr stores only what a manifest declares, and never calls a provider.
+  `secret`); scuttlarr stores only what a manifest declares, and never calls a provider.
 - **Layout:** the widget appears in `bar.layout` as `widget:<id>`; toggle or move it in
   Settings → Menubar. Removed widgets keep their slot in the layout, so a re-install lands
   where you left it.
@@ -213,5 +213,5 @@ app being approved. When a token expires the widget answers `setup`, not `error`
 | `vercel.ts`         | Vercel API `/v9/projects`       | 2 min   | The Vercel CLI's own login or a pasted `VERCEL_TOKEN` (Keychain); latest production deployment per project; dim + the fix when signed out or stale.                                           |
 | `trmnl.ts`          | TRMNL `/api/devices`            | 5 min   | Key via `TRMNL_API_KEY` or `secret shared/trmnl/api_key`; hidden without one.                                                                                                                 |
 
-Install one: `cp apps/desktop/widgets/uptime.ts ~/.config/launcharr/widgets/` (or
+Install one: `cp apps/desktop/widgets/uptime.ts ~/.config/scuttlarr/widgets/` (or
 Settings → Menubar → Custom widgets → add file) — then it's yours to edit in place.

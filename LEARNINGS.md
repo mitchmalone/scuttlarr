@@ -10,7 +10,7 @@ if it needs more. Never duplicate global AGENTS.md rules here.
   `recache()` cannot release — icon extraction MUST run in the `--extract-icons` subprocess.
 - `open Foo.app` re-activates a running instance; always `pkill` before relaunching a rebuild.
 - TCC judges a child process by the **responsible app's** Info.plist. A helper spawned from
-  launcharr.app that touches a privacy-gated API (Bluetooth, camera, …) needs the matching
+  scuttlarr.app that touches a privacy-gated API (Bluetooth, camera, …) needs the matching
   `NS…UsageDescription` in `src-tauri/Info.plist` or it is killed with no prompt — the only
   trace is `~/Library/Logs/DiagnosticReports/<helper>-*.ips` (JOURNAL 2026-09-10).
 

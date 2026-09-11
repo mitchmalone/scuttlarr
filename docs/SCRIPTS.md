@@ -1,7 +1,7 @@
-# launcharr scripts
+# scuttlarr scripts
 
 Scripts are first-class citizens: drop a **TypeScript file** (or any executable) into
-`~/.config/launcharr/scripts/` and its trigger word joins the launcher grammar — no
+`~/.config/scuttlarr/scripts/` and its trigger word joins the launcher grammar — no
 build, no chmod, no restart, no store, no manifest file. `.ts` runs under Bun (or Node —
 DECISIONS 2026-08-19). The bundled scripts (`json-format.ts`, `ip.ts`) are reference
 implementations and yours to edit; `lorem` is a built-in.
@@ -57,7 +57,7 @@ Called on every keystroke (debounced ~120ms). Print results to stdout and exit 0
 - **Network is your business** for scripts: fetch what you like, mind the timeouts.
 - **TypeScript:** guard the entry point with `if (import.meta.main)` (see the bundled
   scripts) so the file also imports cleanly into a test; type-only imports from
-  `@launcharr/core/types` are erased at run time. No Bun or Node on the machine → the
+  `@scuttlarr/core/types` are erased at run time. No Bun or Node on the machine → the
   script is skipped with a log line (`needs bun — brew install oven-sh/bun/bun`).
 - **Python gotcha** (if you still write one): the scripts dir is `sys.path[0]` for python
   scripts — don't name one after a stdlib module. The old bundled `.py` scripts are parked
@@ -66,7 +66,7 @@ Called on every keystroke (debounced ~120ms). Print results to stdout and exit 0
 ## Widgets
 
 The bar has the same idea for cells: `docs/WIDGETS.md` — executables in
-`~/.config/launcharr/widgets/` answering `manifest` / `tick`.
+`~/.config/scuttlarr/widgets/` answering `manifest` / `tick`.
 
 ## Built-in triggers
 

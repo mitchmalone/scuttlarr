@@ -67,7 +67,7 @@ toggleable. Not a distro — bar + launcher + config only. Record: docs/releases
 ## v0.5 — plugins (next; scope talk pending)
 
 **Plugins landed 2026-08-27** (DECISIONS ×3, `plans/done/plugins-react-cells-and-panels.md`,
-`docs/PLUGINS.md`): plugins are code — `cell.tsx` / `panel.tsx` on `@launcharr/tui`,
+`docs/PLUGINS.md`): plugins are code — `cell.tsx` / `panel.tsx` on `@scuttlarr/tui`,
 `service.ts` in Bun (stream or tick), manifest `kinds`, `bun build` + blob-URL loading with
 hot-swap, Settings → Menubar → Plugins (git install, on/off, restart), `plugins ⏎` gallery.
 First-party `usage` and `calendar` are plugins (`packages/plugins/`, native state
@@ -79,7 +79,7 @@ widget items below are absorbed.
 Candidates carried over from v0.4, to be cut down in the 0.5 scope session:
 
 - **Module API** — ✅ **widgets** (2026-08-19, plans/done/widgets.md; DECISIONS
-  2026-08-19 ×2): TypeScript files in `~/.config/launcharr/widgets/` run under Bun
+  2026-08-19 ×2): TypeScript files in `~/.config/scuttlarr/widgets/` run under Bun
   (`runtime.rs`; any executable works too), `manifest`/`tick` JSON, generic cell + card,
   live dir watch, `triggers/widget.<id>`, Settings → Menubar → Custom widgets (install
   from URL/file, tick, remove). Reference widgets uptime / github-actions / vercel /
@@ -99,8 +99,9 @@ Candidates carried over from v0.4, to be cut down in the 0.5 scope session:
   slice E. (Relaunch persistence shipped 2026-08-19, DECISIONS.)
 - **Site/app single-source gaps** — `PANEL_INFO` is hand-mirrored in `apps/www`
   (invariant 10 smell); extract to a package.
-- **PRD revision pass** — predates the control-surface direction (DECISIONS 2026-08-15 is
-  the scope source until then).
+- **PRD revision pass** — ✅ 2026-09-11 for §1–§3 and §10 (vision, target user, non-goals,
+  horizon: the rungs). §4–§9 still describe v1 behaviour; DECISIONS 2026-08-15 remains the
+  scope source for bar/panel questions.
 
 ## Unification into scuttlarr (DECISIONS 2026-09-11)
 
@@ -126,18 +127,17 @@ plan steps.
 | --------------------------------------------------------- | --------------------------------------------------------- |
 | Per-query learned bindings (schema already records query) | Frecency data shows repeated query→pick                   |
 | Richer bangs (`!!` repeat, project-scoped commands)       | Bang mode proves itself daily                             |
-| Theming beyond the built-in look                          | A second user exists                                      |
+| Theming beyond the built-in look                          | ✅ 2026-09-11 — the Theme rung (`THEMES.md`)              |
 | Signing, notarization, auto-update, public README         | Releasing to the wild                                     |
 | Move matching to Rust                                     | R2 fires: WKWebView can't hold the 16 ms keystroke budget |
 
 ## Explicitly not doing (non-goals — load-bearing, PRD §3, amended by v0.4)
 
-File search, snippets, Windows/Linux, **anything distro-shaped** (that's
-[scuttlarr](https://github.com/mitchmalone/scuttlarr) — DECISIONS 2026-08-25; light mode
-left this list the same day, as a palette scuttlarr supplies, not a second look). Still true
-for the **launcher core**: zero permissions (zero network was retired 2026-09-04 — DECISIONS).
-Amended by DECISIONS 2026-08-15/16 for v0.4: window management arrives _wrapped_ (Aerospace, which brings its
-own Accessibility grant — launcharr itself still requests nothing), and bar **modules**
-may be credentialed + networked per-module, fail-visible (TRMNL was the first; pulled 2026-08-17 pending the plugin API). The PRD predates
-v0.4 and needs a revision pass — until then DECISIONS 2026-08-15 is the scope source for
-bar/panel questions.
+File search, snippets, Windows/Linux. Still true for the **launcher core**: zero
+permissions (zero network was retired 2026-09-04 — DECISIONS). Amended by DECISIONS
+2026-08-15/16 for v0.4: window management arrives _wrapped_ (Aerospace, which brings its own
+Accessibility grant — scuttlarr itself still requests nothing), and bar **modules** may be
+credentialed + networked per-module, fail-visible (TRMNL was the first; pulled 2026-08-17
+pending the plugin API). **"Anything distro-shaped" left this list 2026-09-11** (DECISIONS):
+it was a separate repo from 2026-08-25, and is now the Machine rung (`SETUP.md`); light mode
+is a palette in the Theme rung (`THEMES.md`). The PRD's §1–§3 were revised the same day.

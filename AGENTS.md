@@ -1,21 +1,19 @@
-# AGENTS.md — launcharr (becoming scuttlarr)
+# AGENTS.md — scuttlarr
 
-> _An app launcher for pirates._ Always lowercase.
->
-> **Fold in progress (DECISIONS 2026-09-11).** This repo absorbs the scuttlarr repo and is
-> renamed scuttlarr: one product — bar, launcher, universal theming, keyboard-first, plus
-> the machine setup — where the launcher is a feature. The code rename has landed
-> (`@scuttlarr/*`, `com.mitchmalone.scuttlarr`, `~/.config/scuttlarr`, `rename.rs`
-> migrates old homes); the GitHub repo, tap cask, and domain still say launcharr until
-> Mitch flips them (`docs/plans/active/2026-09-11-unify-into-scuttlarr.md` 1.1/1.5/1.6).
-> Product shape: **install gets the bar and launcher; everything else is a toggle**
-> (desktop, theme, machine).
+> _Scuttle the ship. Sail the wreck._ Always lowercase.
 
-A macOS app launcher that dresses up as a shell prompt: global hotkey summons a floating
-REPL-looking panel; type to fuzzy-launch apps and System Settings panes, or `!command` to fling
-a command at Ghostty. Full product truth lives in `docs/PRD.md`. Two values govern every
-decision: **lightweight** (idle invisibly, summon instantly) and **hackable** (extending it
-feels like scripting). When a feature and the weight budget conflict, the feature loses.
+An opinionated macOS desktop for developers who live in the terminal: a menubar
+replacement, a launcher that dresses up as a shell prompt, one theme rendered into
+everything, keyboard-first — with tiling, de-shined defaults, and a fast shell a toggle
+away (the Omarchy shape, without Linux). **Install gets the bar and launcher; everything
+else is a rung you turn on**: Desktop, Theme, Machine (README). Full product truth lives
+in `docs/PRD.md`. Two values govern every decision: **lightweight** (idle invisibly,
+summon instantly) and **hackable** (extending it feels like scripting). When a feature and
+the weight budget conflict, the feature loses.
+
+History: launcharr (the launcher) and scuttlarr (the distro) were two repos until
+2026-09-11 (DECISIONS); this repo is the fold, renamed. Names, ids, and paths are
+scuttlarr's; `rename.rs` migrates old homes.
 
 ## Standard
 
@@ -48,7 +46,7 @@ pnpm monorepo:
 | `packages/theme` | _(planned, phase 3)_ Omarchy model: `themes/<name>/colors.toml`, templates, pure renderer, committed per-app renders                          |
 | `packages/setup` | scuttlarr's zsh CLI (ported 2026-09-11): install, defaults, Brewfile, shell, Caps→Hyper, duti, migrations, remove, manifest — `docs/SETUP.md` |
 
-The only external repo is the generated satellite `mitchmalone/homebrew-tap` (shared tap; `Casks/scuttlarr.rb`, `launcharr.rb` deprecated),
+The only external repo is the generated satellite `mitchmalone/homebrew-tap` (shared tap; `Casks/scuttlarr.rb`; `launcharr.rb` stays as a deprecated alias),
 written by the release pipeline — fix the generator, not the output.
 
 **Rust owns the OS, TypeScript owns the experience.** Anything touching AppKit, the
@@ -77,7 +75,7 @@ it in `docs/DECISIONS.md`.
    Automation consent prompt, and only if the effective terminal falls back to iTerm2 —
    Ghostty, the default, has no AppleScript dictionary and needs no consent). Nothing
    requiring Accessibility.
-   One opt-in, off by default: Settings → General → "Use the launcharr loupe" makes
+   One opt-in, off by default: Settings → General → "Use the scuttlarr loupe" makes
    `colorpicker` ask for **Screen Recording** once (2× magnifier, DECISIONS 2026-08-17);
    off — and until granted — it's Apple's `NSColorSampler`, which needs nothing. Nothing
    ever prompts unless that toggle is flipped.
@@ -87,7 +85,7 @@ it in `docs/DECISIONS.md`.
    banned: analytics, crash reporting, update pings, any request that exists to tell
    someone about the user rather than to serve them. Credentials the app uses are the
    user's own (the CLIs' stores, the Keychain), read with consent where a provider's
-   settings say so, never written or refreshed by launcharr.
+   settings say so, never written or refreshed by scuttlarr.
 3. **Tiny IPC surface.** A handful of typed Tauri commands; every command is a future
    plugin-API liability.
 4. **Prefix dispatch is general.** `!` is mode dispatch via first-char lookup, not a special
@@ -110,7 +108,7 @@ it in `docs/DECISIONS.md`.
 9. **Release facts are generated, not authored.** `apps/www/src/lib/release.json` is written
    by `scripts/release.sh` — never hand-edit it. `site.ts` derives version, artifact URLs,
    and install methods from it; site copy is free, release data is not.
-10. **The website never holds a second copy of launcharr UI.** Every pixel `apps/www`
+10. **The website never holds a second copy of scuttlarr UI.** Every pixel `apps/www`
     renders of the app — panels, rows, the bar, agent cells, cards, themes, keyboard
     behaviour — is **imported from a shared package** (`packages/tui`, `packages/core`).
     Not ported, not mirrored, not "kept in sync": imported. If a surface the site needs
@@ -137,7 +135,7 @@ it in `docs/DECISIONS.md`.
 | ------------------------------------------ | -------------------------- |
 | Hotkey → panel visible and accepting input | **< 100 ms** (target 50)   |
 | Keystroke → updated results on screen      | **< 16 ms** (one frame)    |
-| Enter → launch initiated + panel dismissed | **< 50 ms** launcharr-side |
+| Enter → launch initiated + panel dismissed | **< 50 ms** scuttlarr-side |
 | Idle memory (resident, panel hidden)       | **< 120 MB** ceiling       |
 | Cold start → hotkey registered             | **< 1 s**                  |
 | Full index rebuild (~300 apps)             | **< 500 ms**               |

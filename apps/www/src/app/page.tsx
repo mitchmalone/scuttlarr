@@ -222,12 +222,14 @@ const FEATURES = [
   },
   {
     icon: <Palette size={22} strokeWidth={1.75} className="text-(--dim)" />,
-    title: '14 themes, JSON overlays',
+    title: '14 themes, one colors.toml',
     body: (
       <>
-        From gruvbox to rose-pine, launcher and bar together. Custom themes are
-        plain JSON token overlays in{' '}
-        <code className={MONO_CODE}>config.json</code>.
+        From gruvbox to rose-pine, in Omarchy&rsquo;s{' '}
+        <code className={MONO_CODE}>colors.toml</code> format verbatim, so any
+        Omarchy theme ports by copying one file. Turn the Theme rung on and it
+        styles Ghostty, tmux, your prompt, delta and Claude Code too; a
+        light/dark pair follows macOS, a schedule, or a Focus.
       </>
     ),
   },
@@ -300,6 +302,13 @@ const COMPARISON = {
     ],
     ['menubar replacement', 'yes — bar + launcher', 'no', 'no', 'bar only'],
     [
+      'theming',
+      'one palette, everywhere — terminal, tmux, prompt, macOS Focus',
+      'its own window',
+      'its own window',
+      'the bar, by hand',
+    ],
+    [
       'license',
       'MIT, open source',
       'closed, freemium',
@@ -310,14 +319,40 @@ const COMPARISON = {
 }
 
 const ROADMAP = [
-  ['done', 'TUI kit', 'panels, rows, hotkeys, themes'],
   ['done', 'The bar', 'daily driver; zones, notch profiles, hover cards'],
   ['done', 'Panel framework', 'wifi ⏎ · dns ⏎ · ss ⏎ and eight more'],
   ['done', 'Agent monitoring', 'cells, tmux groups, usage ⏎, ? mode'],
-  ['done', 'Desktop layer', 'AeroSpace managed, borders, corners — v0.4'],
-  ['todo', 'Module API', 'any-language bar emitters — plugins'],
-  ['todo', 'Multi-display', 'per-monitor bar + notch detection'],
-  ['todo', 'Settings into panels', 'the native window retires'],
+  ['done', 'Desktop rung', 'AeroSpace managed, borders, corners'],
+  [
+    'done',
+    'Plugins',
+    'any-language services and bar cells, declared permissions',
+  ],
+  [
+    'done',
+    'Theme rung',
+    "Omarchy's colors.toml, rendered into Ghostty, tmux, prompt, delta, Claude Code",
+  ],
+  [
+    'done',
+    'Theme policy',
+    'light/dark pair by macOS or schedule; a theme per macOS Focus; theme ⏎',
+  ],
+  [
+    'wip',
+    'Machine rung',
+    'de-shined defaults, manifest, remove — the shell base is next',
+  ],
+  [
+    'todo',
+    'Your themes',
+    'overlays in ~/.config/scuttlarr/themes, theme install <git-url>',
+  ],
+  [
+    'todo',
+    'Hot editors',
+    'VS Code, Cursor, Zed, Neovim, Helix retint with the theme',
+  ],
 ] as const
 
 const MARK = {
@@ -340,15 +375,16 @@ export default function Home() {
           macOS · Apple Silicon · free &amp; open source
         </Badge>
         <h1 className="m-0 max-w-[17ch] text-[clamp(2.25rem,7vw,3.625rem)] font-bold leading-[1.05] tracking-[-0.035em] text-balance">
-          The keyboard control surface for macOS.
+          The terminal developer&rsquo;s desktop for macOS.
         </h1>
         <p
           className={`m-0 max-w-[64ch] font-sans text-[19px] leading-[1.6] text-(--body) text-pretty`}
         >
-          scuttlarr started as an app launcher that dresses up as a shell
-          prompt. It has kept growing: a full menubar replacement in the Omarchy
-          mold, keyboard-driven TUI panels, agent monitoring, and a grammar you
-          extend by dropping executables in a folder. Hit{' '}
+          A menubar replacement, a launcher that dresses up as a shell prompt,
+          one theme rendered into everything, and a keyboard-first way of
+          working — with tiling, de-shined defaults and a fast shell a toggle
+          away. The Omarchy shape, without Linux. Install gets the bar and the
+          launcher; the rest is a rung you turn on. Hit{' '}
           <kbd className="rounded-[5px] border border-b-2 border-(--border) px-1.5 py-px text-[15px] text-(--fg)">
             ⌥Space
           </kbd>{' '}
@@ -507,7 +543,7 @@ export default function Home() {
 
       {/* ---- comparison ---- */}
       <section id="compare" className={`${SECTION} py-24`}>
-        <h2 className={`${EYEBROW} mb-6`}>Picking a launcher</h2>
+        <h2 className={`${EYEBROW} mb-6`}>Picking a launcher and a bar</h2>
         <div className="overflow-hidden rounded-xl border border-(--hair)">
           <Table>
             <TableHeader>
@@ -541,8 +577,10 @@ export default function Home() {
           </Table>
         </div>
         <p className="mt-3.5 text-[12.5px] text-(--dim2)">
-          All fine tools, and all of them do things scuttlarr doesn&rsquo;t.
-          This table is about temperament, not superiority.
+          All fine tools, and all of them do things scuttlarr doesn&rsquo;t. The
+          launcher and the bar are where they overlap; the rungs above them —
+          Desktop, Theme, Machine — are what none of them try. This table is
+          about temperament, not superiority.
         </p>
       </section>
 
@@ -574,15 +612,16 @@ export default function Home() {
         >
           <div className="grid gap-4">
             <h2 className={EYEBROW}>
-              Building in the open — v0.4 shipped, v0.5 next
+              Building in the open — the fold shipped, the rungs are filling in
             </h2>
             <p className={`m-0 ${PROSE}`}>
               v0.4 is where scuttlarr became a control surface: bar, panels,
               agents, the desktop layer — all in daily use. v0.5 is the plugin
               release: a module API for the bar, multi-display, settings inside
-              the panels. Explicit non-goals hold: no file search, no snippets,{' '}
-              <em>not a distro</em> — bar + launcher + config, each
-              independently toggleable.
+              the panels. Explicit non-goals hold: no file search, no snippets,
+              no granted permissions. What once read <em>not a distro</em> is
+              now the rungs: bar + launcher on install, then Desktop, Theme and
+              Machine as toggles you turn on — the Omarchy shape, without Linux.
             </p>
           </div>
           <div className="grid gap-3 rounded-xl border border-(--hair) bg-(--bg) px-6 py-[22px] text-[13px]">
@@ -613,8 +652,8 @@ export default function Home() {
               className="opacity-75 [filter:var(--logo)]"
             />
             <span className="text-[13px] text-(--dim2)">
-              scuttlarr {VERSION} — because the apps won&rsquo;t launch
-              themselves. Yarr.
+              scuttlarr {VERSION} — scuttle the ship, sail the wreck. The apps
+              still won&rsquo;t launch themselves. Yarr.
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-5 text-[13px]">

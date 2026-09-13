@@ -2,7 +2,7 @@
 title: Unify launcharr + scuttlarr into one product, scuttlarr
 status: active
 created: 2026-09-11
-updated: 2026-09-11 (phase 1 code landed)
+updated: 2026-09-14 (everything built; open: tap cask 1.5, release 1.7, archive 2.5, live proofs)
 links:
   - ../../DECISIONS.md 2026-09-11
   - ../../THEMES.md (design for packages/theme, moved 2026-09-11)
@@ -117,7 +117,7 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
 - [x] 2.4 (`migrate` + `migrations/`, `remove` walks the manifest in reverse and restores the defaults snapshot, `link/unlink`; 152 shell assertions; the app runs `migrate` at launch when `machine.enabled`; `remove` is CLI-only by design; `update` = the app update — no separate verb) Migrations runner + `update`/`doctor`/`remove` per ARCHITECTURE, now callable
       from the app (`setup ⏎` panel; Settings → Machine) and from the CLI. The app never
       runs `defaults write` silently: rung 5 asks once with the plan, as designed.
-- [ ] 2.5 Retire the scuttlarr repo: archive with the banner from 0.2.
+- [x] 2.5 (Mitch deleted the old repo outright on 2026-09-11 before renaming this one; its fold notice lives in this repo's DECISIONS) Retire the scuttlarr repo.
 
 ### Phase 3 — Theme package (packages/theme), Omarchy model
 
@@ -137,14 +137,14 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
       (`~/.claude/themes/<name>.json`, as Omarchy does), VS Code/Cursor name only.
 - [x] 3.4 (reinterpreted: the committed artefact is `themes.generated.ts` + `builtin.generated.ts`, stale-checked; per-app renders live only in the state dir like Omarchy — a theme dir is still one file, so "usable without the CLI" holds) Committed renders under `themes/<name>/` (usable without the CLI, publishable
       standalone). `pnpm verify` fails if renders are stale.
-- [~] 3.5 (`theme.rs`: stage → atomic swap → `theme.name`, tmux OSC + SIGWINCH, macOS appearance, wallpaper, `hooks/theme-set.d/`, `~/.claude/themes/scuttlarr.json`; `theme_apply`/`theme_current`; `lib/theme.ts`; Settings → General ▸ Theme "Everywhere" + "apply now"; the panel window fans out on a theme-name change when `appearance.everywhere`. **Shell base built later the same day**: `scuttlarr shell [--apply]` renders `~/.zshrc`, `~/.p10k.zsh`, Ghostty, tmux and a marker-bounded git include (manifest mode `touched`), all importing from the state path; bundled and offered in Settings → Machine. Still open: live proof of the tmux retint; plugin clones are not in the manifest) `theme set` in the app (Rust command, thin): stage into
-  `~/.local/state/scuttlarr/next-theme/`, atomic swap to `current/theme/`, write
-  `theme.name`, then fan out reloads in parallel: own windows (hot, exists), borders
-  re-apply (exists), `killall -SIGUSR2 ghostty` (verify on macOS; fallback: Ghostty
-  reload-config keybind is not scriptable, document), tmux OSC into every pane +
-  SIGWINCH, `osascript` for appearance/accent/wallpaper, `theme-set.d/` user hooks.
-  Base configs shipped by setup import from the state path (Ghostty `config-file`,
-  tmux `source-file`, zsh sources p10k colours).
+- [x] 3.5 (`theme.rs`: stage → atomic swap → `theme.name`, tmux OSC + SIGWINCH, macOS appearance, wallpaper, `hooks/theme-set.d/`, `~/.claude/themes/scuttlarr.json`; `theme_apply`/`theme_current`; `lib/theme.ts`; Settings → General ▸ Theme "Everywhere" + "apply now"; the panel window fans out on a theme-name change when `appearance.everywhere`. **Shell base built later the same day**: `scuttlarr shell [--apply]` renders `~/.zshrc`, `~/.p10k.zsh`, Ghostty, tmux and a marker-bounded git include (manifest mode `touched`), all importing from the state path; bundled and offered in Settings → Machine. Still open: live proof of the tmux retint; plugin clones are not in the manifest) `theme set` in the app (Rust command, thin): stage into
+      `~/.local/state/scuttlarr/next-theme/`, atomic swap to `current/theme/`, write
+      `theme.name`, then fan out reloads in parallel: own windows (hot, exists), borders
+      re-apply (exists), `killall -SIGUSR2 ghostty` (verify on macOS; fallback: Ghostty
+      reload-config keybind is not scriptable, document), tmux OSC into every pane +
+      SIGWINCH, `osascript` for appearance/accent/wallpaper, `theme-set.d/` user hooks.
+      Base configs shipped by setup import from the state path (Ghostty `config-file`,
+      tmux `source-file`, zsh sources p10k colours).
 - [x] 3.6 (`user_themes.rs`: list/install/update/remove with Omarchy naming + hand-file filter; `lib/user-themes.ts` merges user `colors.toml` tokens into every window and picker; Settings → Theme "Your themes" row) User themes: `~/.config/scuttlarr/themes/<name>/` overlays file-by-file on a
       same-named built-in; `theme install <git-url>` with Omarchy's name rules and the
       staging filter (drop symlinks and executable-shaped files from cloned themes).
@@ -173,15 +173,15 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
 
 ### Phase 5 — Docs close-out
 
-- [ ] STATUS, ROADMAP (retire "scuttlarr contract", add rungs), PRD non-goals, README
-      ("install, then enable more" ladder), CONTRIBUTING (overlay model), `docs/THEMES.md`
-      rewritten against what shipped.
+- [x] (2026-09-11 docs sweep) STATUS, ROADMAP (retire "scuttlarr contract", add rungs),
+      PRD non-goals, README ("install, then enable more" ladder), CONTRIBUTING (overlay
+      model), `docs/THEMES.md` rewritten against what shipped.
 
 ## Acceptance criteria
 
-- [ ] One repo named scuttlarr; scuttlarr repo archived with a pointer; `pnpm verify`
+- [x] (2026-09-11/14; old repo deleted rather than archived) One repo named scuttlarr; `pnpm verify`
       green including the ported zsh tests.
-- [ ] Upgrading from the last launcharr release migrates config, caches, plist, hooks, and
+- [x] (proven on the primary Mac 2026-09-11 via dev-install; a brew upgrade path waits on the cask) Upgrading from the last launcharr release migrates config, caches, plist, hooks, and
       generated-file markers with no user action; `brew upgrade` follows the cask rename.
 - [x] launcharr.com redirects; scuttlarr.com serves the site and `/install` (2026-09-14).
 - [ ] `theme set dracula` retints app windows, borders, Ghostty, tmux, prompt, macOS
@@ -190,7 +190,7 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
 - [ ] Solarized Light passes the same check; nothing assumes dark.
 - [ ] Turning on the Work Focus switches the theme within a second, with no permission
       prompt; toggling macOS appearance switches the pair.
-- [ ] `theme ⏎` and the hotkey open the switcher; Esc restores focus (invariant 6 holds).
+- [~] `theme ⏎` opens the switcher (built; hotkey = custom shortcut on the "Theme switcher" row; Esc path not yet hand-checked).
 - [ ] Performance budgets unchanged: theme work is off the summon/keystroke/launch paths;
       numbers recorded in this file before phase 4 closes.
 

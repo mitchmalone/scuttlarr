@@ -3,7 +3,7 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-09-11 (unification: phases 0–3 done, phase 4 policy + switcher in)
+> Last updated: 2026-09-14 (unification built end to end; site + domains live; repo at ~/Developer/mitch/scuttlarr)
 
 ## Where we are
 
@@ -58,10 +58,18 @@ repo, renamed scuttlarr; the launcher is a feature (DECISIONS 2026-09-11 ×3, pl
   flips the policy under fixed modes); **wallpaper** (`backgrounds/` per user theme,
   advances per apply, "Next wallpaper" row). Docs: README, THEMES, SETUP rewritten; PRD,
   API docs, site copy swept.
+- **2026-09-14:** workspace flattened (repo now `~/Developer/mitch/scuttlarr`; a moved
+  checkout needs `cargo clean`, JOURNAL); site done end to end — Vercel project
+  `scuttlarr-web` git-linked to this repo, scuttlarr.com canonical, `www.`, both
+  `launcharr.com` hosts and the `scutlarr.com` typo domains 308 to it, `/install` served
+  as a shell script, ignore step widened; the old scuttlarr repo was deleted (2.5).
 - **Still not live-proven** (needs a hand): the tmux retint, an editor retint, a Focus
-  flip, the shell base applied on a real home. **Open:** bar theme cell; macOS accent
-  colour; bat beyond `ansi`; plugin clones aren't in the manifest; 2.5 archive the old
-  repo and the tap/Vercel/domain steps (Mitch).
+  flip, the shell base applied on a real home (note: the four files it adopts are
+  chezmoi-managed in Mitch's dotfiles — reconcile the dotfiles first or the next
+  `chezmoi apply` fights back). **Open:** the tap cask (1.5) and the release (1.7) —
+  until the cask exists the README's brew line and the curl installer fail at that
+  step; bar theme cell; macOS accent colour; bat beyond `ansi`; plugin clones aren't in
+  the manifest.
 
 **Plugin permissions, 2026-09-10 (working tree, uncommitted — built, not yet
 reinstalled):** the generic answer to the amaran kill below. `manifest.permissions`

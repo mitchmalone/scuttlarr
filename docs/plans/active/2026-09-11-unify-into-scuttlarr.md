@@ -95,10 +95,10 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
 - [~] 1.5 Release pipeline (scripts + workflow renamed; **tap cask `scuttlarr.rb` + deprecating `launcharr.rb` is in the tap repo — Mitch, pending**): `scripts/release.sh`, tap cask `Casks/scuttlarr.rb` with the
   old cask left as a deprecated alias (`brew` `deprecate!` + `replacement`), signing
   identity unchanged, `release.json` shape unchanged.
-- [~] 1.6 Site (copy + `site.ts` renamed; **domain redirect, Vercel project, manifesto merge pending**): `apps/www` copy and `site.ts` constants; scuttlarr.com becomes the
-  canonical domain (Vercel project already exists as `scuttlarr-web`); launcharr.com
-  301 → scuttlarr.com. scuttlarr's `apps/www` landing copy (manifesto, curl line)
-  merges in; its repo's site is retired.
+- [x] 1.6 Site (2026-09-14: Vercel project `scuttlarr-web` — the old `launcharr-web`, renamed, git-linked to the renamed repo, root `apps/www`, ignore step covers `packages/{core,tui,plugins,theme}` + `install/`; scuttlarr.com serves, `www.` + both `launcharr.com` hosts + the `scutlarr.com` typo domain 308 to it; `/install` served as `text/x-shellscript` via `vercel.json`; copy swept 2026-09-11): `apps/www` copy and `site.ts` constants; scuttlarr.com becomes the
+      canonical domain (Vercel project already exists as `scuttlarr-web`); launcharr.com
+      301 → scuttlarr.com. scuttlarr's `apps/www` landing copy (manifesto, curl line)
+      merges in; its repo's site is retired.
 - [ ] 1.7 (built + dev-installed 2026-09-11, see STATUS) Ship as v0.x with release notes: "launcharr is now scuttlarr; paths moved, nothing
       to do". Verify on the primary Mac via `scripts/dev-install.sh` first (quiet install).
 
@@ -183,7 +183,7 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
       green including the ported zsh tests.
 - [ ] Upgrading from the last launcharr release migrates config, caches, plist, hooks, and
       generated-file markers with no user action; `brew upgrade` follows the cask rename.
-- [ ] launcharr.com redirects; scuttlarr.com serves the site and `/install`.
+- [x] launcharr.com redirects; scuttlarr.com serves the site and `/install` (2026-09-14).
 - [ ] `theme set dracula` retints app windows, borders, Ghostty, tmux, prompt, macOS
       accent and appearance, wallpaper, and Claude Code in one action; committed renders
       match the renderer.

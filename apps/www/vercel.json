@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "headers": [
+    {
+      "source": "/install",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/x-shellscript; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300"
+        }
+      ]
+    }
+  ]
+}

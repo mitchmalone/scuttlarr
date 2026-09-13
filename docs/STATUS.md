@@ -16,9 +16,10 @@ repo, renamed scuttlarr; the launcher is a feature (DECISIONS 2026-09-11 ×3, pl
   every owned home path; `rename.rs` migrates old homes once (proven live: all four dirs,
   hooks repaired, plugins rebuilt, aerospace.toml re-headered, login item re-registered);
   `launcharr` theme name aliased. **Mitch's outward steps still pending:** GitHub repo
-  rename (1.1), `Casks/scuttlarr.rb` + deprecate `launcharr.rb` in the tap (1.5), point
-  scuttlarr.com at this `apps/www` and 301 launcharr.com (1.6) — until then `site.ts`,
-  README and the workflow name a repo, cask and domain that don't exist. Then 1.7 release.
+  rename (1.1, done 2026-09-11), Vercel + domains (1.6, done 2026-09-14: project
+  `scuttlarr-web`, scuttlarr.com canonical, every other host 308s to it), `Casks/scuttlarr.rb`
+  - deprecate `launcharr.rb` in the tap (1.5, **still pending** — the README's brew line
+    and the installer point at a cask that doesn't exist yet). Then 1.7 release.
 - **Phase 2, setup:** scuttlarr's CLI in `packages/setup` (`verify:shell` first in the
   gate; 152 assertions), shipped in the bundle under `Contents/Resources/setup/`,
   `setup.rs` allowlisted runner, Settings → Machine (doctor, plan → apply defaults,

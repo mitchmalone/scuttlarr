@@ -6,6 +6,16 @@
 
 ---
 
+### 2026-09-14 · Moving the checkout breaks the Tauri build cache — `cargo clean` first
+
+The repo moved from `~/Developer/mitch/stackarr/launcharr` to `~/Developer/mitch/scuttlarr`
+(the `stackarr` wrapper made no sense once the two repos were one). `pnpm verify` then
+failed in `tauri-build`'s build script: `failed to read plugin permissions … /stackarr/
+launcharr/…/target/debug/build/tauri-…/out/permissions/…: No such file or directory`.
+Tauri's build script records absolute paths into `target/`, so a moved checkout must
+`cargo clean --manifest-path apps/desktop/src-tauri/Cargo.toml` (24 GiB here) before
+the first build. Node, pnpm and the shell tests were unaffected.
+
 ### 2026-09-11 · The theme policy restyled the machine on first launch — a default pair is a decision, not a default
 
 First dev-install with the policy engine: `config.theme` was `launcharr` (aliased),

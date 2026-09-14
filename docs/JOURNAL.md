@@ -6,6 +6,31 @@
 
 ---
 
+### 2026-09-14 · Home.app lights from a Mac: only Shortcuts gets in
+
+Folding the Nanoleaf lights into the (now) `lights` plugin: they are Essentials — Thread /
+Matter — so nothing on the LAN advertises `_nanoleafapi._tcp` (three `_matter._tcp` nodes
+sit behind the HomePod border router). No local REST API. The doors that look open are
+not: the HomeKit framework is iOS/Catalyst-only and its entitlement needs provisioning;
+Homebridge feeds devices _into_ Home, it cannot drive accessories already there; a Matter
+accessory pairs to one fabric and a second controller (chip-tool) is a stack, not a
+plugin. What works with zero permissions is the Shortcuts CLI: `shortcuts run
+"lights/<name>/on"`, `--input-path` for a number, `--output-path` for state text. The
+driver discovers lights by naming convention in `shortcuts list` — the Shortcuts app _is_
+the config. Latency and whether the LaunchAgent-launched app gets a TCC prompt for
+Shortcuts are still to be measured (plan `lights-plugin.md`).
+
+### 2026-09-14 · A card with controls: the bar never loaded the kit's stylesheet
+
+`lights` is the first plugin whose hover card holds `Toggle`/`Slider`/`ListRow`. They
+rendered naked: `bar/main.tsx` imported only `bar.css`; every component rule lives in
+`styles.css` and is scoped to `.tui`, which no card carried — and a card has no width of
+its own, so a slider collapsed to the title's width. Kit fix: `BarCardControls` (a
+`.tui.bar-card-controls` wrapper, 300 px min, card type scale) and the bar imports
+`styles.css` (all `.tui`-scoped, nothing else in the strip changes). Open: whether a
+slider _drag_ reaches a never-active window — clicks do (`accept_first_mouse`), hover is
+synthetic (2026-08-16); presets are the fallback if `pointermove` never arrives.
+
 ### 2026-09-14 · The rename moved plugins but not their imports — a pre-fold plugin failed `bun build`
 
 amaran's cell went red after the fold: `Could not resolve: "@launcharr/tui"`. `rename.rs`

@@ -136,6 +136,17 @@ export const BarCardHint = ({ children }: { children: ReactNode }) => (
   <div className="bar-card-hint">{children}</div>
 )
 
+/**
+ * Room for kit controls inside a card — a plugin's toggles and sliders
+ * (docs/PLUGINS.md). Scopes the kit's tokens (`.tui`) so `Toggle`, `Slider`,
+ * `ListRow`, `SegmentedControl` render as they do in a panel, and pins a
+ * width, since a slider has no intrinsic one. The bar loads the kit
+ * stylesheet for this (apps/desktop bar/main.tsx).
+ */
+export const BarCardControls = ({ children }: { children: ReactNode }) => (
+  <div className="tui bar-card-controls">{children}</div>
+)
+
 /* ---- cells ----------------------------------------------------------- */
 
 /** Lucide icons in bar cells, sized to the 12px monospace strip. Custom

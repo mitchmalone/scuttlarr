@@ -127,7 +127,10 @@ Props (`@scuttlarr/tui/plugins`):
 
 Use `BarHoverCell` with `id={`plugin:${plugin.id}`}` for a cell with a card (cards anchor
 to their zone's edge automatically, so they stay on screen wherever the cell sits); the kit's
-`Panel`, `ListRow`, `KeyHints`, `Calendar`, `MeterRow`… for panels. A component that
+`Panel`, `ListRow`, `KeyHints`, `Calendar`, `MeterRow`… for panels. A card can hold
+controls too — wrap them in `BarCardControls` and `Toggle`, `Slider`, `ListRow`,
+`SegmentedControl` render as they do in a panel (the `lights` plugin: a row per light,
+sliders under it). A component that
 throws paints its own cell red (the message is in the card and in Settings) and nothing
 else in the bar changes.
 

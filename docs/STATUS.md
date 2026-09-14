@@ -104,7 +104,14 @@ grew a "Hardware is a helper" rule; JOURNAL ×3; plan
 `plans/done/amaran-plugin-bluetooth.md`. Loose thread: status replies arrived in one run
 and not in three earlier probes — recorded, not chased. **2026-09-14:** the fold broke it
 — the plugin still imported `@launcharr/tui`; the old name is now a shared alias of the kit
-so pre-rename plugins build unchanged (JOURNAL 2026-09-14).
+so pre-rename plugins build unchanged (JOURNAL 2026-09-14). **Same day, folded into
+`~/.config/scuttlarr/plugins/lights/`:** one 💡 for every light — amaran demoted to a
+driver, a Home.app driver through the Shortcuts CLI (the Nanoleaf lights are Thread/Matter,
+nothing else gets in — JOURNAL 2026-09-14), scenes from `scenes.json` + Home scenes, and
+the first hover card with controls (kit: `BarCardControls`, bar loads `styles.css`).
+**Waiting on Mitch:** the `lights/<light>/…` shortcuts (README recipe), then measure
+`shortcuts run` latency and whether slider drag works in a card. Plan
+`plans/active/lights-plugin.md`.
 
 **Updates plugin, second pass, 2026-09-10 (working tree, uncommitted — built + running):**
 npm dropped as a source (its only globals are node's own `npm`/`corepack`, mise's business).

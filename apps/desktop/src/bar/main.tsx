@@ -25,6 +25,8 @@ import {
 } from '@scuttlarr/tui'
 import '@scuttlarr/tui/bar.css'
 import { pluginIdOf } from '@scuttlarr/tui/plugins'
+// Kit controls inside plugin cards (BarCardControls) — every rule is scoped to `.tui`.
+import '@scuttlarr/tui/styles.css'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { useEffect, useRef, useState } from 'react'

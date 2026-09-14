@@ -57,6 +57,7 @@ export {
   BarBatteryCard,
   BarBatteryCell,
   BarCard,
+  BarCardControls,
   BarCardDim,
   BarCardHint,
   BarCardLine,

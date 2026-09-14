@@ -185,6 +185,16 @@
   transform: translateX(-50%);
 }
 
+/* Kit controls inside a card (BarCardControls): the kit's own type scale is
+ * for panels; in a card the controls take the card's 12px. */
+.bar-card-controls {
+  min-width: 300px;
+  margin-top: 4px;
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+
 .bar-card-title {
   color: var(--fg, #dde1f0);
   overflow: hidden;

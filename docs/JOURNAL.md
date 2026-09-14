@@ -6,6 +6,19 @@
 
 ---
 
+### 2026-09-14 · The rename moved plugins but not their imports — a pre-fold plugin failed `bun build`
+
+amaran's cell went red after the fold: `Could not resolve: "@launcharr/tui"`. `rename.rs`
+moves `~/.config/launcharr/plugins/<id>` to the scuttlarr home but never rewrites plugin
+source (not ours to edit — invariant 11), and `plugins.rs` only marked `@scuttlarr/tui` as a
+shared external, so bun tried to resolve the old name from a directory with no
+`node_modules`. Fix: `@launcharr/tui` stays in `SHARED_MODULES` and `components.tsx`
+registers it against the _same_ kit namespace as `@scuttlarr/tui` — the theme-name alias
+(`THEME_ALIASES`) already set the pattern. Old plugins build and load unchanged; new ones
+should import `@scuttlarr/tui` (docs/PLUGINS.md). The amaran sources were updated by hand
+at the same time. Type-only imports (`@launcharr/tui/plugins`) never needed the alias —
+bun erases them.
+
 ### 2026-09-14 · Moving the checkout breaks the Tauri build cache — `cargo clean` first
 
 The repo moved from `~/Developer/mitch/stackarr/launcharr` to `~/Developer/mitch/scuttlarr`

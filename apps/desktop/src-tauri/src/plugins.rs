@@ -135,12 +135,17 @@ const CLONE_TIMEOUT: Duration = Duration::from_secs(90);
 /// resolves these names to the app's own instances). `lucide-react` is shared
 /// too: a plugin directory has no `node_modules`, so the icons must come from
 /// the app (and the app already ships lucide's dynamic-icon set).
-pub const SHARED_MODULES: [&str; 6] = [
+/// `@launcharr/tui` is the kit's pre-fold name (DECISIONS 2026-09-11): plugins
+/// written before the rename still import it, and `rename.rs` moves their
+/// directory without rewriting their source — so the old name stays a shared
+/// external and the webview maps it to the same kit (components.tsx).
+pub const SHARED_MODULES: [&str; 7] = [
     "react",
     "react/jsx-runtime",
     "react/jsx-dev-runtime",
     "react-dom",
     "@scuttlarr/tui",
+    "@launcharr/tui",
     "lucide-react",
 ];
 

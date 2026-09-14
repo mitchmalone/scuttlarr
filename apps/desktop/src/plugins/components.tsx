@@ -41,12 +41,15 @@ import { importPluginModule, registerShared } from './loader'
 // Names match plugins.rs SHARED_MODULES. Lucide is shared because a plugin
 // dir has no node_modules to resolve it from (and the bar already carries
 // lucide's dynamic-icon set for widgets; measured 2026-08-27: no RSS delta).
+// `@launcharr/tui` is the kit's pre-fold name: plugins written before the
+// rename keep importing it, and it must land on the *same* kit instance.
 registerShared({
   react: React,
   'react/jsx-runtime': JsxRuntime,
   'react/jsx-dev-runtime': JsxDevRuntime,
   'react-dom': ReactDOM,
   '@scuttlarr/tui': Tui,
+  '@launcharr/tui': Tui,
   'lucide-react': Lucide,
 })
 

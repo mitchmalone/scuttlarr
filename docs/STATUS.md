@@ -90,7 +90,7 @@ buttons (`plugin_permission_fix`, the one new command). A service killed by sign
 
 **First hardware plugin, 2026-09-10 (working tree, uncommitted — built, not yet
 reinstalled):** Mitch's amaran 60d S studio light is a user plugin
-(`~/.config/launcharr/plugins/amaran/`, not in this repo): a Swift CoreBluetooth bridge
+(`~/.config/scuttlarr/plugins/amaran/`, not in this repo): a Swift CoreBluetooth bridge
 spawned by the Bun service, a TypeScript Bluetooth Mesh stack (AES-CCM hand-rolled — Bun
 has none — verified against the spec vectors), Telink `0x26` commands, and the light's
 status replies decoded so the cell follows the physical dial. Cell click toggles, `light ⏎`
@@ -102,7 +102,9 @@ Built to `target/release/bundle/macos/launcharr.app`; **the reinstall over the r
 is pending (Mitch)** — then one Bluetooth prompt and the cell should go live. PLUGINS.md
 grew a "Hardware is a helper" rule; JOURNAL ×3; plan
 `plans/done/amaran-plugin-bluetooth.md`. Loose thread: status replies arrived in one run
-and not in three earlier probes — recorded, not chased.
+and not in three earlier probes — recorded, not chased. **2026-09-14:** the fold broke it
+— the plugin still imported `@launcharr/tui`; the old name is now a shared alias of the kit
+so pre-rename plugins build unchanged (JOURNAL 2026-09-14).
 
 **Updates plugin, second pass, 2026-09-10 (working tree, uncommitted — built + running):**
 npm dropped as a source (its only globals are node's own `npm`/`corepack`, mise's business).

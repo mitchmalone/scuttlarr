@@ -128,6 +128,18 @@ it in `docs/DECISIONS.md`.
     user's home — `aerospace.toml`, borders, the Claude hook entries, theme renders,
     macOS defaults — not just the machine rung. `TomlState`'s adopt-or-leave is the
     existing instance. `docs/SETUP.md` (DECISIONS 2026-09-11).
+12. **Off means off.** A disabled plugin, rung or opt-in spawns no process, scans no
+    directory, makes no request, registers no watcher and holds no state — not "runs but
+    hides". `plugins.rs` never starts a disabled id, `setup::boot` returns before anything
+    when the machine rung is off, `appearance` is inert until its key exists, and the
+    self-update check makes no request when `updates.checkSelf` is off. Turning a thing on
+    is consent to what it does; a toggle that merely hides is a lie about what the app is
+    doing (DECISIONS 2026-09-16, after Tinycast).
+13. **No native alerts.** Never `NSAlert`, AppleScript `display dialog`/`display alert`,
+    `window.alert`/`confirm`/`prompt`, or a system popover. A question is a row with a
+    labelled Enter, a report is a panel line or a bar cell; both keep the prompt's focus
+    discipline (invariant 6), a modal breaks it. The one AppleScript dialog is the file
+    picker in `desktop.rs`, which the user asked for by clicking.
 
 ## Performance budgets (requirements, not aspirations)
 
@@ -180,10 +192,15 @@ Same spirit as the TypeScript rules: strict, minimal, boring.
 | `pnpm verify`                                | The gate: typecheck + lint + format + test + cargo test + clippy                        |
 | `scripts/dev-install.sh [--build]`           | Run a working-tree build: swap into `/Applications` and relaunch, quietly (no Finder)   |
 | `scripts/release.sh X.Y.Z`                   | The only way to release (see `docs/RELEASING.md`)                                       |
+| `scripts/mem.sh [--watch]`                   | Resident memory of the app and its helpers — the number the definition of done wants    |
 
 ## Definition of done
 
 - `pnpm verify` green (typecheck, lint, format:check, Vitest, cargo test, clippy `-D warnings`).
 - New pure logic (matcher, ranking, grammar) has unit tests written first.
-- Performance budgets not regressed.
+- Performance budgets not regressed. A change that adds a process, a window, a watcher or
+  a resident cache records `scripts/mem.sh` idle numbers (app + helpers, panel hidden) in
+  its plan file, before and after — the 120 MB ceiling is measured, not assumed.
+- A ranking complaint becomes a case in `packages/core/src/corpus.json` first; the scorer
+  changes second, and every earlier case still holds.
 - `docs/STATUS.md` (and the task's plan file) updated in the same commit; pushed, CI green.

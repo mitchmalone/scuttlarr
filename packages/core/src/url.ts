@@ -82,6 +82,57 @@ export function fillQuery(template: string, query: string): string {
 }
 
 /**
+ * The values a quicklink can pull in besides the typed query (DECISIONS 2026-09-16, after
+ * Tinycast's dynamic placeholders). No selection placeholder: reading the frontmost app's
+ * selection needs Accessibility (invariant 1).
+ */
+export type PlaceholderContext = {
+  /** The newest clipboard entry, or null when history is empty. */
+  clipboard: string | null
+  /** Local time; `{date}` is its ISO date, `{time}` its HH:MM. */
+  now: Date
+}
+
+/** Which placeholders a template uses beyond `{query}` — the host fetches only those. */
+export function placeholdersIn(
+  template: string,
+): Set<'clipboard' | 'date' | 'time'> {
+  const used = new Set<'clipboard' | 'date' | 'time'>()
+  for (const name of ['clipboard', 'date', 'time'] as const) {
+    if (template.includes(`{${name}}`)) used.add(name)
+  }
+  return used
+}
+
+/** `2026-09-16` in local time. */
+export function isoDate(now: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+}
+
+/** `09:05` in local time. */
+export function clockTime(now: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(now.getHours())}:${pad(now.getMinutes())}`
+}
+
+/**
+ * Expand `{clipboard}`, `{date}` and `{time}` in a URL that has already had its `{query}`
+ * filled. Clipboard text is percent-encoded like the query; an empty clipboard expands to
+ * nothing rather than the literal placeholder. Runs at Enter, never while rows are built:
+ * drawing a row must not read the clipboard.
+ */
+export function expandPlaceholders(
+  url: string,
+  ctx: PlaceholderContext,
+): string {
+  return url
+    .replaceAll('{clipboard}', encodeURIComponent(ctx.clipboard ?? ''))
+    .replaceAll('{date}', isoDate(ctx.now))
+    .replaceAll('{time}', clockTime(ctx.now))
+}
+
+/**
  * Where a quicklink trigger goes. With a query: the filled template. Bare trigger on a
  * search-style template ({query} present): the site root — `chill ⏎` means "take me to
  * chill.institute", not "search for nothing". Plain links and unparseable templates fall

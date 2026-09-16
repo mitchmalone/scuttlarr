@@ -283,6 +283,21 @@ function GeneralBasics({
           Launch at login
         </label>
       </Row>
+      <Row label="Updates">
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={config.updates?.checkSelf ?? true}
+            onChange={(e) => set('updates', { checkSelf: e.target.checked })}
+          />
+          Check for scuttlarr updates
+        </label>
+        <p className="hint">
+          Every 6 h, from GitHub Releases; the newest shows in{' '}
+          <code>updates ⏎</code>, where ↵ installs it and relaunches. Nothing
+          about you is sent. Off means the request is never made.
+        </p>
+      </Row>
       <hr />
       <ThemeSection config={config} set={set} patch={patch} />
       <Row label="Prompt sigil">

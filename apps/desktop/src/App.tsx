@@ -23,6 +23,7 @@ import type {
   ScriptInfo,
   ScriptItem,
 } from '@scuttlarr/core/types'
+import { expandPlaceholders, placeholdersIn } from '@scuttlarr/core/url'
 import {
   AskPinned,
   AskSurface,
@@ -153,6 +154,7 @@ const DEFAULT_CONFIG: Config = {
   colorLoupeSize: 264,
   widgets: {},
   plugins: { disabled: [] },
+  updates: undefined,
 }
 
 /** Panel rows draw their lucide icon; everything else keeps its text glyph. */
@@ -614,9 +616,19 @@ export default function App() {
         case 'copy':
           invoke('copy_text', { text: enter.text }).catch(console.error)
           break
-        case 'open-url':
-          invoke('open_url', { url: enter.url }).catch(console.error)
+        case 'open-url': {
+          // `{clipboard}` / `{date}` / `{time}` expand here, at Enter, never while the
+          // row is drawn: drawing must not read the clipboard (DECISIONS 2026-09-16).
+          const url =
+            placeholdersIn(enter.url).size > 0
+              ? expandPlaceholders(enter.url, {
+                  clipboard: clips[0]?.content ?? null,
+                  now: new Date(),
+                })
+              : enter.url
+          invoke('open_url', { url }).catch(console.error)
           break
+        }
         case 'script-action': {
           const item = scriptItems[enter.index]
           if (item) {
@@ -719,7 +731,7 @@ export default function App() {
         }
       }
     },
-    [parsed, scriptItems, refetchClips, draft, raw],
+    [parsed, scriptItems, refetchClips, draft, raw, clips],
   )
 
   const onKeyDown = useCallback(

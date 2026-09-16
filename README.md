@@ -24,7 +24,8 @@ the first is on by default.
 
 1. **Launcher** — ⌥Space summons a non-activating panel; Esc returns focus exactly where
    it was. Fuzzy-launch apps and System Settings panes, frecency-ranked. `!git status ⏎`
-   flings a command at Ghostty. `clip`, inline math, `:emoji`, quicklinks with `{query}`,
+   flings a command at Ghostty. `clip`, inline math, `:emoji`, quicklinks with `{query}`
+   (and `{clipboard}`, `{date}`, `{time}`),
    system commands, ⌥⏎ secondary actions, [scripts](docs/SCRIPTS.md) that join the grammar
    with their own trigger words.
 2. **Bar** — the menubar replacement: workspaces, front app, clock, wifi, battery, agent
@@ -51,7 +52,9 @@ the first is on by default.
   turned on needs one. Focus detection and appearance tracking read files macOS already
   lets you read.
 - **No telemetry.** scuttlarr talks to the network only to do what you asked — fetch a
-  favicon, read your usage limits, check for app updates. Nothing phones home about you.
+  favicon, read your usage limits, check for app updates — its own included: `updates ⏎`
+  offers the newest release and installs it after verifying it is code we signed. Nothing
+  phones home about you.
 - **The prompt is the product.** The menubar icon is a courtesy; everything it does, the
   panel does too (type `scuttlarr`).
 - **One owner per file.** Anything written outside `~/.config/scuttlarr` is recorded in a

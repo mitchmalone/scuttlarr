@@ -3,9 +3,27 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-09-14 (unification built end to end; site + domains live; repo at ~/Developer/mitch/scuttlarr)
+> Last updated: 2026-09-16 (Tinycast borrow: corpus, naming roles, purity lint, mem.sh, invariants 12–13, placeholders, self-update)
 
 ## Where we are
+
+**Tinycast borrow, 2026-09-16 (committed, dev-installed):** seven practices from
+[tinycast](https://github.com/abue-ammar/tinycast) plus a self-updater, DECISIONS
+2026-09-16 ×2, plan `plans/done/tinycast-borrow.md`. `packages/core/src/corpus.json` —
+202 real entries, 57 pinned queries; its first run caught five wrong rankings and fixed
+the gap penalty (JOURNAL). `IndexItem.keywords` (bundle-id tail / `CFBundleName` /
+executable, word-start only, 0.8) beside `aliases` (0.9); `indexer::keywords_for` derives
+them. ESLint now fails any I/O or framework import in `packages/core` (invariant 5,
+enforced). `scripts/mem.sh` + a memory line in the definition of done — **first reading:
+app 157–177 MB idle, over the 120 MB ceiling; borders 370–460 MB** (JOURNAL; the shrink
+is its own task). Invariants 12 (off means off) and 13 (no native alerts). `{clipboard}`,
+`{date}`, `{time}` in quicklinks, expanded at Enter. **Self-update:** `selfupdate.rs` as
+the `scuttlarr` source of `updates ⏎` — GitHub `releases/latest` every 6 h, `↵` installs
+after sha256 + `codesign` team verification, relaunches; Settings → General "Check for
+scuttlarr updates" (default on, off = no request). **Not live-proven:** the install path
+needs a signed release newer than the installed one — the dev build is ad-hoc signed and
+correctly shows no `scuttlarr` source. **Tap:** `Casks/scuttlarr.rb` still doesn't exist
+(1.5); when created it needs `auto_updates true` (RELEASING).
 
 **Unification into scuttlarr, 2026-09-11 — phases 0–4 landed in one day, all local,
 not pushed, dev-installed on the primary Mac.** launcharr and scuttlarr fold into this

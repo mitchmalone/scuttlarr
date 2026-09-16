@@ -11,7 +11,12 @@ export type MatchResult = {
 }
 
 const SCORE_MATCH = 16
-const PENALTY_GAP_START = -4
+/**
+ * -8, not fzf's -4 (2026-09-16): at -4 a scattered `quit` in QuickTime outscored the
+ * exact `quit` alias, and `ical` through Notion Calendar beat Calendar's iCal keyword.
+ * The corpus (corpus.json) pins both.
+ */
+const PENALTY_GAP_START = -8
 const PENALTY_GAP_EXTEND = -2
 const BONUS_BOUNDARY = 8
 const BONUS_CAMEL = 7
@@ -19,6 +24,16 @@ const BONUS_CONSECUTIVE = 12
 const BONUS_FIRST_CHAR = 8
 /** Leading gap is penalised gently so prefix matches win without banning mid-word matches. */
 const MAX_LEADING_PENALTY = -6
+
+/**
+ * Whether target[j] starts a word: the first character, one after a separator, or a
+ * camel hump. The keyword role (ranking.ts) anchors on this.
+ */
+export function isWordStart(target: string, j: number): boolean {
+  if (j === 0) return true
+  const prev = target[j - 1]!
+  return isWordSeparator(prev) || (isLower(prev) && isUpper(target[j]!))
+}
 
 function isWordSeparator(ch: string): boolean {
   return (

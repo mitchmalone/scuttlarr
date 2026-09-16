@@ -1,15 +1,22 @@
-import { fuzzyMatch } from './matcher'
+import { fuzzyMatch, isWordStart } from './matcher'
 import type { FrecencyMap, IndexItem } from './types'
 
 export type ScoredItem = {
   item: IndexItem
   score: number
-  /** Match positions in the display name; empty when the match was via an alias. */
+  /** Match positions in the display name; empty when the match was via an alias or keyword. */
   positions: number[]
 }
 
-/** Matches through an alias count, but slightly less than matching the visible name. */
+/**
+ * Naming roles, from most to least trusted (DECISIONS 2026-09-16, after Tinycast's
+ * `SearchAlias.Role`): the visible name, a curated alias, a derived keyword. Every text an
+ * item can be found by is one of these three, and the factor is the whole difference — a
+ * weaker role can never beat a stronger one at the same match strength, and the scorer
+ * never learns which field the text came from.
+ */
 const ALIAS_FACTOR = 0.9
+const KEYWORD_FACTOR = 0.8
 
 export const MAX_RESULTS = 8
 
@@ -22,6 +29,22 @@ export const MAX_RESULTS = 8
 export function frecencyMultiplier(frecency: number | undefined): number {
   if (!frecency || frecency <= 0) return 1
   return 1 + frecency / (frecency + 2)
+}
+
+/**
+ * The keyword role's looseness: the query must sit contiguously at a word start of the
+ * keyword (`ical` → `iCal`, `sms` → `MobileSMS`), never scattered through it — a derived
+ * string is not something the user ever saw, so a subsequence hit through it is noise.
+ */
+export function keywordScore(query: string, keyword: string): number | null {
+  const m = fuzzyMatch(query, keyword)
+  if (!m || m.positions.length === 0) return null
+  const first = m.positions[0]!
+  if (!isWordStart(keyword, first)) return null
+  for (let i = 1; i < m.positions.length; i++) {
+    if (m.positions[i] !== first + i) return null
+  }
+  return m.score * KEYWORD_FACTOR
 }
 
 export function rank(
@@ -45,6 +68,12 @@ export function rank(
         (!best || aliasMatch.score * ALIAS_FACTOR > best.score)
       ) {
         best = { score: aliasMatch.score * ALIAS_FACTOR, positions: [] }
+      }
+    }
+    for (const keyword of item.keywords ?? []) {
+      const score = keywordScore(query, keyword)
+      if (score !== null && (!best || score > best.score)) {
+        best = { score, positions: [] }
       }
     }
     if (!best) continue

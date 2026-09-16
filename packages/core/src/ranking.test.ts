@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { frecencyMultiplier, rank } from './ranking'
+import { frecencyMultiplier, keywordScore, rank } from './ranking'
 import type { IndexItem } from './types'
 
-function app(name: string, aliases: string[] = []): IndexItem {
+function app(
+  name: string,
+  aliases: string[] = [],
+  keywords: string[] = [],
+): IndexItem {
   return {
     id: `/Applications/${name}.app`,
     name,
@@ -12,6 +16,7 @@ function app(name: string, aliases: string[] = []): IndexItem {
     hint: 'app',
     icon: null,
     aliases,
+    keywords,
   }
 }
 
@@ -91,5 +96,47 @@ describe('rank', () => {
   it('non-matching items are excluded entirely', () => {
     const results = rank('zzz', ITEMS, {})
     expect(results).toEqual([])
+  })
+})
+
+describe('naming roles', () => {
+  it('a keyword finds an item by a name the user never sees (ical → Calendar)', () => {
+    const items = [app('Calendar', [], ['iCal']), app('Calculator')]
+    const results = rank('ical', items, {})
+    expect(results[0]!.item.name).toBe('Calendar')
+    expect(results[0]!.positions).toEqual([])
+  })
+
+  it('a keyword only matches contiguously at a word start', () => {
+    expect(keywordScore('sms', 'MobileSMS')).not.toBeNull() // camel hump
+    expect(keywordScore('vsc', 'VSCode')).not.toBeNull() // prefix
+    expect(keywordScore('book', 'AddressBook')).not.toBeNull()
+    expect(keywordScore('code', 'VSCode')).toBeNull() // S→C is no hump: mid-word
+    expect(keywordScore('mbs', 'MobileSMS')).toBeNull() // scattered
+    expect(keywordScore('obile', 'MobileSMS')).toBeNull() // mid-word
+    expect(keywordScore('zz', 'MobileSMS')).toBeNull()
+  })
+
+  it('roles order: name > alias > keyword at equal match strength', () => {
+    const byName = app('Code')
+    const byAlias = app('Editor', ['code'])
+    const byKeyword = app('Studio', [], ['Code'])
+    const results = rank('code', [byKeyword, byAlias, byName], {})
+    expect(results.map((r) => r.item.name)).toEqual([
+      'Code',
+      'Editor',
+      'Studio',
+    ])
+  })
+
+  it('a keyword hit is beaten by any real name match of the same query', () => {
+    // ChatGPT's bundle id ends in `codex`; the Codex app owns the name.
+    const items = [app('ChatGPT', [], ['codex']), app('Codex')]
+    expect(rank('codex', items, {})[0]!.item.name).toBe('Codex')
+  })
+
+  it('items without keywords still rank (the field is optional across IPC)', () => {
+    const bare: IndexItem = { ...app('Safari'), keywords: undefined }
+    expect(rank('saf', [bare], {})[0]!.item.name).toBe('Safari')
   })
 })

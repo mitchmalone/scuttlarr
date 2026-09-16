@@ -31,6 +31,7 @@ The chosen approach in a few sentences. Note alternatives considered if the choi
 
 - [ ] Observable condition that means "done"
 - [ ] Tests / checks that must pass
+- [ ] Memory: `scripts/mem.sh` idle before → after, if this adds a process, window, watcher or cache
 
 ## Out of scope
 

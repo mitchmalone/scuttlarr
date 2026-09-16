@@ -72,10 +72,16 @@ announcing anywhere is a deliberate, separate decision.
 | zip                       | GitHub Release                                                      | what the cask consumes; direct download            |
 | source                    | git clone + `pnpm --filter @scuttlarr/desktop tauri build`          | the committed                                      |
 
-No in-app updater: Homebrew is the update channel, and the bundled `updates` plugin only
-surfaces what `brew outdated` already knows (the zero-network rule this once rested on was
-retired 2026-09-04 — DECISIONS; what remains banned is update _pings_). Never instruct users
-to strip quarantine.
+**In-app updates (DECISIONS 2026-09-16):** the `updates` plugin's `scuttlarr` source reads
+GitHub's `releases/latest` every 6 h and, on `↵`, installs the release zip after checking
+its sha256 against `SHA256SUMS` and its signature against the running app's team
+(`selfupdate.rs`). It therefore depends on every release carrying **the zip, `SHA256SUMS`,
+and a Developer ID signature** — `release.sh` produces all three; an `--unsigned` release is
+never offered. Homebrew stays the advertised channel. **The cask must declare
+`auto_updates true`** (Homebrew's flag for an app that manages its own version) so `brew
+outdated` stops reporting a self-updated app as stale; add it when `Casks/scuttlarr.rb` is
+created. Never instruct users to strip quarantine — the updater refuses a quarantined
+download rather than clearing the flag.
 
 **Dependencies (v0.4, DECISIONS 2026-08-17):** the cask declares
 `depends_on cask: "nikitabobko/tap/aerospace"` — a structural line in

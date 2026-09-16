@@ -1406,3 +1406,65 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
   plugins currently need (rejected: every new class would need a release before a plugin
   could exist); a Rust command per device class (rejected, invariant 3 — the helper
   pattern keeps hardware out of core).
+
+### 2026-09-16 · Borrowed from Tinycast: the corpus, naming roles, an enforced pure layer, off-means-off, no alerts, memory numbers
+
+- **Decision (ranking corpus).** `packages/core/src/corpus.json` is a dense index shaped
+  like the real payload — the apps of a working Mac with their derived keywords, every
+  settings pane, the system commands, links, panel triggers, scuttlarr's own rows — plus
+  cases pinning the row that must come first for a query, cold or warm. **A ranking
+  complaint is a new case first**; the scorer moves second and every earlier case is
+  re-checked at once. First run found five (JOURNAL).
+- **Decision (naming roles).** Every string an item can be found by has one of three
+  roles: the _name_ (shown, factor 1), a curated _alias_ (`preferences`, factor 0.9), or a
+  derived _keyword_ (bundle id tail, `CFBundleName`, executable — factor 0.8, and it only
+  counts contiguously at a word start). Ranking is keyed on role and match strength, never
+  on which field supplied the text. `IndexItem.keywords` is optional across IPC so plugins
+  and the site's demo index need nothing. Derivation lives once in `indexer::keywords_for`
+  and is mirrored by the corpus generator.
+- **Decision (pure layer, enforced).** Invariant 5 is now an ESLint failure: nothing in
+  `packages/core/src` may import Tauri, React, Node I/O or the kit, or touch `window`,
+  `fetch`, timers and friends. Tinycast gets this by compiling the shipped `Model/` sources
+  in a harness; a lint rule is the TypeScript equivalent and runs in `pnpm verify`.
+- **Decision (memory numbers).** `scripts/mem.sh` prints resident memory of the app and
+  its helpers; the definition of done asks for before/after idle numbers on any change that
+  adds a process, window, watcher or cache. First reading (JOURNAL) is over budget.
+- **Decision (invariants 12 and 13).** Off means off; no native alerts. Both were already
+  the practice; now they are written down so a future toggle that merely hides, or a
+  `display dialog` for a yes/no, is a reviewable violation.
+- **Alternatives.** Raycast extension compatibility (rejected: drags in Raycast's design
+  language and API surface, competes with our plugin protocol); window management in the
+  launcher (rejected: needs Accessibility, AeroSpace owns tiling); localised names and CJK
+  romanisation as keywords (deferred, no demand — the role model is ready for them).
+
+### 2026-09-16 · Reversal: scuttlarr updates itself, from `updates ⏎`
+
+- **Decision.** The `updates` plugin gains a `scuttlarr` source (`selfupdate.rs`). Every
+  6 h, on the same cadence as the package managers, the app reads GitHub's public
+  `releases/latest` — the feed `release.json` is cut from — and, when a newer stable
+  release exists, shows `scuttlarr 0.6.0 → 0.7.0`. `↵` on that row downloads the release
+  zip, checks its sha256 against the release's `SHA256SUMS`, expands it, verifies the
+  bundle's signature against the _running_ app's team (`codesign --verify --deep --strict
+-R 'anchor apple generic and certificate leaf[subject.OU] = "<team>"'`), refuses a
+  quarantined file rather than stripping the flag, swaps the bundle by two renames, and
+  relaunches with `open -g` after the same teardown quitting runs. Nothing is installed
+  unless every check passes; the running app survives any failure untouched, and a failure
+  is the run's exit line with `t` (`brew upgrade --cask scuttlarr`) as the tty route. A
+  dev or ad-hoc-signed build never offers it. `config.updates.checkSelf` (Settings →
+  General, default on) is the switch: off means no request is ever made. `all` upgrades
+  the package managers only; the app's own update relaunches and would cut a chain short.
+- **Why.** The 2026-08-10 "no in-app updater, ever" rested on the zero-network invariant,
+  retired 2026-09-04. What invariant 2 still bans is a request that exists to tell someone
+  about the user; this one carries the app's name and nothing else, and is on the user's
+  side of the line the way the favicon fetch is. `brew upgrade` stays the advertised
+  channel; this is for the person who never runs it (Mitch, 2026-09-16, after Tinycast's
+  updater doc). Verification is stronger than an appcast signature: the download must be
+  code we signed, which the release pipeline already guarantees.
+- **Alternatives.** `tauri-plugin-updater` (rejected: a new crate, a minisign key pair to
+  mint and keep, a `latest.json` to generate, and it verifies less than `codesign` does);
+  a Sparkle-style appcast (rejected: a second release fact to author — invariant 9);
+  reading `scuttlarr.com/release.json` (rejected: the site deploys after the release commit
+  lands, so it can briefly name an asset that does not exist yet).
+- **Consequence for the tap.** The cask must declare `auto_updates true` so `brew outdated`
+  stops reporting a self-updated app as stale (RELEASING.md); until `Casks/scuttlarr.rb`
+  exists (plan step 1.5) there is nothing to change.

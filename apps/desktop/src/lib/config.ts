@@ -54,7 +54,11 @@ export type Config = {
   widgets: Record<string, Record<string, string>>
   /** Plugins (docs/PLUGINS.md): which are switched off. */
   plugins: { disabled: string[] }
+  /** scuttlarr's own updates: check GitHub Releases and offer the newest in `updates ⏎`. */
+  updates: UpdatesConfig | undefined
 }
+
+export type UpdatesConfig = { checkSelf: boolean }
 
 export type MachineConfig = { enabled: boolean }
 

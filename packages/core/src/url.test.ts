@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { detectUrl, fillQuery, quicklinkTarget } from './url'
+import {
+  detectUrl,
+  expandPlaceholders,
+  fillQuery,
+  placeholdersIn,
+  quicklinkTarget,
+} from './url'
 
 describe('detectUrl', () => {
   it('accepts explicit schemes as-is', () => {
@@ -93,5 +99,39 @@ describe('quicklinkTarget', () => {
 
   it('falls back to filled template if the URL cannot be parsed', () => {
     expect(quicklinkTarget('not a url {query}', '')).toBe('not a url ')
+  })
+})
+
+describe('placeholders', () => {
+  const now = new Date(2026, 8, 16, 9, 5) // local: 2026-09-16 09:05
+
+  it('lists the placeholders a template uses, minus {query}', () => {
+    expect([...placeholdersIn('https://x.test/?q={query}')]).toEqual([])
+    expect([...placeholdersIn('https://x.test/{date}/{clipboard}')]).toEqual([
+      'clipboard',
+      'date',
+    ])
+  })
+
+  it('expands clipboard (encoded), date and time', () => {
+    const url = 'https://x.test/{date}/{time}?c={clipboard}'
+    expect(expandPlaceholders(url, { clipboard: 'a b&c', now })).toBe(
+      'https://x.test/2026-09-16/09:05?c=a%20b%26c',
+    )
+  })
+
+  it('an empty clipboard expands to nothing, not the literal', () => {
+    expect(
+      expandPlaceholders('https://x.test/?c={clipboard}', {
+        clipboard: null,
+        now,
+      }),
+    ).toBe('https://x.test/?c=')
+  })
+
+  it('leaves URLs without placeholders untouched', () => {
+    expect(
+      expandPlaceholders('https://x.test/{query}', { clipboard: 'z', now }),
+    ).toBe('https://x.test/{query}')
   })
 })

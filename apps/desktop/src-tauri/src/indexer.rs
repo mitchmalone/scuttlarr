@@ -33,8 +33,13 @@ pub struct IndexItem {
     pub hint: String,
     /// Absolute path to a cached PNG icon, when one exists.
     pub icon: Option<String>,
-    /// Extra strings the fuzzy matcher may match against.
+    /// Curated synonyms the fuzzy matcher may match against (the *alias* role).
     pub aliases: Vec<String>,
+    /// Derived search-only hints — bundle id tail, `CFBundleName`, executable — that
+    /// only count at a word start (the *keyword* role; `@scuttlarr/core/ranking`).
+    /// Absent for anything but apps.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub keywords: Vec<String>,
     /// Links only: open in this browser (`open -a`); None = default.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub browser: Option<String>,
@@ -71,6 +76,7 @@ pub fn scan(links: &[crate::config::Link], include_bookmarks: bool) -> Vec<Index
             hint: "settings".into(),
             icon: None,
             aliases: vec!["settings".into(), "preferences".into()],
+            keywords: Vec::new(),
             browser: None,
         });
     }
@@ -85,6 +91,7 @@ pub fn scan(links: &[crate::config::Link], include_bookmarks: bool) -> Vec<Index
             hint: "command".into(),
             icon: None,
             aliases: cmd.aliases.split(' ').map(String::from).collect(),
+            keywords: Vec::new(),
             browser: None,
         });
     }
@@ -99,6 +106,7 @@ pub fn scan(links: &[crate::config::Link], include_bookmarks: bool) -> Vec<Index
             hint: "link".into(),
             icon: None,
             aliases: Vec::new(),
+            keywords: Vec::new(),
             browser: link.browser.clone(),
         });
     }
@@ -114,6 +122,7 @@ pub fn scan(links: &[crate::config::Link], include_bookmarks: bool) -> Vec<Index
                 hint: "bookmark".into(),
                 icon: None,
                 aliases: Vec::new(),
+                keywords: Vec::new(),
                 browser: None,
             });
         }
@@ -160,11 +169,90 @@ pub fn scan(links: &[crate::config::Link], include_bookmarks: bool) -> Vec<Index
             hint: "scuttlarr".into(),
             icon: None,
             aliases: alias.split(' ').map(String::from).collect(),
+            keywords: Vec::new(),
             browser: None,
         });
     }
 
     items
+}
+
+/// Words that name a technology rather than the app — as a keyword they'd make
+/// `elec` find every Electron app. Kept short; the corpus pins the rest.
+const GENERIC_KEYWORDS: &[&str] = &[
+    "electron",
+    "node",
+    "java",
+    "python",
+    "helper",
+    "launcher",
+    "app",
+    "desktop",
+    "macos",
+    "mac",
+    "native",
+    "extension",
+    "main",
+    "utility",
+    "client",
+    "bootstrapper",
+    "macsys",
+    "shortcuts",
+];
+
+/// The keyword role for an app (`@scuttlarr/core/ranking`, DECISIONS 2026-09-16):
+/// the bundle id's tail (`VSCode`), `CFBundleName` (`Code`) and the executable
+/// (`Resolve`), each kept only when it says something the display name doesn't —
+/// not equal to it, not contained in it, not a generic word, not a number, not a
+/// duplicate. Same rule as `packages/core/src/corpus.json`'s generator.
+pub fn keywords_for(
+    name: &str,
+    bundle_id: &str,
+    bundle_name: &str,
+    executable: &str,
+) -> Vec<String> {
+    let lname = name.to_lowercase();
+    let mut seen: Vec<String> = vec![lname.clone()];
+    let mut out = Vec::new();
+    let tail = bundle_id.rsplit('.').next().unwrap_or("");
+    for candidate in [tail, bundle_name, executable] {
+        let k = candidate.trim();
+        let lk = k.to_lowercase();
+        if k.chars().count() < 3 || k.chars().all(|c| c.is_ascii_digit()) {
+            continue;
+        }
+        if GENERIC_KEYWORDS.contains(&lk.as_str()) || lname.contains(&lk) {
+            continue;
+        }
+        if seen.contains(&lk) {
+            continue;
+        }
+        seen.push(lk);
+        out.push(k.to_string());
+    }
+    out
+}
+
+/// The three plist strings the keyword role is derived from; empty on any failure —
+/// a bundle without a readable plist still indexes by its file name.
+fn bundle_strings(app: &Path) -> (String, String, String) {
+    let Ok(value) = plist::Value::from_file(app.join("Contents/Info.plist")) else {
+        return Default::default();
+    };
+    let Some(dict) = value.as_dictionary() else {
+        return Default::default();
+    };
+    let get = |key: &str| {
+        dict.get(key)
+            .and_then(|v| v.as_string())
+            .unwrap_or("")
+            .to_string()
+    };
+    (
+        get("CFBundleIdentifier"),
+        get("CFBundleName"),
+        get("CFBundleExecutable"),
+    )
 }
 
 fn scan_dir(dir: &Path, depth: u8, items: &mut Vec<IndexItem>) {
@@ -181,6 +269,8 @@ fn scan_dir(dir: &Path, depth: u8, items: &mut Vec<IndexItem>) {
         }
         if file_name.ends_with(".app") {
             let name = file_name.trim_end_matches(".app").to_string();
+            let (bundle_id, bundle_name, executable) = bundle_strings(&path);
+            let keywords = keywords_for(&name, &bundle_id, &bundle_name, &executable);
             items.push(IndexItem {
                 id: path.to_string_lossy().into_owned(),
                 name,
@@ -189,6 +279,7 @@ fn scan_dir(dir: &Path, depth: u8, items: &mut Vec<IndexItem>) {
                 hint: "app".into(),
                 icon: None,
                 aliases: Vec::new(),
+                keywords,
                 browser: None,
             });
         } else if depth < 1 && path.is_dir() {
@@ -250,6 +341,56 @@ pub fn start(app: AppHandle) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn keywords_say_only_what_the_name_does_not() {
+        assert_eq!(
+            keywords_for("Visual Studio Code", "com.microsoft.VSCode", "Code", "Code"),
+            vec!["VSCode"] // `Code` is inside the name already
+        );
+        assert_eq!(
+            keywords_for("Calendar", "com.apple.iCal", "Calendar", "Calendar"),
+            vec!["iCal"]
+        );
+        // Equal to or inside the name: nothing new.
+        assert!(keywords_for(
+            "Google Chrome",
+            "com.google.Chrome",
+            "Chrome",
+            "Google Chrome"
+        )
+        .is_empty());
+        assert!(keywords_for("Ghostty", "com.mitchellh.ghostty", "Ghostty", "ghostty").is_empty());
+        // Generic, numeric, short and duplicate candidates are dropped.
+        assert!(keywords_for("Figma", "com.figma.Desktop", "Figma", "Figma").is_empty());
+        assert!(keywords_for(
+            "Screens 5",
+            "com.edovia.screens.5",
+            "Screens 5",
+            "Screens 5"
+        )
+        .is_empty());
+        assert_eq!(
+            keywords_for("iTerm", "com.googlecode.iterm2", "iTerm2", "iTerm2"),
+            vec!["iterm2"]
+        );
+        // An unreadable plist indexes by file name alone.
+        assert!(keywords_for("Thing", "", "", "").is_empty());
+    }
+
+    #[test]
+    fn scan_is_inside_the_index_budget_with_keywords() {
+        // AGENTS.md: full index rebuild (~300 apps) < 500 ms. The plist read per app is
+        // the only new cost; a generous bound so CI noise never fails it.
+        let t = std::time::Instant::now();
+        let items = scan(&[], false);
+        let apps = items.iter().filter(|i| i.kind == ItemKind::App).count();
+        let ms = t.elapsed().as_millis();
+        assert!(ms < 500, "scan took {ms} ms for {apps} apps");
+        assert!(items
+            .iter()
+            .any(|i| i.kind == ItemKind::App && !i.keywords.is_empty()));
+    }
 
     #[test]
     fn scan_finds_apps_and_settings_and_self() {

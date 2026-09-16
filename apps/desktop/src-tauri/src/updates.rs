@@ -6,7 +6,9 @@
 //! cached read plus a background refresh on a long TTL, so the 1 Hz bar
 //! snapshot never blocks on a shell-out. Every check is the user's own
 //! package manager doing what it already does on `brew outdated` — no
-//! request scuttlarr makes on its own behalf (DECISIONS 2026-09-04).
+//! request scuttlarr makes on its own behalf (DECISIONS 2026-09-04) — with one
+//! exception since 2026-09-16: the `scuttlarr` source (selfupdate.rs) reads the
+//! public GitHub Releases feed, sending nothing about the user.
 
 use std::io::{BufRead, Read};
 use std::path::{Path, PathBuf};
@@ -123,6 +125,42 @@ pub fn upgrade(source: &str) -> Result<(), String> {
     if matches!(slot.as_ref(), Some((run, _)) if run.finished_at == 0) {
         return Err("an upgrade is already running".into());
     }
+    if source == crate::selfupdate::SOURCE_ID {
+        // In-process, not a shell: download → verify → swap → relaunch
+        // (selfupdate.rs). The run's tail carries the steps; `x` cannot cancel
+        // it (a half-swapped bundle is worse than a finished one).
+        *slot = Some((
+            UpgradeRun {
+                source: source.to_owned(),
+                command: "scuttlarr update".into(),
+                started_at: now_secs(),
+                ..Default::default()
+            },
+            None,
+        ));
+        drop(slot);
+        crate::logbook::breadcrumb("updates", "upgrade scuttlarr in panel (selfupdate)");
+        std::thread::spawn(|| {
+            let push = |line: String| {
+                let mut slot = UPGRADE.lock().unwrap();
+                if let Some((run, _)) = slot.as_mut() {
+                    run.tail.push(line);
+                }
+            };
+            let result = crate::selfupdate::install(&push);
+            // Ok never returns: the process relaunched.
+            if let Err(e) = result {
+                push(format!("error: {e}"));
+                let mut slot = UPGRADE.lock().unwrap();
+                if let Some((run, _)) = slot.as_mut() {
+                    run.finished_at = now_secs();
+                    run.exit_code = Some(1);
+                }
+                crate::logbook::breadcrumb("selfupdate", &format!("failed: {e}"));
+            }
+        });
+        return Ok(());
+    }
     let mut cmd = Command::new("/bin/sh");
     cmd.args(["-c", &command])
         .stdin(Stdio::null())
@@ -232,6 +270,11 @@ pub fn refresh_after_upgrade() {
 /// `locate`) joined with ` && ` in table order, so a failure stops the chain
 /// rather than silently skipping ahead. `None` for an unknown source id.
 pub fn upgrade_command(source: &str) -> Option<String> {
+    if source == crate::selfupdate::SOURCE_ID {
+        return Some(crate::selfupdate::UPGRADE_COMMAND.to_string());
+    }
+    // `all` is the package managers only: the app's own update relaunches,
+    // which would cut a chain short — it is one `↵` on its own row.
     if source == "all" {
         let joined = SOURCES
             .iter()
@@ -341,7 +384,13 @@ fn scan() -> UpdatesReport {
         .into_iter()
         .map(|(def, bin)| std::thread::spawn(move || check_source(def, &bin)))
         .collect();
-    let sources = handles.into_iter().filter_map(|h| h.join().ok()).collect();
+    let mut sources: Vec<UpdateSource> = Vec::new();
+    // scuttlarr itself first (selfupdate.rs); absent from dev/unsigned builds
+    // and when `config.updates.checkSelf` is off — off means no request.
+    if crate::selfupdate::eligible() {
+        sources.push(crate::selfupdate::check());
+    }
+    sources.extend(handles.into_iter().filter_map(|h| h.join().ok()));
     UpdatesReport {
         generated_at: now_secs(),
         refreshing: false,

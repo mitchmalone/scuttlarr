@@ -1,0 +1,2241 @@
+{
+  "entries": [
+    {
+      "id": "/Applications/Adobe Lightroom.app",
+      "name": "Adobe Lightroom",
+      "kind": "app",
+      "path": "/Applications/Adobe Lightroom.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["lightroomCC"]
+    },
+    {
+      "id": "/Applications/AeroSpace.app",
+      "name": "AeroSpace",
+      "kind": "app",
+      "path": "/Applications/AeroSpace.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/amaran Desktop.app",
+      "name": "amaran Desktop",
+      "kind": "app",
+      "path": "/Applications/amaran Desktop.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["amaran-desktop"]
+    },
+    {
+      "id": "/Applications/Amazon Kindle.app",
+      "name": "Amazon Kindle",
+      "kind": "app",
+      "path": "/Applications/Amazon Kindle.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["Lassen"]
+    },
+    {
+      "id": "/Applications/Amphetamine.app",
+      "name": "Amphetamine",
+      "kind": "app",
+      "path": "/Applications/Amphetamine.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Astropad Workbench.app",
+      "name": "Astropad Workbench",
+      "kind": "app",
+      "path": "/Applications/Astropad Workbench.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Bartender 6.app",
+      "name": "Bartender 6",
+      "kind": "app",
+      "path": "/Applications/Bartender 6.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Battle.net.app",
+      "name": "Battle.net",
+      "kind": "app",
+      "path": "/Applications/Battle.net.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Beeper Desktop.app",
+      "name": "Beeper Desktop",
+      "kind": "app",
+      "path": "/Applications/Beeper Desktop.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Blackmagic Proxy Generator Lite.app",
+      "name": "Blackmagic Proxy Generator Lite",
+      "kind": "app",
+      "path": "/Applications/Blackmagic Proxy Generator Lite.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["BlackmagicProxyGeneratorLite"]
+    },
+    {
+      "id": "/Applications/Blackmagic RAW Player.app",
+      "name": "Blackmagic RAW Player",
+      "kind": "app",
+      "path": "/Applications/Blackmagic RAW Player.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["BlackmagicRawPlayer"]
+    },
+    {
+      "id": "/Applications/Blackmagic RAW Speed Test.app",
+      "name": "Blackmagic RAW Speed Test",
+      "kind": "app",
+      "path": "/Applications/Blackmagic RAW Speed Test.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["BlackmagicRawSpeedTest"]
+    },
+    {
+      "id": "/Applications/Caffeinated.app",
+      "name": "Caffeinated",
+      "kind": "app",
+      "path": "/Applications/Caffeinated.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/ChatGPT.app",
+      "name": "ChatGPT",
+      "kind": "app",
+      "path": "/Applications/ChatGPT.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["codex"]
+    },
+    {
+      "id": "/Applications/ChatGPT Classic.app",
+      "name": "ChatGPT Classic",
+      "kind": "app",
+      "path": "/Applications/ChatGPT Classic.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Chrome Artoo.app",
+      "name": "Chrome Artoo",
+      "kind": "app",
+      "path": "/Applications/Chrome Artoo.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["chrome-artoo"]
+    },
+    {
+      "id": "/Applications/Chrome Beebee.app",
+      "name": "Chrome Beebee",
+      "kind": "app",
+      "path": "/Applications/Chrome Beebee.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["chrome-beebee"]
+    },
+    {
+      "id": "/Applications/Chrome Chopper.app",
+      "name": "Chrome Chopper",
+      "kind": "app",
+      "path": "/Applications/Chrome Chopper.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["chrome-chopper"]
+    },
+    {
+      "id": "/Applications/Chrome Kaytoo.app",
+      "name": "Chrome Kaytoo",
+      "kind": "app",
+      "path": "/Applications/Chrome Kaytoo.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["chrome-kaytoo"]
+    },
+    {
+      "id": "/Applications/Chrome Threepio.app",
+      "name": "Chrome Threepio",
+      "kind": "app",
+      "path": "/Applications/Chrome Threepio.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["chrome-threepio"]
+    },
+    {
+      "id": "/Applications/Chrome Work.app",
+      "name": "Chrome Work",
+      "kind": "app",
+      "path": "/Applications/Chrome Work.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["chrome-work"]
+    },
+    {
+      "id": "/Applications/Claude.app",
+      "name": "Claude",
+      "kind": "app",
+      "path": "/Applications/Claude.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["claudefordesktop"]
+    },
+    {
+      "id": "/Applications/cmux.app",
+      "name": "cmux",
+      "kind": "app",
+      "path": "/Applications/cmux.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Codex.app",
+      "name": "Codex",
+      "kind": "app",
+      "path": "/Applications/Codex.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/CodexBar.app",
+      "name": "CodexBar",
+      "kind": "app",
+      "path": "/Applications/CodexBar.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/CurseForge.app",
+      "name": "CurseForge",
+      "kind": "app",
+      "path": "/Applications/CurseForge.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Cyberduck.app",
+      "name": "Cyberduck",
+      "kind": "app",
+      "path": "/Applications/Cyberduck.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/DaVinci Control Panels Setup.app",
+      "name": "DaVinci Control Panels Setup",
+      "kind": "app",
+      "path": "/Applications/DaVinci Control Panels Setup.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/DaVinci Remote Monitor.app",
+      "name": "DaVinci Remote Monitor",
+      "kind": "app",
+      "path": "/Applications/DaVinci Remote Monitor.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["DaVinciRemoteMonitor"]
+    },
+    {
+      "id": "/Applications/DaVinci Resolve.app",
+      "name": "DaVinci Resolve",
+      "kind": "app",
+      "path": "/Applications/DaVinci Resolve.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["DaVinciResolve"]
+    },
+    {
+      "id": "/Applications/Discord.app",
+      "name": "Discord",
+      "kind": "app",
+      "path": "/Applications/Discord.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Fairlight Studio Utility.app",
+      "name": "Fairlight Studio Utility",
+      "kind": "app",
+      "path": "/Applications/Fairlight Studio Utility.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["configutility"]
+    },
+    {
+      "id": "/Applications/Fathom.app",
+      "name": "Fathom",
+      "kind": "app",
+      "path": "/Applications/Fathom.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Feedback Assistant.app",
+      "name": "Feedback Assistant",
+      "kind": "app",
+      "path": "/Applications/Feedback Assistant.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["FeedbackAssistant"]
+    },
+    {
+      "id": "/Applications/Figma.app",
+      "name": "Figma",
+      "kind": "app",
+      "path": "/Applications/Figma.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Final Cut Pro.app",
+      "name": "Final Cut Pro",
+      "kind": "app",
+      "path": "/Applications/Final Cut Pro.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["FinalCut"]
+    },
+    {
+      "id": "/Applications/Ghostty.app",
+      "name": "Ghostty",
+      "kind": "app",
+      "path": "/Applications/Ghostty.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Google Chrome.app",
+      "name": "Google Chrome",
+      "kind": "app",
+      "path": "/Applications/Google Chrome.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Google Docs.app",
+      "name": "Google Docs",
+      "kind": "app",
+      "path": "/Applications/Google Docs.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Google Drive.app",
+      "name": "Google Drive",
+      "kind": "app",
+      "path": "/Applications/Google Drive.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["drivefs"]
+    },
+    {
+      "id": "/Applications/Google Sheets.app",
+      "name": "Google Sheets",
+      "kind": "app",
+      "path": "/Applications/Google Sheets.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Google Slides.app",
+      "name": "Google Slides",
+      "kind": "app",
+      "path": "/Applications/Google Slides.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Hand Mirror.app",
+      "name": "Hand Mirror",
+      "kind": "app",
+      "path": "/Applications/Hand Mirror.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["Hand-Mirror"]
+    },
+    {
+      "id": "/Applications/HandBrake.app",
+      "name": "HandBrake",
+      "kind": "app",
+      "path": "/Applications/HandBrake.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/iFlicks 3.app",
+      "name": "iFlicks 3",
+      "kind": "app",
+      "path": "/Applications/iFlicks 3.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["iFlicks3"]
+    },
+    {
+      "id": "/Applications/iTerm.app",
+      "name": "iTerm",
+      "kind": "app",
+      "path": "/Applications/iTerm.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["iterm2"]
+    },
+    {
+      "id": "/Applications/Keynote.app",
+      "name": "Keynote",
+      "kind": "app",
+      "path": "/Applications/Keynote.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Long Exposure Stacker.app",
+      "name": "Long Exposure Stacker",
+      "kind": "app",
+      "path": "/Applications/Long Exposure Stacker.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["Long-Exposure-Stacker"]
+    },
+    {
+      "id": "/Applications/Monologue.app",
+      "name": "Monologue",
+      "kind": "app",
+      "path": "/Applications/Monologue.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["jottleai"]
+    },
+    {
+      "id": "/Applications/Motrix.app",
+      "name": "Motrix",
+      "kind": "app",
+      "path": "/Applications/Motrix.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/NameChanger.app",
+      "name": "NameChanger",
+      "kind": "app",
+      "path": "/Applications/NameChanger.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Nextcloud.app",
+      "name": "Nextcloud",
+      "kind": "app",
+      "path": "/Applications/Nextcloud.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["desktopclient"]
+    },
+    {
+      "id": "/Applications/Notion.app",
+      "name": "Notion",
+      "kind": "app",
+      "path": "/Applications/Notion.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Notion Calendar.app",
+      "name": "Notion Calendar",
+      "kind": "app",
+      "path": "/Applications/Notion Calendar.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Numbers.app",
+      "name": "Numbers",
+      "kind": "app",
+      "path": "/Applications/Numbers.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/OmniDiskSweeper.app",
+      "name": "OmniDiskSweeper",
+      "kind": "app",
+      "path": "/Applications/OmniDiskSweeper.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Pages.app",
+      "name": "Pages",
+      "kind": "app",
+      "path": "/Applications/Pages.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Pencil.app",
+      "name": "Pencil",
+      "kind": "app",
+      "path": "/Applications/Pencil.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Raspberry Pi Imager.app",
+      "name": "Raspberry Pi Imager",
+      "kind": "app",
+      "path": "/Applications/Raspberry Pi Imager.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["rpi-imager"]
+    },
+    {
+      "id": "/Applications/Raycast.app",
+      "name": "Raycast",
+      "kind": "app",
+      "path": "/Applications/Raycast.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Safari.app",
+      "name": "Safari",
+      "kind": "app",
+      "path": "/Applications/Safari.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Screens 5.app",
+      "name": "Screens 5",
+      "kind": "app",
+      "path": "/Applications/Screens 5.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/scuttlarr.app",
+      "name": "scuttlarr",
+      "kind": "app",
+      "path": "/Applications/scuttlarr.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Seafile Client.app",
+      "name": "Seafile Client",
+      "kind": "app",
+      "path": "/Applications/Seafile Client.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["seafile-client", "seafile-applet"]
+    },
+    {
+      "id": "/Applications/Slack.app",
+      "name": "Slack",
+      "kind": "app",
+      "path": "/Applications/Slack.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["slackmacgap"]
+    },
+    {
+      "id": "/Applications/Speedtest.app",
+      "name": "Speedtest",
+      "kind": "app",
+      "path": "/Applications/Speedtest.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["speedtest-macos"]
+    },
+    {
+      "id": "/Applications/Starry Sky Stacker.app",
+      "name": "Starry Sky Stacker",
+      "kind": "app",
+      "path": "/Applications/Starry Sky Stacker.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["Starry-Sky-Stacker"]
+    },
+    {
+      "id": "/Applications/StarryLandscapeStacker.app",
+      "name": "StarryLandscapeStacker",
+      "kind": "app",
+      "path": "/Applications/StarryLandscapeStacker.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Tailscale.app",
+      "name": "Tailscale",
+      "kind": "app",
+      "path": "/Applications/Tailscale.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Todoist.app",
+      "name": "Todoist",
+      "kind": "app",
+      "path": "/Applications/Todoist.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Tower.app",
+      "name": "Tower",
+      "kind": "app",
+      "path": "/Applications/Tower.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["Tower3"]
+    },
+    {
+      "id": "/Applications/Uninstall Resolve.app",
+      "name": "Uninstall Resolve",
+      "kind": "app",
+      "path": "/Applications/Uninstall Resolve.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["UninstallDaVinciResolve"]
+    },
+    {
+      "id": "/Applications/Visual Studio Code.app",
+      "name": "Visual Studio Code",
+      "kind": "app",
+      "path": "/Applications/Visual Studio Code.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["VSCode"]
+    },
+    {
+      "id": "/Applications/VLC.app",
+      "name": "VLC",
+      "kind": "app",
+      "path": "/Applications/VLC.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/World of Warcraft Launcher.app",
+      "name": "World of Warcraft Launcher",
+      "kind": "app",
+      "path": "/Applications/World of Warcraft Launcher.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Xcode-beta.app",
+      "name": "Xcode-beta",
+      "kind": "app",
+      "path": "/Applications/Xcode-beta.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Activity Monitor.app",
+      "name": "Activity Monitor",
+      "kind": "app",
+      "path": "/Applications/Activity Monitor.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["ActivityMonitor"]
+    },
+    {
+      "id": "/Applications/AirPort Utility.app",
+      "name": "AirPort Utility",
+      "kind": "app",
+      "path": "/Applications/AirPort Utility.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["airportutility"]
+    },
+    {
+      "id": "/Applications/App Store.app",
+      "name": "App Store",
+      "kind": "app",
+      "path": "/Applications/App Store.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["AppStore"]
+    },
+    {
+      "id": "/Applications/Apps.app",
+      "name": "Apps",
+      "kind": "app",
+      "path": "/Applications/Apps.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Audio MIDI Setup.app",
+      "name": "Audio MIDI Setup",
+      "kind": "app",
+      "path": "/Applications/Audio MIDI Setup.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["AudioMIDISetup"]
+    },
+    {
+      "id": "/Applications/Automator.app",
+      "name": "Automator",
+      "kind": "app",
+      "path": "/Applications/Automator.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Bluetooth File Exchange.app",
+      "name": "Bluetooth File Exchange",
+      "kind": "app",
+      "path": "/Applications/Bluetooth File Exchange.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["BluetoothFileExchange"]
+    },
+    {
+      "id": "/Applications/Books.app",
+      "name": "Books",
+      "kind": "app",
+      "path": "/Applications/Books.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["iBooksX"]
+    },
+    {
+      "id": "/Applications/Calculator.app",
+      "name": "Calculator",
+      "kind": "app",
+      "path": "/Applications/Calculator.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Calendar.app",
+      "name": "Calendar",
+      "kind": "app",
+      "path": "/Applications/Calendar.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["iCal"]
+    },
+    {
+      "id": "/Applications/Chess.app",
+      "name": "Chess",
+      "kind": "app",
+      "path": "/Applications/Chess.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Clock.app",
+      "name": "Clock",
+      "kind": "app",
+      "path": "/Applications/Clock.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/ColorSync Utility.app",
+      "name": "ColorSync Utility",
+      "kind": "app",
+      "path": "/Applications/ColorSync Utility.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["ColorSyncUtility"]
+    },
+    {
+      "id": "/Applications/Console.app",
+      "name": "Console",
+      "kind": "app",
+      "path": "/Applications/Console.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Contacts.app",
+      "name": "Contacts",
+      "kind": "app",
+      "path": "/Applications/Contacts.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["AddressBook"]
+    },
+    {
+      "id": "/Applications/Dictionary.app",
+      "name": "Dictionary",
+      "kind": "app",
+      "path": "/Applications/Dictionary.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Digital Color Meter.app",
+      "name": "Digital Color Meter",
+      "kind": "app",
+      "path": "/Applications/Digital Color Meter.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["DigitalColorMeter"]
+    },
+    {
+      "id": "/Applications/Disk Utility.app",
+      "name": "Disk Utility",
+      "kind": "app",
+      "path": "/Applications/Disk Utility.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["DiskUtility"]
+    },
+    {
+      "id": "/Applications/FaceTime.app",
+      "name": "FaceTime",
+      "kind": "app",
+      "path": "/Applications/FaceTime.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/FindMy.app",
+      "name": "FindMy",
+      "kind": "app",
+      "path": "/Applications/FindMy.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Font Book.app",
+      "name": "Font Book",
+      "kind": "app",
+      "path": "/Applications/Font Book.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["FontBook"]
+    },
+    {
+      "id": "/Applications/Freeform.app",
+      "name": "Freeform",
+      "kind": "app",
+      "path": "/Applications/Freeform.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Games.app",
+      "name": "Games",
+      "kind": "app",
+      "path": "/Applications/Games.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Grapher.app",
+      "name": "Grapher",
+      "kind": "app",
+      "path": "/Applications/Grapher.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Home.app",
+      "name": "Home",
+      "kind": "app",
+      "path": "/Applications/Home.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Image Capture.app",
+      "name": "Image Capture",
+      "kind": "app",
+      "path": "/Applications/Image Capture.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["Image_Capture"]
+    },
+    {
+      "id": "/Applications/Image Playground.app",
+      "name": "Image Playground",
+      "kind": "app",
+      "path": "/Applications/Image Playground.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["GenerativePlaygroundApp"]
+    },
+    {
+      "id": "/Applications/iPhone Mirroring.app",
+      "name": "iPhone Mirroring",
+      "kind": "app",
+      "path": "/Applications/iPhone Mirroring.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["ScreenContinuity"]
+    },
+    {
+      "id": "/Applications/Journal.app",
+      "name": "Journal",
+      "kind": "app",
+      "path": "/Applications/Journal.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Magnifier.app",
+      "name": "Magnifier",
+      "kind": "app",
+      "path": "/Applications/Magnifier.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Mail.app",
+      "name": "Mail",
+      "kind": "app",
+      "path": "/Applications/Mail.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Maps.app",
+      "name": "Maps",
+      "kind": "app",
+      "path": "/Applications/Maps.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Messages.app",
+      "name": "Messages",
+      "kind": "app",
+      "path": "/Applications/Messages.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["MobileSMS"]
+    },
+    {
+      "id": "/Applications/Migration Assistant.app",
+      "name": "Migration Assistant",
+      "kind": "app",
+      "path": "/Applications/Migration Assistant.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["MigrateAssistant"]
+    },
+    {
+      "id": "/Applications/Mission Control.app",
+      "name": "Mission Control",
+      "kind": "app",
+      "path": "/Applications/Mission Control.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["exposelauncher"]
+    },
+    {
+      "id": "/Applications/Music.app",
+      "name": "Music",
+      "kind": "app",
+      "path": "/Applications/Music.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/News.app",
+      "name": "News",
+      "kind": "app",
+      "path": "/Applications/News.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Notes.app",
+      "name": "Notes",
+      "kind": "app",
+      "path": "/Applications/Notes.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Passwords.app",
+      "name": "Passwords",
+      "kind": "app",
+      "path": "/Applications/Passwords.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Phone.app",
+      "name": "Phone",
+      "kind": "app",
+      "path": "/Applications/Phone.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["mobilephone"]
+    },
+    {
+      "id": "/Applications/Photo Booth.app",
+      "name": "Photo Booth",
+      "kind": "app",
+      "path": "/Applications/Photo Booth.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["PhotoBooth"]
+    },
+    {
+      "id": "/Applications/Photos.app",
+      "name": "Photos",
+      "kind": "app",
+      "path": "/Applications/Photos.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Podcasts.app",
+      "name": "Podcasts",
+      "kind": "app",
+      "path": "/Applications/Podcasts.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Preview.app",
+      "name": "Preview",
+      "kind": "app",
+      "path": "/Applications/Preview.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Print Center.app",
+      "name": "Print Center",
+      "kind": "app",
+      "path": "/Applications/Print Center.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["printcenter"]
+    },
+    {
+      "id": "/Applications/QuickTime Player.app",
+      "name": "QuickTime Player",
+      "kind": "app",
+      "path": "/Applications/QuickTime Player.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["QuickTimePlayerX"]
+    },
+    {
+      "id": "/Applications/Reminders.app",
+      "name": "Reminders",
+      "kind": "app",
+      "path": "/Applications/Reminders.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Screen Sharing.app",
+      "name": "Screen Sharing",
+      "kind": "app",
+      "path": "/Applications/Screen Sharing.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["ScreenSharing"]
+    },
+    {
+      "id": "/Applications/Screenshot.app",
+      "name": "Screenshot",
+      "kind": "app",
+      "path": "/Applications/Screenshot.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Script Editor.app",
+      "name": "Script Editor",
+      "kind": "app",
+      "path": "/Applications/Script Editor.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["ScriptEditor2"]
+    },
+    {
+      "id": "/Applications/Shortcuts.app",
+      "name": "Shortcuts",
+      "kind": "app",
+      "path": "/Applications/Shortcuts.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Siri AI.app",
+      "name": "Siri AI",
+      "kind": "app",
+      "path": "/Applications/Siri AI.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["campo"]
+    },
+    {
+      "id": "/Applications/Siri.app",
+      "name": "Siri",
+      "kind": "app",
+      "path": "/Applications/Siri.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Stickies.app",
+      "name": "Stickies",
+      "kind": "app",
+      "path": "/Applications/Stickies.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Stocks.app",
+      "name": "Stocks",
+      "kind": "app",
+      "path": "/Applications/Stocks.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/System Information.app",
+      "name": "System Information",
+      "kind": "app",
+      "path": "/Applications/System Information.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["SystemProfiler"]
+    },
+    {
+      "id": "/Applications/System Settings.app",
+      "name": "System Settings",
+      "kind": "app",
+      "path": "/Applications/System Settings.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["systempreferences"]
+    },
+    {
+      "id": "/Applications/Terminal.app",
+      "name": "Terminal",
+      "kind": "app",
+      "path": "/Applications/Terminal.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/TextEdit.app",
+      "name": "TextEdit",
+      "kind": "app",
+      "path": "/Applications/TextEdit.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Time Machine.app",
+      "name": "Time Machine",
+      "kind": "app",
+      "path": "/Applications/Time Machine.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/Tips.app",
+      "name": "Tips",
+      "kind": "app",
+      "path": "/Applications/Tips.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["helpviewer"]
+    },
+    {
+      "id": "/Applications/TV.app",
+      "name": "TV",
+      "kind": "app",
+      "path": "/Applications/TV.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/VoiceMemos.app",
+      "name": "VoiceMemos",
+      "kind": "app",
+      "path": "/Applications/VoiceMemos.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "/Applications/VoiceOver Utility.app",
+      "name": "VoiceOver Utility",
+      "kind": "app",
+      "path": "/Applications/VoiceOver Utility.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": ["VoiceOverUtility"]
+    },
+    {
+      "id": "/Applications/Weather.app",
+      "name": "Weather",
+      "kind": "app",
+      "path": "/Applications/Weather.app",
+      "hint": "app",
+      "icon": null,
+      "aliases": [],
+      "keywords": []
+    },
+    {
+      "id": "settings:appearance",
+      "name": "Appearance",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:apple-id",
+      "name": "Apple ID",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:battery",
+      "name": "Battery",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:bluetooth",
+      "name": "Bluetooth",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:date-time",
+      "name": "Date & Time",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:desktop-dock",
+      "name": "Desktop & Dock",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:displays",
+      "name": "Displays",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:focus",
+      "name": "Focus",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:game-center",
+      "name": "Game Center",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:general",
+      "name": "General",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:keyboard",
+      "name": "Keyboard",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:lock-screen",
+      "name": "Lock Screen",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:login-items",
+      "name": "Login Items",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:mouse",
+      "name": "Mouse",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:network",
+      "name": "Network",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:passwords",
+      "name": "Passwords",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:screen-saver",
+      "name": "Screen Saver",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:screen-time",
+      "name": "Screen Time",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:sharing",
+      "name": "Sharing",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:siri",
+      "name": "Siri",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:sound",
+      "name": "Sound",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:storage",
+      "name": "Storage",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:time-machine",
+      "name": "Time Machine",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:trackpad",
+      "name": "Trackpad",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:wallpaper",
+      "name": "Wallpaper",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "settings:wi-fi",
+      "name": "Wi-Fi",
+      "kind": "settings",
+      "path": "",
+      "hint": "settings",
+      "icon": null,
+      "aliases": ["settings", "preferences"]
+    },
+    {
+      "id": "cmd:sleep",
+      "name": "Sleep",
+      "kind": "command",
+      "path": "",
+      "hint": "command",
+      "icon": null,
+      "aliases": ["sleep", "suspend"]
+    },
+    {
+      "id": "cmd:sleep-displays",
+      "name": "Sleep Displays",
+      "kind": "command",
+      "path": "",
+      "hint": "command",
+      "icon": null,
+      "aliases": ["display", "monitor", "screen", "off"]
+    },
+    {
+      "id": "cmd:lock-screen",
+      "name": "Lock Screen",
+      "kind": "command",
+      "path": "",
+      "hint": "command",
+      "icon": null,
+      "aliases": ["lock", "afk"]
+    },
+    {
+      "id": "cmd:screen-saver",
+      "name": "Start Screen Saver",
+      "kind": "command",
+      "path": "",
+      "hint": "command",
+      "icon": null,
+      "aliases": ["screensaver"]
+    },
+    {
+      "id": "cmd:empty-trash",
+      "name": "Empty Trash",
+      "kind": "command",
+      "path": "",
+      "hint": "command",
+      "icon": null,
+      "aliases": ["trash", "bin"]
+    },
+    {
+      "id": "cmd:toggle-dark-mode",
+      "name": "Toggle Dark Mode",
+      "kind": "command",
+      "path": "",
+      "hint": "command",
+      "icon": null,
+      "aliases": ["dark", "light", "appearance", "theme"]
+    },
+    {
+      "id": "cmd:toggle-mute",
+      "name": "Toggle Mute",
+      "kind": "command",
+      "path": "",
+      "hint": "command",
+      "icon": null,
+      "aliases": ["mute", "unmute", "volume", "sound", "audio"]
+    },
+    {
+      "id": "cmd:eject-all",
+      "name": "Eject All Disks",
+      "kind": "command",
+      "path": "",
+      "hint": "command",
+      "icon": null,
+      "aliases": ["eject", "unmount", "usb"]
+    },
+    {
+      "id": "cmd:restart",
+      "name": "Restart…",
+      "kind": "command",
+      "path": "",
+      "hint": "command",
+      "icon": null,
+      "aliases": ["reboot"]
+    },
+    {
+      "id": "cmd:shut-down",
+      "name": "Shut Down…",
+      "kind": "command",
+      "path": "",
+      "hint": "command",
+      "icon": null,
+      "aliases": ["shutdown", "power", "off"]
+    },
+    {
+      "id": "cmd:log-out",
+      "name": "Log Out…",
+      "kind": "command",
+      "path": "",
+      "hint": "command",
+      "icon": null,
+      "aliases": ["logout"]
+    },
+    {
+      "id": "link:https://github.com",
+      "name": "GitHub",
+      "kind": "link",
+      "path": "https://github.com",
+      "hint": "link",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "link:https://youtube.com",
+      "name": "YouTube",
+      "kind": "link",
+      "path": "https://youtube.com",
+      "hint": "link",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "link:https://linear.app",
+      "name": "Linear",
+      "kind": "link",
+      "path": "https://linear.app",
+      "hint": "link",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "link:https://vercel.com",
+      "name": "Vercel",
+      "kind": "link",
+      "path": "https://vercel.com",
+      "hint": "link",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "link:https://news.ycombinator.com",
+      "name": "Hacker News",
+      "kind": "link",
+      "path": "https://news.ycombinator.com",
+      "hint": "link",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "panel:wifi",
+      "name": "wifi",
+      "kind": "panel",
+      "path": "wifi",
+      "hint": "panel",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "panel:dns",
+      "name": "dns",
+      "kind": "panel",
+      "path": "dns",
+      "hint": "panel",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "panel:audio",
+      "name": "audio",
+      "kind": "panel",
+      "path": "audio",
+      "hint": "panel",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "panel:clip",
+      "name": "clip",
+      "kind": "panel",
+      "path": "clip",
+      "hint": "panel",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "panel:awake",
+      "name": "awake",
+      "kind": "panel",
+      "path": "awake",
+      "hint": "panel",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "panel:aerospace",
+      "name": "aerospace",
+      "kind": "panel",
+      "path": "aerospace",
+      "hint": "panel",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "panel:help",
+      "name": "help",
+      "kind": "panel",
+      "path": "help",
+      "hint": "panel",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "panel:screenshots",
+      "name": "screenshots",
+      "kind": "panel",
+      "path": "screenshots",
+      "hint": "panel",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "panel:theme",
+      "name": "theme",
+      "kind": "panel",
+      "path": "theme",
+      "hint": "panel",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "panel:updates",
+      "name": "updates",
+      "kind": "panel",
+      "path": "updates",
+      "hint": "panel",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "panel:usage",
+      "name": "usage",
+      "kind": "panel",
+      "path": "usage",
+      "hint": "panel",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "panel:agents",
+      "name": "agents",
+      "kind": "panel",
+      "path": "agents",
+      "hint": "panel",
+      "icon": null,
+      "aliases": []
+    },
+    {
+      "id": "scuttlarr:settings",
+      "name": "scuttlarr — Settings",
+      "kind": "scuttlarr",
+      "path": "",
+      "hint": "scuttlarr",
+      "icon": null,
+      "aliases": ["settings", "preferences", "options"]
+    },
+    {
+      "id": "scuttlarr:reindex",
+      "name": "scuttlarr — Reindex apps",
+      "kind": "scuttlarr",
+      "path": "",
+      "hint": "scuttlarr",
+      "icon": null,
+      "aliases": ["reindex"]
+    },
+    {
+      "id": "scuttlarr:colorpicker",
+      "name": "Color Picker",
+      "kind": "scuttlarr",
+      "path": "",
+      "hint": "scuttlarr",
+      "icon": null,
+      "aliases": [
+        "colorpicker",
+        "color",
+        "picker",
+        "eyedropper",
+        "hex",
+        "sample"
+      ]
+    },
+    {
+      "id": "scuttlarr:config",
+      "name": "scuttlarr — Open config",
+      "kind": "scuttlarr",
+      "path": "",
+      "hint": "scuttlarr",
+      "icon": null,
+      "aliases": ["config", "settings", "preferences"]
+    },
+    {
+      "id": "scuttlarr:theme",
+      "name": "scuttlarr — Theme switcher",
+      "kind": "scuttlarr",
+      "path": "",
+      "hint": "scuttlarr",
+      "icon": null,
+      "aliases": [
+        "theme",
+        "themes",
+        "appearance",
+        "switcher",
+        "colors",
+        "colours"
+      ]
+    },
+    {
+      "id": "scuttlarr:wallpaper",
+      "name": "scuttlarr — Next wallpaper",
+      "kind": "scuttlarr",
+      "path": "",
+      "hint": "scuttlarr",
+      "icon": null,
+      "aliases": ["wallpaper", "background", "desktop", "picture", "next"]
+    },
+    {
+      "id": "scuttlarr:quit",
+      "name": "scuttlarr — Quit",
+      "kind": "scuttlarr",
+      "path": "",
+      "hint": "scuttlarr",
+      "icon": null,
+      "aliases": ["quit", "exit"]
+    }
+  ],
+  "cases": [
+    {
+      "query": "saf",
+      "top": "/Applications/Safari.app"
+    },
+    {
+      "query": "safari",
+      "top": "/Applications/Safari.app"
+    },
+    {
+      "query": "chrome",
+      "top": "/Applications/Google Chrome.app",
+      "frecency": {
+        "/Applications/Google Chrome.app": 3
+      },
+      "note": "six Chrome profiles are prefix matches; a few launches pick the real one"
+    },
+    {
+      "query": "code",
+      "top": "/Applications/Codex.app",
+      "note": "cold: the prefix match wins"
+    },
+    {
+      "query": "code",
+      "top": "/Applications/Visual Studio Code.app",
+      "frecency": {
+        "/Applications/Visual Studio Code.app": 5
+      },
+      "note": "warm: the one being launched"
+    },
+    {
+      "query": "vscode",
+      "top": "/Applications/Visual Studio Code.app",
+      "note": "keyword: the bundle id tail"
+    },
+    {
+      "query": "ical",
+      "top": "/Applications/Calendar.app",
+      "note": "keyword: com.apple.iCal"
+    },
+    {
+      "query": "addressbook",
+      "top": "/Applications/Contacts.app",
+      "note": "keyword: com.apple.AddressBook"
+    },
+    {
+      "query": "sms",
+      "top": "/Applications/Messages.app",
+      "note": "keyword: MobileSMS, camel hump"
+    },
+    {
+      "query": "iterm2",
+      "top": "/Applications/iTerm.app",
+      "note": "keyword: CFBundleName"
+    },
+    {
+      "query": "resolve",
+      "top": "/Applications/DaVinci Resolve.app"
+    },
+    {
+      "query": "davinci",
+      "top": "/Applications/DaVinci Resolve.app",
+      "note": "three DaVinci apps: the shortest name"
+    },
+    {
+      "query": "term",
+      "top": "/Applications/Terminal.app",
+      "note": "prefix beats iTerm’s mid-name"
+    },
+    {
+      "query": "settings",
+      "top": "/Applications/System Settings.app",
+      "note": "the app beats every pane’s alias and scuttlarr’s own Settings row"
+    },
+    {
+      "query": "wifi",
+      "top": "panel:wifi",
+      "note": "the panel trigger, exact, beats the Wi-Fi pane"
+    },
+    {
+      "query": "sleep",
+      "top": "cmd:sleep",
+      "note": "exact beats Sleep Displays"
+    },
+    {
+      "query": "dark",
+      "top": "cmd:toggle-dark-mode"
+    },
+    {
+      "query": "trash",
+      "top": "cmd:empty-trash"
+    },
+    {
+      "query": "reboot",
+      "top": "cmd:restart",
+      "note": "alias"
+    },
+    {
+      "query": "act",
+      "top": "/Applications/Activity Monitor.app"
+    },
+    {
+      "query": "amph",
+      "top": "/Applications/Amphetamine.app"
+    },
+    {
+      "query": "slack",
+      "top": "/Applications/Slack.app"
+    },
+    {
+      "query": "music",
+      "top": "/Applications/Music.app"
+    },
+    {
+      "query": "notes",
+      "top": "/Applications/Notes.app",
+      "note": "Notion has no e"
+    },
+    {
+      "query": "notion",
+      "top": "/Applications/Notion.app",
+      "note": "shorter than Notion Calendar"
+    },
+    {
+      "query": "cal",
+      "top": "/Applications/Calendar.app",
+      "note": "cold: shorter than Calculator"
+    },
+    {
+      "query": "cal",
+      "top": "/Applications/Calculator.app",
+      "frecency": {
+        "/Applications/Calculator.app": 3
+      },
+      "note": "warm"
+    },
+    {
+      "query": "calc",
+      "top": "/Applications/Calculator.app"
+    },
+    {
+      "query": "ghost",
+      "top": "/Applications/Ghostty.app"
+    },
+    {
+      "query": "kindle",
+      "top": "/Applications/Amazon Kindle.app",
+      "note": "word start of the name"
+    },
+    {
+      "query": "figma",
+      "top": "/Applications/Figma.app"
+    },
+    {
+      "query": "xcode",
+      "top": "/Applications/Xcode-beta.app"
+    },
+    {
+      "query": "fcp",
+      "top": "/Applications/Final Cut Pro.app",
+      "note": "initials"
+    },
+    {
+      "query": "vlc",
+      "top": "/Applications/VLC.app"
+    },
+    {
+      "query": "disk",
+      "top": "/Applications/Disk Utility.app"
+    },
+    {
+      "query": "sys info",
+      "top": "/Applications/System Information.app"
+    },
+    {
+      "query": "screenshot",
+      "top": "/Applications/Screenshot.app",
+      "note": "exact app name beats the screenshots panel"
+    },
+    {
+      "query": "quit",
+      "top": "scuttlarr:quit"
+    },
+    {
+      "query": "preview",
+      "top": "/Applications/Preview.app"
+    },
+    {
+      "query": "photos",
+      "top": "/Applications/Photos.app"
+    },
+    {
+      "query": "mail",
+      "top": "/Applications/Mail.app"
+    },
+    {
+      "query": "msg",
+      "top": "/Applications/Messages.app"
+    },
+    {
+      "query": "blue",
+      "top": "settings:bluetooth",
+      "note": "shorter than Bluetooth File Exchange"
+    },
+    {
+      "query": "appearance",
+      "top": "settings:appearance",
+      "note": "exact pane beats Toggle Dark Mode’s alias"
+    },
+    {
+      "query": "mute",
+      "top": "cmd:toggle-mute"
+    },
+    {
+      "query": "git",
+      "top": "link:https://github.com"
+    },
+    {
+      "query": "store",
+      "top": "/Applications/App Store.app",
+      "note": "word start beats Storage’s scattered match"
+    },
+    {
+      "query": "clock",
+      "top": "/Applications/Clock.app"
+    },
+    {
+      "query": "weather",
+      "top": "/Applications/Weather.app"
+    },
+    {
+      "query": "claude",
+      "top": "/Applications/Claude.app"
+    },
+    {
+      "query": "discord",
+      "top": "/Applications/Discord.app"
+    },
+    {
+      "query": "todo",
+      "top": "/Applications/Todoist.app"
+    },
+    {
+      "query": "tail",
+      "top": "/Applications/Tailscale.app"
+    },
+    {
+      "query": "tower",
+      "top": "/Applications/Tower.app"
+    },
+    {
+      "query": "hacker",
+      "top": "link:https://news.ycombinator.com"
+    },
+    {
+      "query": "usage",
+      "top": "panel:usage"
+    },
+    {
+      "query": "theme",
+      "top": "panel:theme",
+      "note": "the trigger word, exact, beats the switcher row"
+    }
+  ]
+}

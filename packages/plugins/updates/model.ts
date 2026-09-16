@@ -35,7 +35,8 @@ export interface UpgradeRun {
 }
 
 export interface UpdateSource {
-  id: 'brew' | 'mas' | 'pnpm' | 'mise'
+  /** `scuttlarr` is the app itself (selfupdate.rs): its upgrade runs in-process, then relaunches. */
+  id: 'scuttlarr' | 'brew' | 'mas' | 'pnpm' | 'mise'
   label: string
   upgradeCommand: string
   /** Epoch secs; 0 if the first check hasn't finished. */

@@ -123,13 +123,13 @@ plan steps.
 
 ## v2 horizon (recorded now, built later — PRD §10)
 
-| Item                                                      | Trigger                                                   |
-| --------------------------------------------------------- | --------------------------------------------------------- |
-| Per-query learned bindings (schema already records query) | Frecency data shows repeated query→pick                   |
-| Richer bangs (`!!` repeat, project-scoped commands)       | Bang mode proves itself daily                             |
-| Theming beyond the built-in look                          | ✅ 2026-09-11 — the Theme rung (`THEMES.md`)              |
-| Signing, notarization, auto-update, public README         | Releasing to the wild                                     |
-| Move matching to Rust                                     | R2 fires: WKWebView can't hold the 16 ms keystroke budget |
+| Item                                                      | Trigger                                                      |
+| --------------------------------------------------------- | ------------------------------------------------------------ |
+| Per-query learned bindings (schema already records query) | Frecency data shows repeated query→pick                      |
+| Richer bangs (`!!` repeat, project-scoped commands)       | Bang mode proves itself daily                                |
+| Theming beyond the built-in look                          | ✅ 2026-09-11 — the Theme rung (`THEMES.md`)                 |
+| Signing, notarization, public README                      | Releasing to the wild (auto-update ✅ 2026-09-16, DECISIONS) |
+| Move matching to Rust                                     | R2 fires: WKWebView can't hold the 16 ms keystroke budget    |
 
 ## Explicitly not doing (non-goals — load-bearing, PRD §3, amended by v0.4)
 

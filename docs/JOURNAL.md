@@ -857,3 +857,32 @@ path already used). Second half: the window went to the tmux client with the lat
 `client_activity`, which with two Ghostty windows is a coin flip. `#{client_focused}` (tmux
 ≥ 3.2, `focus-events on`) is preferred now, activity as the fallback — the flag is empty
 when the terminal isn't reporting focus, so treat empty as unknown, not unfocused.
+
+### 2026-09-16 · The corpus's first run: five rankings nobody had noticed
+
+Fifty-seven queries over 202 real entries, and five came back wrong on the untouched
+scorer: `quit` → QuickTime Player (a scattered q-u-i…t outscored the exact `quit` alias
+on scuttlarr — Quit), `ical` → Notion Calendar (i…cal across a word boundary beat
+Calendar's `iCal` keyword), `sms` → System Settings (s…m…s beat Messages' `MobileSMS`),
+`bt` → Battery, `hn` → HandBrake. The first three share a cause: fzf's `-4` gap-start
+penalty is too gentle against the `+12` consecutive bonus, so three scattered letters plus
+one run can outscore a shorter exact hit. `PENALTY_GAP_START` is `-8` now and every
+matcher test still holds. `bt` and `hn` are honest — two-letter abbreviations lose to a
+closer gap, as they do in fzf — so the cases became `blue` and `hacker`. Lesson: a fixture
+of five apps proves the scorer's shape; only a dense corpus proves its judgement.
+
+### 2026-09-16 · First `scripts/mem.sh` reading: 157 MB, plus a 460 MB borders
+
+The app's own resident is 157 MB with the panel hidden — over the 120 MB ceiling — and the
+supervised JankyBorders child sits at 460 MB, which is not ours to shrink but is on the
+machine because of us. Two Bun plugin services at 31 and 39 MB, the Bluetooth helper at 8.
+Nothing was measured before, so nothing was regressed; but the ceiling has been a wish, not
+a number, since the bar landed. Recorded here as the baseline every plan from now on
+compares against; the shrink is its own task.
+
+### 2026-09-16 · Keywords cost nothing the budget notices
+
+Reading three plist strings per app (bundle id, `CFBundleName`, executable) during the
+index scan: the scan of ~140 bundles stays under the 500 ms budget with room to spare
+(`indexer::tests::scan_is_inside_the_index_budget_with_keywords` asserts it). `plist`
+was already a dependency; `icons.rs` reads the same files for the icon name.

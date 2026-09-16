@@ -47,6 +47,7 @@ mod runtime;
 mod screens;
 mod screenshots;
 mod scripts;
+mod selfupdate;
 mod settings_panes;
 mod settings_window;
 mod setup;
@@ -237,6 +238,9 @@ pub fn run() {
             }
             agents::configure(&cfg.agents);
             usage::configure(&cfg.agents);
+            selfupdate::configure(&cfg.updates);
+            // We are running: whatever the last self-update staged can go.
+            selfupdate::cleanup();
             agents::start(app.handle().clone());
             if cfg.agents.monitor {
                 // Keep the Claude hook adapter installed at its stable path and

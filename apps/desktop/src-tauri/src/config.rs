@@ -271,6 +271,23 @@ pub struct Config {
     pub widgets: std::collections::HashMap<String, std::collections::HashMap<String, String>>,
     /// Plugins: disabled ids (docs/PLUGINS.md).
     pub plugins: PluginsConfig,
+    /// scuttlarr's own updates (selfupdate.rs, DECISIONS 2026-09-16).
+    pub updates: UpdatesConfig,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(default, rename_all = "camelCase")]
+pub struct UpdatesConfig {
+    /// Ask GitHub Releases for the newest scuttlarr every 6 h and offer it in
+    /// `updates ⏎`. The request carries nothing about the user (invariant 2); off
+    /// means no request is ever made. Default on.
+    pub check_self: bool,
+}
+
+impl Default for UpdatesConfig {
+    fn default() -> Self {
+        Self { check_self: true }
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
@@ -325,6 +342,7 @@ impl Default for Config {
             agents: AgentsConfig::default(),
             desktop: serde_json::Value::Object(Default::default()),
             machine: MachineConfig::default(),
+            updates: UpdatesConfig::default(),
             appearance: AppearanceConfig::default(),
             color_loupe: false,
             color_loupe_zoom: 8,
@@ -451,6 +469,7 @@ pub fn watch(app: AppHandle) {
                     }
                     crate::agents::configure(&new_config.agents);
                     crate::usage::configure(&new_config.agents);
+                    crate::selfupdate::configure(&new_config.updates);
                     crate::plugins::configure(&app, &new_config.plugins.disabled);
                     if old.bar.enabled != new_config.bar.enabled {
                         crate::bar::set_enabled(&app, new_config.bar.enabled);

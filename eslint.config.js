@@ -34,6 +34,74 @@ export default tseslint.config(
     },
   },
   {
+    // Invariant 5, enforced rather than trusted (DECISIONS 2026-09-16, after Tinycast's
+    // compile-the-shipped-sources harnesses): the engine is I/O-free. Nothing in
+    // packages/core may reach the OS, the window, the network or a UI framework —
+    // every environment fact arrives as a parameter.
+    files: ['packages/core/src/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@tauri-apps/*', 'react', 'react-dom', 'react/*'],
+              message:
+                'packages/core is the pure engine: no Tauri, no React (invariant 5).',
+            },
+            {
+              group: [
+                'node:*',
+                'fs',
+                'path',
+                'os',
+                'child_process',
+                'http',
+                'https',
+                'net',
+              ],
+              message:
+                'packages/core is the pure engine: no Node I/O (invariant 5).',
+            },
+            {
+              group: [
+                '@scuttlarr/tui',
+                '@scuttlarr/tui/*',
+                '@scuttlarr/plugins/*',
+              ],
+              message: 'packages/core sits under the kit, never on it.',
+            },
+          ],
+        },
+      ],
+      'no-restricted-globals': [
+        'error',
+        ...[
+          'window',
+          'document',
+          'navigator',
+          'localStorage',
+          'sessionStorage',
+          'fetch',
+          'XMLHttpRequest',
+          'WebSocket',
+          'process',
+          'setTimeout',
+          'setInterval',
+          'requestAnimationFrame',
+        ].map((name) => ({
+          name,
+          message: `${name} is I/O or time: pass it in (invariant 5).`,
+        })),
+      ],
+    },
+  },
+  {
+    // Tests may fake the clock.
+    files: ['packages/core/src/**/*.test.ts'],
+    rules: { 'no-restricted-globals': 'off' },
+  },
+  {
     files: [
       'apps/desktop/widgets/**/*.ts',
       'apps/desktop/src-tauri/scripts/**/*.ts',

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Resident memory of the running scuttlarr and everything it spawned — the number
-# the definition of done asks for (AGENTS.md, after Tinycast's per-PR memory bar).
+# the definition of done asks for (AGENTS.md).
 #
 #   scripts/mem.sh          one reading
 #   scripts/mem.sh --watch  a reading every 5 s (Ctrl-C to stop)

@@ -82,8 +82,7 @@ export function fillQuery(template: string, query: string): string {
 }
 
 /**
- * The values a quicklink can pull in besides the typed query (DECISIONS 2026-09-16, after
- * Tinycast's dynamic placeholders). No selection placeholder: reading the frontmost app's
+ * The values a quicklink can pull in besides the typed query (DECISIONS 2026-09-16). No selection placeholder: reading the frontmost app's
  * selection needs Accessibility (invariant 1).
  */
 export type PlaceholderContext = {

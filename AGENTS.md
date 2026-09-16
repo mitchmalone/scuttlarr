@@ -134,7 +134,7 @@ it in `docs/DECISIONS.md`.
     when the machine rung is off, `appearance` is inert until its key exists, and the
     self-update check makes no request when `updates.checkSelf` is off. Turning a thing on
     is consent to what it does; a toggle that merely hides is a lie about what the app is
-    doing (DECISIONS 2026-09-16, after Tinycast).
+    doing (DECISIONS 2026-09-16).
 13. **No native alerts.** Never `NSAlert`, AppleScript `display dialog`/`display alert`,
     `window.alert`/`confirm`/`prompt`, or a system popover. A question is a row with a
     labelled Enter, a report is a panel line or a bar cell; both keep the prompt's focus

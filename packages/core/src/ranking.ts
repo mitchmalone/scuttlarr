@@ -9,8 +9,7 @@ export type ScoredItem = {
 }
 
 /**
- * Naming roles, from most to least trusted (DECISIONS 2026-09-16, after Tinycast's
- * `SearchAlias.Role`): the visible name, a curated alias, a derived keyword. Every text an
+ * Naming roles, from most to least trusted (DECISIONS 2026-09-16): the visible name, a curated alias, a derived keyword. Every text an
  * item can be found by is one of these three, and the factor is the whole difference — a
  * weaker role can never beat a stronger one at the same match strength, and the scorer
  * never learns which field the text came from.

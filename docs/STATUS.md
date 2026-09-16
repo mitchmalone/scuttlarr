@@ -3,13 +3,12 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-09-16 (Tinycast borrow: corpus, naming roles, purity lint, mem.sh, invariants 12–13, placeholders, self-update)
+> Last updated: 2026-09-16 (ranking corpus, naming roles, purity lint, mem.sh, invariants 12–13, placeholders, self-update)
 
 ## Where we are
 
-**Tinycast borrow, 2026-09-16 (committed, dev-installed):** seven practices from
-[tinycast](https://github.com/abue-ammar/tinycast) plus a self-updater, DECISIONS
-2026-09-16 ×2, plan `plans/done/tinycast-borrow.md`. `packages/core/src/corpus.json` —
+**Engineering hardening + self-update, 2026-09-16 (committed, dev-installed):** DECISIONS
+2026-09-16 ×2, plan `plans/done/ranking-corpus-and-self-update.md`. `packages/core/src/corpus.json` —
 202 real entries, 57 pinned queries; its first run caught five wrong rankings and fixed
 the gap penalty (JOURNAL). `IndexItem.keywords` (bundle-id tail / `CFBundleName` /
 executable, word-start only, 0.8) beside `aliases` (0.9); `indexer::keywords_for` derives

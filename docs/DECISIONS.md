@@ -1407,7 +1407,7 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
   could exist); a Rust command per device class (rejected, invariant 3 — the helper
   pattern keeps hardware out of core).
 
-### 2026-09-16 · Borrowed from Tinycast: the corpus, naming roles, an enforced pure layer, off-means-off, no alerts, memory numbers
+### 2026-09-16 · The ranking corpus, naming roles, an enforced pure layer, off-means-off, no alerts, memory numbers
 
 - **Decision (ranking corpus).** `packages/core/src/corpus.json` is a dense index shaped
   like the real payload — the apps of a working Mac with their derived keywords, every
@@ -1424,8 +1424,8 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
   and is mirrored by the corpus generator.
 - **Decision (pure layer, enforced).** Invariant 5 is now an ESLint failure: nothing in
   `packages/core/src` may import Tauri, React, Node I/O or the kit, or touch `window`,
-  `fetch`, timers and friends. Tinycast gets this by compiling the shipped `Model/` sources
-  in a harness; a lint rule is the TypeScript equivalent and runs in `pnpm verify`.
+  `fetch`, timers and friends. A lint rule is the cheapest mechanical guard TypeScript offers and
+  runs in `pnpm verify`.
 - **Decision (memory numbers).** `scripts/mem.sh` prints resident memory of the app and
   its helpers; the definition of done asks for before/after idle numbers on any change that
   adds a process, window, watcher or cache. First reading (JOURNAL) is over budget.
@@ -1457,8 +1457,7 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
   retired 2026-09-04. What invariant 2 still bans is a request that exists to tell someone
   about the user; this one carries the app's name and nothing else, and is on the user's
   side of the line the way the favicon fetch is. `brew upgrade` stays the advertised
-  channel; this is for the person who never runs it (Mitch, 2026-09-16, after Tinycast's
-  updater doc). Verification is stronger than an appcast signature: the download must be
+  channel; this is for the person who never runs it (Mitch, 2026-09-16). Verification is stronger than an appcast signature: the download must be
   code we signed, which the release pipeline already guarantees.
 - **Alternatives.** `tauri-plugin-updater` (rejected: a new crate, a minisign key pair to
   mint and keep, a `latest.json` to generate, and it verifies less than `codesign` does);

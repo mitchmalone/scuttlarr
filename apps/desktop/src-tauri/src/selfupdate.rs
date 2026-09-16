@@ -1,4 +1,4 @@
-//! scuttlarr updating itself (DECISIONS 2026-09-16, after Tinycast's `Updates`):
+//! scuttlarr updating itself (DECISIONS 2026-09-16):
 //! the `scuttlarr` source in the `updates` plugin. The check reads the public
 //! GitHub Releases feed — the same feed the site's `release.json` is cut from —
 //! and sends nothing about the user (invariant 2: the request serves the user,

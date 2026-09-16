@@ -34,8 +34,7 @@ export default tseslint.config(
     },
   },
   {
-    // Invariant 5, enforced rather than trusted (DECISIONS 2026-09-16, after Tinycast's
-    // compile-the-shipped-sources harnesses): the engine is I/O-free. Nothing in
+    // Invariant 5, enforced rather than trusted (DECISIONS 2026-09-16): the engine is I/O-free. Nothing in
     // packages/core may reach the OS, the window, the network or a UI framework —
     // every environment fact arrives as a parameter.
     files: ['packages/core/src/**/*.ts'],

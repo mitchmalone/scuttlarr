@@ -1,33 +1,29 @@
 ---
-title: Borrow from Tinycast — corpus, alias roles, purity lint, budgets, off-means-off, placeholders, self-update
+title: Ranking corpus, alias roles, purity lint, memory numbers, off-means-off, placeholders, self-update
 status: done
 created: 2026-09-16
 updated: 2026-09-16
 links:
-  - https://github.com/abue-ammar/tinycast (docs/architecture.md, docs/testing.md, docs/features/*.md)
   - ../../DECISIONS.md (2026-09-16 entries)
   - ../done/app-updates-plugin.md
   - ../active/updates-upgrade-in-panel.md
 ---
 
-# Borrow from Tinycast
+# Ranking corpus, alias roles, purity lint, memory numbers, off-means-off, placeholders, self-update
 
 ## Goal
 
-Take the seven engineering practices Tinycast gets right that scuttlarr lacks, plus an
-in-app updater, without importing anything that fights the invariants (no Accessibility,
-no window management, no Raycast runtime). Everything lands in one burn; each piece is
-small.
+Seven engineering gaps closed in one burn, plus an in-app updater, without anything that
+fights the invariants (no Accessibility, no window management). Each piece is small.
 
 ## Context
 
-Tinycast is a native Swift launcher (macOS 26 only, zero deps, <100 MB) whose docs are
-unusually explicit about _mechanisms_: a ranking corpus every complaint feeds, naming
-lowered to trust roles, the pure layer enforced by compilation, memory numbers on every
-PR, "off means off" for opt-ins, quicklink placeholders, no `NSAlert`, and a self-updater
-that verifies the download's signature against the running app. Comparison done
-2026-09-16 (session "Inspo"). scuttlarr already matches it on indexer depth, pure matcher,
-bounded frecency and permissions; the gaps are below.
+Comparison against other launchers on 2026-09-16 (session "Inspo"). scuttlarr already
+matched them on indexer depth, pure matcher, bounded frecency and permissions; the gaps
+were mechanisms: a ranking corpus every complaint feeds, naming lowered to trust roles, the
+pure layer enforced rather than trusted, memory numbers on every change, "off means off"
+for opt-ins, quicklink placeholders, no native alerts, and a self-updater that verifies the
+download against the running app's signature.
 
 ## Approach
 
@@ -89,7 +85,7 @@ bounded frecency and permissions; the gaps are below.
 
 ## Out of scope
 
-- Raycast extension compatibility; window management in the launcher (AeroSpace owns it).
+- Third-party extension runtimes; window management in the launcher (AeroSpace owns it).
 - Localised app names and CJK romanisation as keywords (no demand yet; the role model is
   ready for them).
 - The tap's `auto_updates true` line — the cask does not exist yet (plan step 1.5, Mitch);

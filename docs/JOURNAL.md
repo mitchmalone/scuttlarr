@@ -6,6 +6,22 @@
 
 ---
 
+### 2026-09-16 · A first `tell application` blocks inside tccd until the consent dialog is answered — bound every osascript
+
+The first live theme switch with `appearance.ghostty` on wrote the state dir, retinted
+the ttys, then sat for over a minute: the app's `osascript … tell application "Ghostty"`
+was parked in tccd behind the Automation consent dialog, and because the fan-out is
+sequential, macOS appearance, Claude Code and the editors never ran. A second osascript
+from another process (an agent shell's `count terminals`) queued behind it too. Two
+rules now: every `osascript` in `theme.rs` waits at most 8 s and then reports "waiting
+for consent" without killing the child (it completes the action by itself once the
+dialog is answered), and the Ghostty reload runs _last_, after the hooks, so nothing
+waits behind a prompt. Same hazard exists for `System Events` (appearance, wallpaper);
+same helper covers them. Ghostty's `perform action` needs a target even for app-wide
+actions: `on first terminal` works, the bare form errors `-1701`.
+
+---
+
 ### 2026-09-14 · Home.app lights from a Mac: only Shortcuts gets in
 
 Folding the Nanoleaf lights into the (now) `lights` plugin: they are Essentials — Thread /

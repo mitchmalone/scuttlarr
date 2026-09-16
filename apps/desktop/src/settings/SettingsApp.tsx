@@ -731,8 +731,22 @@ function ThemeSection({
         </label>
         <p className="hint">
           Files land in <code>~/.local/state/scuttlarr/current/theme/</code>;
-          running tmux panes retint at once, new terminal windows read them.
-          Themes you add in config.json are token-only and stay app-only.
+          every open shell retints at once (tmux or not, any terminal, no
+          permission), new terminal windows read the files. Themes you add in
+          config.json are token-only and stay app-only.
+        </p>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={appearance.ghostty}
+            onChange={(e) => setAppearance({ ghostty: e.target.checked })}
+          />
+          Also reload Ghostty&rsquo;s config (one Automation prompt, first time)
+        </label>
+        <p className="hint">
+          The retint above changes colours only; this asks a running Ghostty to
+          re-read its config so open windows take the whole theme. Needs Ghostty
+          1.3+.
         </p>
         <label className="check">
           <input

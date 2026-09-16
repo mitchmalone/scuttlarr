@@ -58,6 +58,7 @@ describe('pickTheme', () => {
         everywhere: false,
         macos: true,
         editors: false,
+        ghostty: false,
         ...DEFAULT_POLICY,
         focus: { [WORK]: 'terminal' },
       }),

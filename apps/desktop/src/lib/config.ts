@@ -69,11 +69,14 @@ export type AppearanceConfig = {
   macos: boolean
   /** Hot editors: VS Code/Cursor, Zed, Neovim, Helix, btop retint at theme set. */
   editors: boolean
+  /** Reload a running Ghostty's config over AppleScript (one Automation consent). */
+  ghostty: boolean
 } & AppearancePolicy
 export const DEFAULT_APPEARANCE: AppearanceConfig = {
   everywhere: false,
   macos: true,
   editors: false,
+  ghostty: false,
   ...DEFAULT_POLICY,
 }
 

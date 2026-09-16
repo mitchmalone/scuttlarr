@@ -111,6 +111,8 @@ export type ThemeApply = {
   mode: 'light' | 'dark'
   files: Record<string, string>
   osc: string
+  /** Ask a running Ghostty to re-read its config (AppleScript, opt-in). */
+  ghosttyReload: boolean
   appearance: boolean
   claude: string | null
   /** Absolute image paths the theme ships; Rust cycles through them. */
@@ -137,12 +139,13 @@ export function themeApplyRequest(
     'btop.theme': btop,
     ...files
   } = rendered.files
-  const editors = appearanceOf(config).editors
+  const { editors, ghostty } = appearanceOf(config)
   return {
     name: rendered.name,
     mode: rendered.mode,
     files,
     osc: rendered.osc,
+    ghosttyReload: ghostty,
     appearance: flipsMacos(config),
     claude: claude ?? null,
     backgrounds: [],

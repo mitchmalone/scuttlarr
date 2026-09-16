@@ -7,9 +7,10 @@
 //!    `<state>/current/theme/`, rename the stage into place (one atomic move —
 //!    a reader never sees a half-written theme), write `theme.name`;
 //! 2. fan out reloads, each independent and fail-visible: OSC colour sequences
-//!    into every tmux pane + SIGWINCH (running shells retint, no terminal
-//!    reload needed), macOS appearance for the theme's mode, wallpaper, then
-//!    the user's `~/.config/scuttlarr/hooks/theme-set.d/*` with the name.
+//!    into every pty the user owns + SIGWINCH (running shells retint — tmux or
+//!    not, Ghostty or Terminal.app — with no permission), an opt-in Ghostty
+//!    config reload over AppleScript, macOS appearance for the theme's mode,
+//!    wallpaper, then the user's `~/.config/scuttlarr/hooks/theme-set.d/*`.
 //!
 //! Nothing here knows what a theme *is*; that's the renderer's business. Paths
 //! are the contract: base configs import from `current/theme/<file>`.
@@ -29,9 +30,13 @@ pub struct ThemeApply {
     pub mode: String,
     /// Relative path → contents, e.g. `ghostty` → the rendered Ghostty snippet.
     pub files: BTreeMap<String, String>,
-    /// Terminal OSC sequences (10/11/12/17/19/4;n) for running panes; empty → skip.
+    /// Terminal OSC sequences (10/11/12/17/19/4;n) for running shells; empty → skip.
     #[serde(default)]
     pub osc: String,
+    /// Ask a running Ghostty to re-read its config over AppleScript (one Automation
+    /// consent, first time). Off unless `config.appearance.ghostty`.
+    #[serde(default)]
+    pub ghostty_reload: bool,
     /// Flip macOS light/dark to match `mode`.
     #[serde(default)]
     pub appearance: bool,
@@ -135,17 +140,60 @@ fn tmux(args: &[&str]) -> Option<String> {
         .then(|| String::from_utf8_lossy(&out.stdout).into_owned())
 }
 
-/// Write the OSC payload to every tmux pane's tty, then nudge each pane's
-/// foreground process group with SIGWINCH so full-screen apps repaint.
-fn retint_tmux(osc: &str) -> Result<usize, String> {
-    let Some(list) = tmux(&["list-panes", "-a", "-F", "#{pane_tty}"]) else {
-        return Ok(0); // no server — nothing to retint, not a failure
-    };
-    let mut ttys: Vec<&str> = list
-        .lines()
-        .map(str::trim)
-        .filter(|t| t.starts_with("/dev/"))
+/// The pseudo-terminals a user owns, from a `/dev` listing of (name, owner uid):
+/// `ttysNNN` (three or more digits — the console `ttys0`…`ttysf` are root's)
+/// whose owner is `uid`. Pure; `user_ttys` feeds it the real `/dev`.
+pub fn pick_ttys<'a>(entries: impl Iterator<Item = (&'a str, u32)>, uid: u32) -> Vec<String> {
+    let mut out: Vec<String> = entries
+        .filter(|(name, owner)| {
+            *owner == uid
+                && name
+                    .strip_prefix("ttys")
+                    .is_some_and(|d| d.len() >= 3 && d.bytes().all(|b| b.is_ascii_digit()))
+        })
+        .map(|(name, _)| format!("/dev/{name}"))
         .collect();
+    out.sort_unstable();
+    out
+}
+
+/// Every `/dev/ttysNNN` owned by the user. "The user" is whoever owns `$HOME` —
+/// the same uid, and it spares a libc binding for `getuid`.
+fn user_ttys() -> Vec<String> {
+    use std::os::unix::fs::MetadataExt;
+    let Some(home) = dirs::home_dir() else {
+        return Vec::new();
+    };
+    let Ok(uid) = std::fs::metadata(&home).map(|m| m.uid()) else {
+        return Vec::new();
+    };
+    let Ok(dev) = std::fs::read_dir("/dev") else {
+        return Vec::new();
+    };
+    let entries: Vec<(String, u32)> = dev
+        .flatten()
+        .filter_map(|e| {
+            let owner = e.metadata().ok()?.uid();
+            Some((e.file_name().to_string_lossy().into_owned(), owner))
+        })
+        .collect();
+    pick_ttys(entries.iter().map(|(n, u)| (n.as_str(), *u)), uid)
+}
+
+/// Write the OSC payload to every terminal the user has open — each tmux pane's
+/// tty plus every pty the user owns (Ghostty outside tmux, Terminal.app, …) — then
+/// nudge each foreground process group with SIGWINCH so full-screen apps repaint.
+/// Writing to a tty you own needs no permission: this is the zero-consent baseline.
+fn retint_terminals(osc: &str) -> Result<usize, String> {
+    let mut ttys: Vec<String> = user_ttys();
+    if let Some(list) = tmux(&["list-panes", "-a", "-F", "#{pane_tty}"]) {
+        ttys.extend(
+            list.lines()
+                .map(str::trim)
+                .filter(|t| t.starts_with("/dev/"))
+                .map(str::to_string),
+        );
+    }
     ttys.sort_unstable();
     ttys.dedup();
     let mut written = 0;
@@ -179,6 +227,13 @@ fn retint_tmux(osc: &str) -> Result<usize, String> {
             }
         }
     }
+    // The OSC recolours pane contents; the status line, borders and message styles
+    // are tmux options, so re-source just the theme's snippet (not the user's whole
+    // config) into the running server — then redraw every client.
+    let theme_conf = current_dir(&crate::config::state_dir()).join("tmux.conf");
+    if theme_conf.is_file() {
+        let _ = tmux(&["source-file", "-q", &theme_conf.to_string_lossy()]);
+    }
     if let Some(clients) = tmux(&["list-clients", "-F", "#{client_name}"]) {
         for c in clients.lines().filter(|l| !l.trim().is_empty()) {
             let _ = tmux(&["refresh-client", "-t", c.trim()]);
@@ -187,15 +242,73 @@ fn retint_tmux(osc: &str) -> Result<usize, String> {
     Ok(written)
 }
 
+/// How long an AppleScript may take before we stop waiting. A first `tell` to an app
+/// blocks inside tccd until the Automation consent dialog is answered — seen live
+/// 2026-09-16, a theme switch stalled for a minute with the editors never reached.
+const OSASCRIPT_WAIT: std::time::Duration = std::time::Duration::from_secs(8);
+
+/// Run a script, waiting at most `OSASCRIPT_WAIT`. On timeout the child is *left
+/// running* — it is almost certainly waiting on a consent prompt, and once that is
+/// answered it completes the action by itself — and the surface reports why.
 fn osascript(script: &str) -> Result<(), String> {
-    let out = std::process::Command::new("osascript")
+    use std::process::Stdio;
+    let mut child = std::process::Command::new("osascript")
         .args(["-e", script])
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::piped())
+        .spawn()
         .map_err(|e| e.to_string())?;
-    if out.status.success() {
-        Ok(())
-    } else {
-        Err(String::from_utf8_lossy(&out.stderr).trim().to_string())
+    let started = std::time::Instant::now();
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                let mut err = String::new();
+                if let Some(mut e) = child.stderr.take() {
+                    use std::io::Read;
+                    let _ = e.read_to_string(&mut err);
+                }
+                return if status.success() {
+                    Ok(())
+                } else {
+                    Err(err.trim().to_string())
+                };
+            }
+            Ok(None) if started.elapsed() < OSASCRIPT_WAIT => {
+                std::thread::sleep(std::time::Duration::from_millis(50));
+            }
+            Ok(None) => {
+                return Err(format!(
+                    "no answer after {}s — probably waiting for a macOS Automation consent \
+                     prompt; answer it and it completes on its own",
+                    OSASCRIPT_WAIT.as_secs()
+                ));
+            }
+            Err(e) => return Err(e.to_string()),
+        }
+    }
+}
+
+/// Ghostty 1.3+ (JOURNAL 2026-09-11): `perform action` needs a terminal target even
+/// for an app-wide action, and `tell application` would *launch* Ghostty if it were
+/// not running — so check for the process first and treat "not running" as nothing
+/// to do. SIGUSR2, Omarchy's route, is Linux-only and kills Ghostty on macOS.
+fn reload_ghostty() -> crate::theme_editors::Outcome {
+    use crate::theme_editors::Outcome;
+    let running = std::process::Command::new("pgrep")
+        .args(["-xq", "ghostty"])
+        .status()
+        .map(|s| s.success())
+        .unwrap_or(false);
+    if !running {
+        return Outcome::Skipped("ghostty not running".into());
+    }
+    match osascript(
+        r#"tell application "Ghostty" to perform action "reload_config" on first terminal"#,
+    ) {
+        Ok(()) => Outcome::Done("ghostty (config reloaded)".into()),
+        Err(e) if e.contains("-1728") => Outcome::Skipped("ghostty has no open terminal".into()),
+        Err(e) => Outcome::Failed(e),
     }
 }
 
@@ -351,10 +464,13 @@ pub fn apply(req: ThemeApply) -> CmdResult<ThemeResult> {
         path: path.display().to_string(),
         ..Default::default()
     };
+    // The OSC retint first: no consent, every terminal. The Ghostty reload goes
+    // *last* (below) — its first run blocks on a consent dialog, and nothing
+    // else should wait behind it.
     if !req.osc.is_empty() {
-        match retint_tmux(&req.osc) {
-            Ok(n) => res.reloaded.push(format!("tmux ({n} panes)")),
-            Err(e) => res.failed.push(("tmux".into(), e)),
+        match retint_terminals(&req.osc) {
+            Ok(n) => res.reloaded.push(format!("terminals ({n} ttys)")),
+            Err(e) => res.failed.push(("terminals".into(), e)),
         }
     }
     if req.appearance {
@@ -387,6 +503,14 @@ pub fn apply(req: ThemeApply) -> CmdResult<ThemeResult> {
         res.reloaded.push("hooks".into());
     }
     res.failed.extend(hook_failures);
+    if req.ghostty_reload {
+        use crate::theme_editors::Outcome;
+        match reload_ghostty() {
+            Outcome::Done(what) => res.reloaded.push(what),
+            Outcome::Skipped(why) => res.skipped.push(why),
+            Outcome::Failed(why) => res.failed.push(("ghostty".into(), why)),
+        }
+    }
     for (what, why) in &res.failed {
         eprintln!("[scuttlarr theme] {what}: {why}");
     }
@@ -398,13 +522,13 @@ mod tests {
     use super::*;
 
     fn scratch() -> PathBuf {
+        // A counter, not the clock: two tests starting in the same microsecond
+        // shared a dir and raced each other's atomic swap (flaked 2026-09-16).
+        static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
         let d = std::env::temp_dir().join(format!(
             "scuttlarr-theme-{}-{}",
             std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap()
-                .as_nanos()
+            N.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
         ));
         std::fs::create_dir_all(&d).unwrap();
         d
@@ -458,6 +582,26 @@ mod tests {
         assert_eq!(pick_next(&bg, Some("c")).map(String::as_str), Some("a"));
         assert_eq!(pick_next(&bg, Some("gone")).map(String::as_str), Some("a"));
         assert_eq!(pick_next(&[], Some("a")), None);
+    }
+
+    #[test]
+    fn pick_ttys_keeps_the_users_ptys_and_nothing_else() {
+        let dev = [
+            ("ttys000", 501),
+            ("ttys014", 501),
+            ("ttys003", 502), // someone else's
+            ("ttys0", 0),     // console, root
+            ("ttysf", 0),
+            ("ttyp1", 501), // not a pty on this macOS
+            ("null", 0),
+            ("ttys", 501),
+            ("ttys12", 501), // too short to be a pty
+        ];
+        assert_eq!(
+            pick_ttys(dev.iter().copied(), 501),
+            vec!["/dev/ttys000".to_string(), "/dev/ttys014".to_string()]
+        );
+        assert!(pick_ttys(dev.iter().copied(), 999).is_empty());
     }
 
     #[test]

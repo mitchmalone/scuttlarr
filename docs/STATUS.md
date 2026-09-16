@@ -3,9 +3,30 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-09-16 (ranking corpus, naming roles, purity lint, mem.sh, invariants 12–13, placeholders, self-update)
+> Last updated: 2026-09-16 (live theme switch across terminals — proven on the primary Mac)
 
 ## Where we are
+
+**Live theme switch, 2026-09-16 (committed, dev-installed, proven live):** the Omarchy
+moment on macOS. DECISIONS 2026-09-16, plan `plans/done/2026-09-16-live-theme-terminals.md`.
+At `theme set` the OSC payload goes into every `/dev/ttysNNN` the user owns plus tmux's
+panes (`pick_ttys`, no permission), the theme's `tmux.conf` is re-sourced into the running
+server, and — opt-in `appearance.ghostty`, "Also reload Ghostty's config" — a running
+Ghostty 1.3+ re-reads its config over AppleScript (`perform action "reload_config" on
+first terminal`), run last and bounded to 8 s because the first `tell` blocks on the
+Automation consent dialog (JOURNAL). **Switched on here:** `appearance.everywhere`,
+`editors`, `ghostty`; the four include lines live in the chezmoi sources
+(`~/Developer/mitch/dotfiles`, **uncommitted** — Ghostty `config-file` with Dracula Pro as
+fallback, tmux `source-file` last, p10k `source` after the palette with the per-host dir
+colour still winning, git `[include]` in the delta block), applied; Claude Code
+`"theme": "custom:scuttlarr"` (`.bak-scuttlarr` beside settings.json). **Proven:** two
+switches (scuttlarr → dracula → scuttlarr) wrote the state dir, restyled the running tmux
+status line, installed the VS Code extension and switched `workbench.colorTheme`, wrote
+`~/.claude/themes/scuttlarr.json`, and the Ghostty reload returned once consent was given.
+**Hands-check pending (Mitch):** open Ghostty windows outside tmux take the colours on a
+switch; VS Code retints live; the Claude Code theme reads well; whether the p10k dir
+colour should follow the theme instead of the host. Gate green — 245 Rust, 235 core, 110
+theme, 87 tui, 68 desktop.
 
 **Engineering hardening + self-update, 2026-09-16 (committed, dev-installed):** DECISIONS
 2026-09-16 ×2, plan `plans/done/ranking-corpus-and-self-update.md`. `packages/core/src/corpus.json` —

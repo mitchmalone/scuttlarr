@@ -306,6 +306,9 @@ pub struct AppearanceConfig {
     /// Hot editors: VS Code/Cursor, Zed, Neovim, Helix, btop (theme_editors.rs). Off by
     /// default — it edits files outside our config.
     pub editors: bool,
+    /// Reload a running Ghostty's config over AppleScript at theme set (one Automation
+    /// consent, first time). Off by default — the OSC retint needs no consent.
+    pub ghostty: bool,
     /// The policy — mode (system | light | dark | schedule), schedule, pair, Focus
     /// mappings. Opaque to Rust: `@scuttlarr/core/appearance` owns the shape.
     #[serde(flatten)]
@@ -318,6 +321,7 @@ impl Default for AppearanceConfig {
             everywhere: false,
             macos: true,
             editors: false,
+            ghostty: false,
             policy: serde_json::Map::new(),
         }
     }

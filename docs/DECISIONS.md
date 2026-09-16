@@ -1467,3 +1467,24 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
 - **Consequence for the tap.** The cask must declare `auto_updates true` so `brew outdated`
   stops reporting a self-updated app as stale (RELEASING.md); until `Casks/scuttlarr.rb`
   exists (plan step 1.5) there is nothing to change.
+
+### 2026-09-16 · Live terminal retint is OSC into every pty; the Ghostty reload is an opt-in
+
+- **Decision.** At `theme set`, the OSC colour payload goes into every `/dev/ttysNNN` the
+  user owns (owner = `$HOME`'s uid, no libc binding) plus tmux's pane ttys — not tmux
+  panes only. That is the baseline: every open shell, in Ghostty, Terminal.app or
+  anything else, changes on the spot with no permission, because writing to a tty you
+  own is ordinary Unix. On top, `appearance.ghostty` (off by default, "Also reload
+  Ghostty's config" in Settings) sends `tell application "Ghostty" to perform action
+"reload_config" on first terminal` so open Ghostty windows take the whole rendered
+  file, not just colours — one Automation consent, first time. It runs only when a
+  Ghostty process exists (`tell application` would launch one), and after the OSC, which
+  still covers whatever the reload cannot reach.
+- **Why.** The Omarchy moment is the terminal changing under you; on Linux that is
+  `SIGUSR2`, which on macOS kills Ghostty (JOURNAL 2026-09-11). Gating the headline on an
+  Automation prompt would invert invariant 1, so the consent-free route is the default
+  and the prompt buys fidelity, not function.
+- **Alternatives.** AppleScript only (rejected: prompt-gated, Ghostty-only, Terminal.app
+  untouched); `SIGUSR2` (rejected: kills the process); Accessibility-driven menu clicks
+  (rejected: invariant 1). Terminal.app profile colours over its own dictionary:
+  deferred, the OSC already reaches its open windows.

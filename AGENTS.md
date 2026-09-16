@@ -73,8 +73,11 @@ it in `docs/DECISIONS.md`.
 
 1. **Zero required permissions.** The app runs with none (sole exception: the standard
    Automation consent prompt, and only if the effective terminal falls back to iTerm2 —
-   Ghostty, the default, has no AppleScript dictionary and needs no consent). Nothing
-   requiring Accessibility.
+   Ghostty, the default, needs no consent for the hand-off). Nothing requiring
+   Accessibility. Opt-ins that do prompt, each off by default and named as such in
+   Settings: "Also reload Ghostty's config" (`appearance.ghostty`, Automation for
+   Ghostty; the always-on terminal retint is OSC into the user's own ptys and asks
+   nothing).
    One opt-in, off by default: Settings → General → "Use the scuttlarr loupe" makes
    `colorpicker` ask for **Screen Recording** once (2× magnifier, DECISIONS 2026-08-17);
    off — and until granted — it's Apple's `NSColorSampler`, which needs nothing. Nothing

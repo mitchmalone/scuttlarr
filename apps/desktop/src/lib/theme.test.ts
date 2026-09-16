@@ -79,4 +79,17 @@ describe('themeApplyRequest', () => {
     expect(req.neovimColorscheme).toBe('dracula')
     expect(req.helixTheme).toBe('dracula')
   })
+  it('asks for the Ghostty reload only when appearance.ghostty is on', () => {
+    expect(
+      themeApplyRequest(rendered, cfg({ appearance: undefined })).ghosttyReload,
+    ).toBe(false)
+    expect(
+      themeApplyRequest(
+        rendered,
+        cfg({ appearance: { ghostty: true } as never }),
+      ).ghosttyReload,
+    ).toBe(true)
+    // The OSC payload rides along regardless — it is the zero-consent baseline.
+    expect(themeApplyRequest(rendered, cfg({})).osc).toContain('\x1b]11;')
+  })
 })

@@ -101,6 +101,9 @@ export interface LimitWindow {
   usedPercent: number
   /** Unix seconds; null when the provider gave no reset. */
   resetsAt: number | null
+  /** The window's full length in seconds; null when the provider didn't say.
+   * With `resetsAt` it places "now" in the window — the pace baseline. */
+  windowSecs: number | null
 }
 
 /** Mirrors UsageBarAccount in usage.rs — one account's windows for the bar. */
@@ -118,10 +121,13 @@ export interface UsageBarAccount {
   limitsNote: string | null
 }
 
-/** Mirrors UsageBarState in usage.rs — the cached report, folded for the cell. */
+/** The cached report (usage.rs `UsageReport`), folded for the cell and card
+ * by `foldUsageBarState`. */
 export interface UsageBarState {
-  /** Highest used-percent across every account's windows. */
+  /** Highest used-percent across every account's windows — the glyph's fill. */
   tightest: number | null
+  /** Tokens across every account today. */
+  tokensToday: number
   accounts: UsageBarAccount[]
 }
 

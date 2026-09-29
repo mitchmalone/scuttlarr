@@ -4,6 +4,8 @@ import { defineStories } from '../story'
 import { USAGE_ALL, UsagePanel, type UsageReport } from './usage'
 
 const NOW = 1_800_000_000
+const FIVE_HOURS = 5 * 3600
+const WEEK = 7 * 86_400
 
 const days = (tokens: number[]) =>
   ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Today'].map((label, i) => ({
@@ -29,13 +31,24 @@ export const USAGE_FIXTURE: UsageReport = {
         { model: 'claude-opus-5', tokens: 193_794_670 },
       ],
       limits: [
-        { name: '5h session', usedPercent: 62.5, resetsAt: NOW + 3 * 3600 },
+        {
+          name: '5h session',
+          usedPercent: 62.5,
+          resetsAt: NOW + 3 * 3600,
+          windowSecs: FIVE_HOURS,
+        },
         {
           name: 'weekly · all models',
           usedPercent: 41,
           resetsAt: NOW + 3 * 86_400,
+          windowSecs: WEEK,
         },
-        { name: 'weekly · Fable', usedPercent: 88, resetsAt: NOW + 2 * 86_400 },
+        {
+          name: 'weekly · Fable',
+          usedPercent: 88,
+          resetsAt: NOW + 2 * 86_400,
+          windowSecs: WEEK,
+        },
       ],
       limitsNote: null,
     },
@@ -53,11 +66,17 @@ export const USAGE_FIXTURE: UsageReport = {
         { model: 'claude-fable-5', tokens: 194_306_151 },
       ],
       limits: [
-        { name: '5h session', usedPercent: 93, resetsAt: NOW + 40 * 60 },
+        {
+          name: '5h session',
+          usedPercent: 93,
+          resetsAt: NOW + 40 * 60,
+          windowSecs: FIVE_HOURS,
+        },
         {
           name: 'weekly · all models',
           usedPercent: 27,
           resetsAt: NOW + 5 * 86_400,
+          windowSecs: WEEK,
         },
       ],
       limitsNote: 'as of 14m ago — network unreachable',
@@ -70,8 +89,18 @@ export const USAGE_FIXTURE: UsageReport = {
       days: days([0, 0, 2_964_211, 0, 0, 0, 0]),
       models: [{ model: 'gpt-5.5', tokens: 2_964_211 }],
       limits: [
-        { name: 'weekly', usedPercent: 8, resetsAt: NOW + 4 * 86_400 },
-        { name: '5h', usedPercent: 40, resetsAt: NOW + 2 * 3600 },
+        {
+          name: 'weekly',
+          usedPercent: 8,
+          resetsAt: NOW + 4 * 86_400,
+          windowSecs: WEEK,
+        },
+        {
+          name: '5h',
+          usedPercent: 40,
+          resetsAt: NOW + 2 * 3600,
+          windowSecs: FIVE_HOURS,
+        },
       ],
       limitsNote: null,
     },

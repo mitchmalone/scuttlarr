@@ -3,8 +3,7 @@ import { foldUsageBarState } from '@scuttlarr/tui/bar'
 import type { PluginCellProps } from '@scuttlarr/tui/plugins'
 
 /**
- * The usage cell: the tiny meter plus the tightest window's percent across
- * every account. State is usage.rs's `UsageReport` (the `usage` native
+ * The usage cell: the tiny meter, tinted by pace across every account. State is usage.rs's `UsageReport` (the `usage` native
  * provider); null means the monitor is off — no cell. Click summons the
  * panel. First-party, but written to the plugin contract exactly as a
  * third-party cell would be (docs/PLUGINS.md).

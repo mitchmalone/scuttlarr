@@ -67,6 +67,7 @@ export const TOKEN_KEYS = [
   'selected',
   'warn',
   'danger',
+  'good',
 ] as const satisfies ReadonlyArray<keyof ThemeTokens>
 
 /** Parse the root table of a `colors.toml` into a raw palette. */

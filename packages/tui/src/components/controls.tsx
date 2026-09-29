@@ -148,7 +148,8 @@ export function SegmentedControl<T extends string>({
 }
 
 /** Thin labeled meter (memento mori, tokens-by-day): label · track · value.
- * `tone` tints the fill for alert tiers (usage windows near their limit). */
+ * `tone` tints the fill and value (a usage window's pace); `marker` (0–1)
+ * draws a tick on the track — where "now" sits in a usage window. */
 export function MeterRow({
   label,
   value,
@@ -156,13 +157,15 @@ export function MeterRow({
   right,
   emphasis = false,
   tone,
+  marker,
 }: {
   label?: ReactNode
   value: number
   max?: number
   right?: ReactNode
   emphasis?: boolean
-  tone?: 'warn' | 'danger' | null
+  tone?: 'good' | 'warn' | 'danger' | null
+  marker?: number | null
 }) {
   const ratio = sliderRatio(value, 0, max)
   return (
@@ -174,6 +177,12 @@ export function MeterRow({
       {label != null && <span className="tui-meter-label">{label}</span>}
       <span className="tui-meter-track">
         <span className="tui-meter-fill" style={{ width: `${ratio * 100}%` }} />
+        {marker != null && (
+          <span
+            className="tui-meter-marker"
+            style={{ left: `${Math.max(0, Math.min(1, marker)) * 100}%` }}
+          />
+        )}
       </span>
       {right != null && <span className="tui-meter-right">{right}</span>}
     </div>

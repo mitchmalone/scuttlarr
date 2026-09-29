@@ -233,12 +233,12 @@ export function widgetHealth(
 
 /* ---- usage ----------------------------------------------------------- */
 
-/** The bar's fold of a usage report (mirrors `fold_bar_state` in usage.rs):
- * per-account windows, histograms dropped, plus the tightest window overall.
- * Pure, so a server component (the site) can derive the cell from a fixture. */
+/** The bar's fold of a usage report: per-account windows, histograms
+ * dropped, plus the tightest window overall (the meter glyph's fill) and
+ * today's tokens across every account (the card's subtitle). */
 export function foldUsageBarState(report: {
   generatedAt?: number
-  providers: UsageBarAccount[]
+  providers: (UsageBarAccount & { days?: { tokens: number }[] })[]
 }): UsageBarState {
   const accounts = report.providers.map(
     ({ id, provider, label, account, limits, limitsNote }) => ({
@@ -255,5 +255,10 @@ export function foldUsageBarState(report: {
     for (const l of a.limits)
       tightest =
         tightest == null ? l.usedPercent : Math.max(tightest, l.usedPercent)
-  return { tightest, accounts }
+  // `days` runs oldest first, today last.
+  const tokensToday = report.providers.reduce(
+    (sum, p) => sum + (p.days?.at(-1)?.tokens ?? 0),
+    0,
+  )
+  return { tightest, tokensToday, accounts }
 }

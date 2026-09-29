@@ -36,6 +36,7 @@ export function toTokens(
     selected: rgba(palette.accent, SELECTED_ALPHA),
     warn: palette.yellow,
     danger: palette.red,
+    good: palette.green,
     ...launcher,
   }
 }

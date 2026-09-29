@@ -1488,3 +1488,22 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
   untouched); `SIGUSR2` (rejected: kills the process); Accessibility-driven menu clicks
   (rejected: invariant 1). Terminal.app profile colours over its own dictionary:
   deferred, the OSC already reaches its open windows.
+
+### 2026-09-30 · The usage cell shows pace, not percent
+
+- **Decision.** The bar's usage cell drops its percent and is coloured by **pace**: each
+  window's percent used against how far through the window "now" is (`windowPace` in
+  `packages/tui/src/components/usage.tsx`). `alert` (red) when used runs ≥ 15 points
+  ahead of elapsed or sits ≥ 90%; `go` (green, the new `good` theme token = palette
+  green) when it trails by ≥ 25 points; `normal` otherwise, or when the window's length
+  is unknown. Worst window wins, per account and across accounts for the cell. The card
+  and panel draw a tick at "now" on every track; the card shows reset countdowns, no
+  percents; the panel keeps its percents as the detail view.
+- **Why.** 80% used an hour before reset is fine; 80% a day into the week is not. The
+  question the cell answers is "will I run out before it resets", not "how much is
+  spent". `LimitWindow.windowSecs` (usage.rs) carries the length that makes it
+  answerable — fixed for Claude's flat fields, read off `group`/`kind` for `limits[]`,
+  `limit_window_seconds` for Codex.
+- **Alternatives.** Projecting used/elapsed to a run-out ratio (rejected: explodes in the
+  first minutes of a window); keeping the 70/90 absolute tiers beside pace (rejected:
+  two colour systems on one cell disagree).

@@ -48,23 +48,81 @@ const PROVIDER_NAMES: Record<string, string> = {
 /** "Claude Code" / "Codex" for a provider kind; the kind itself otherwise. */
 export const providerName = (kind: string) => PROVIDER_NAMES[kind] ?? kind
 
-/** Alert tiers shared by the panel meters and the bar cell: amber from 70%,
- * red from 90% — the same thresholds a battery cell uses in reverse. */
-export type UsageTone = 'ok' | 'warn' | 'danger'
-export function usageTone(pct: number | null): UsageTone {
-  if (pct == null) return 'ok'
-  if (pct >= 90) return 'danger'
-  if (pct >= 70) return 'warn'
-  return 'ok'
+/**
+ * Pace: is usage running ahead of the clock? A window's percent used means
+ * little alone — 80% with an hour to reset is fine, 80% a day into a week is
+ * not. Judged against how far through the window "now" is:
+ *
+ * - `alert` — used runs ≥ PACE_ALERT points ahead of elapsed, or ≥ 90% used
+ *   whatever the clock says: slow down.
+ * - `go` — used trails elapsed by ≥ PACE_GO points: headroom, spin up agents.
+ * - `normal` — roughly on pace, or the window's length is unknown.
+ */
+export type UsagePace = 'go' | 'normal' | 'alert'
+
+export const PACE_ALERT = 15
+export const PACE_GO = 25
+const PACE_HARD_LIMIT = 90
+const PACE_RANK: Record<UsagePace, number> = { go: 0, normal: 1, alert: 2 }
+
+/** How far through its window "now" is, 0–100; null when the length or the
+ * reset is unknown. */
+export function windowElapsed(l: LimitWindow, nowSecs: number): number | null {
+  if (l.resetsAt == null || !l.windowSecs) return null
+  const left = l.resetsAt - nowSecs
+  const pct = (1 - left / l.windowSecs) * 100
+  return Math.max(0, Math.min(100, pct))
 }
 
-/** The window nearest its limit, or null when the account reports none. */
-export function tightestWindow(limits: LimitWindow[]): LimitWindow | null {
-  let best: LimitWindow | null = null
+export function windowPace(l: LimitWindow, nowSecs: number): UsagePace {
+  if (l.usedPercent >= PACE_HARD_LIMIT) return 'alert'
+  const elapsed = windowElapsed(l, nowSecs)
+  if (elapsed == null) return 'normal'
+  const ahead = l.usedPercent - elapsed
+  if (ahead >= PACE_ALERT) return 'alert'
+  if (ahead <= -PACE_GO) return 'go'
+  return 'normal'
+}
+
+/** Worst pace wins: one window running hot is the account's bottleneck, and
+ * "go" only holds when every window has headroom. Null with no windows. */
+export function worstPace(
+  limits: LimitWindow[],
+  nowSecs: number,
+): UsagePace | null {
+  let worst: UsagePace | null = null
   for (const l of limits) {
-    if (best == null || l.usedPercent > best.usedPercent) best = l
+    const p = windowPace(l, nowSecs)
+    if (worst == null || PACE_RANK[p] > PACE_RANK[worst]) worst = p
   }
-  return best
+  return worst
+}
+
+/** The bar cell's pace across every account — worst wins, as per account. */
+export function usagePace(
+  accounts: UsageBarAccount[],
+  nowSecs: number,
+): UsagePace | null {
+  return worstPace(
+    accounts.flatMap((a) => a.limits),
+    nowSecs,
+  )
+}
+
+export const PACE_LABEL: Record<UsagePace, string> = {
+  go: 'go go go',
+  normal: 'on pace',
+  alert: 'slow down',
+}
+
+/** A window's display name: the headline windows get one word ("5h session"
+ * / "5h" → "Session", "weekly · all models" / "weekly" → "Weekly"); the rest
+ * keep their scope, capitalised ("weekly · opus" → "Weekly · opus"). */
+export function windowLabel(name: string): string {
+  const n = name.trim()
+  if (/^5h( session)?$/i.test(n)) return 'Session'
+  if (/^weekly( · all models)?$/i.test(n)) return 'Weekly'
+  return n.charAt(0).toUpperCase() + n.slice(1)
 }
 
 /** 218234567 → "218.2M", 927000000 → "927M", 1600 → "1.6k", 42 → "42". */
@@ -89,7 +147,19 @@ export function fmtReset(resetsAt: number | null, nowSecs: number): string {
   return `resets in ${Math.round(s / 86_400)}d`
 }
 
-/** Short reset for tight spaces (bar card): "4d" / "7h" / "12m" / "soon". */
+/** Two-unit countdown for the bar card: "4d 12h" / "4h 42m" / "12m" / "soon". */
+export function fmtCountdown(resetsAt: number | null, nowSecs: number): string {
+  if (resetsAt == null) return ''
+  const s = resetsAt - nowSecs
+  if (s <= 0) return 'soon'
+  const m = Math.max(1, Math.floor(s / 60))
+  if (m < 60) return `${m}m`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ${m % 60}m`
+  return `${Math.floor(h / 24)}d ${h % 24}h`
+}
+
+/** Short reset for tight spaces: "4d" / "7h" / "12m" / "soon". */
 export function fmtResetShort(
   resetsAt: number | null,
   nowSecs: number,
@@ -113,13 +183,20 @@ export function accountOptions(providers: UsageBarAccount[]) {
   }))
 }
 
-const toneFor = (pct: number): 'warn' | 'danger' | null => {
-  const t = usageTone(pct)
-  return t === 'ok' ? null : t
+/** A window's pace as a meter tone; "on pace" is the untinted rest state. */
+const toneFor = (l: LimitWindow, nowSecs: number): 'good' | 'danger' | null => {
+  const pace = windowPace(l, nowSecs)
+  return pace === 'go' ? 'good' : pace === 'alert' ? 'danger' : null
+}
+
+/** A window's elapsed share as a meter marker (0–1), null when unknown. */
+const markerFor = (l: LimitWindow, nowSecs: number): number | null => {
+  const elapsed = windowElapsed(l, nowSecs)
+  return elapsed == null ? null : elapsed / 100
 }
 
 /** One account's windows as thin meters; the tile head names the account and
- * carries its tightest window. Selectable tiles are the overview's drill-in. */
+ * carries its pace. Selectable tiles are the overview's drill-in. */
 export function UsageTile({
   usage,
   nowSecs,
@@ -129,8 +206,7 @@ export function UsageTile({
   nowSecs: number
   onSelect?: (id: string) => void
 }) {
-  const tight = tightestWindow(usage.limits)
-  const tone = usageTone(tight?.usedPercent ?? null)
+  const pace = worstPace(usage.limits, nowSecs)
   const sub = [providerName(usage.provider), usage.account]
     .filter(Boolean)
     .join(' · ')
@@ -143,9 +219,9 @@ export function UsageTile({
       <div className="tui-usage-tile-head">
         <span className="tui-usage-tile-name">{usage.label}</span>
         <span className="tui-usage-tile-sub">{sub}</span>
-        {tight && (
-          <span className={`tui-usage-tile-headline tui-tone-${tone}`}>
-            {Math.round(tight.usedPercent)}%
+        {pace && (
+          <span className={`tui-usage-tile-headline tui-pace-${pace}`}>
+            {PACE_LABEL[pace]}
           </span>
         )}
       </div>
@@ -158,7 +234,8 @@ export function UsageTile({
           right={`${Math.round(l.usedPercent)}%${
             l.resetsAt != null ? ` · ${fmtResetShort(l.resetsAt, nowSecs)}` : ''
           }`}
-          tone={toneFor(l.usedPercent)}
+          tone={toneFor(l, nowSecs)}
+          marker={markerFor(l, nowSecs)}
         />
       ))}
       {usage.limits.length === 0 && !usage.limitsNote && (
@@ -227,15 +304,13 @@ export function UsagePanel({
     (sum, p) => sum + p.days.reduce((s, d) => s + d.tokens, 0),
     0,
   )
-  const fold = report ? foldUsageBarState(report) : null
+  const pace = usagePace(providers, nowSecs)
   const subtitle = scanning
     ? 'scanning journals…'
     : active
       ? `${fmtTokens(windowTotal)} tokens · 7 days`
-      : fold?.tightest != null
-        ? `tightest window ${Math.round(fold.tightest)}% · ${fmtTokens(
-            windowTotal,
-          )} tokens · 7 days`
+      : pace
+        ? `${PACE_LABEL[pace]} · ${fmtTokens(windowTotal)} tokens · 7 days`
         : `${fmtTokens(windowTotal)} tokens · 7 days`
 
   const dayMax = Math.max(1, ...(active?.days.map((d) => d.tokens) ?? []))
@@ -297,8 +372,8 @@ export function UsagePanel({
               right={`${Math.round(l.usedPercent)}%${
                 l.resetsAt != null ? ` · ${fmtReset(l.resetsAt, nowSecs)}` : ''
               }`}
-              emphasis={l.usedPercent >= 80}
-              tone={toneFor(l.usedPercent)}
+              tone={toneFor(l, nowSecs)}
+              marker={markerFor(l, nowSecs)}
             />
           ))}
           {active.limitsNote && (

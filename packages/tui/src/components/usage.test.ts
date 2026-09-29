@@ -3,12 +3,16 @@ import { describe, expect, it } from 'vitest'
 import {
   type UsageReport,
   accountOptions,
+  fmtCountdown,
   fmtReset,
   fmtResetShort,
   fmtTokens,
   foldUsageBarState,
-  tightestWindow,
-  usageTone,
+  usagePace,
+  windowElapsed,
+  windowLabel,
+  windowPace,
+  worstPace,
 } from './usage'
 
 const account = (
@@ -20,7 +24,7 @@ const account = (
   provider: id.startsWith('claude') ? 'claude' : 'codex',
   label,
   account: null,
-  limits: limits.map((l) => ({ ...l, resetsAt: null })),
+  limits: limits.map((l) => ({ ...l, resetsAt: null, windowSecs: null })),
   limitsNote: null,
   days: [],
   models: [],
@@ -52,17 +56,95 @@ describe('fmtReset', () => {
   })
 })
 
-describe('usageTone', () => {
-  it('tiers at 70 and 90', () => {
-    expect(usageTone(null)).toBe('ok')
-    expect(usageTone(69.9)).toBe('ok')
-    expect(usageTone(70)).toBe('warn')
-    expect(usageTone(89.9)).toBe('warn')
-    expect(usageTone(90)).toBe('danger')
+describe('windowLabel', () => {
+  it('gives the headline windows one word and capitalises the rest', () => {
+    expect(windowLabel('5h session')).toBe('Session')
+    expect(windowLabel('5h')).toBe('Session')
+    expect(windowLabel('weekly · all models')).toBe('Weekly')
+    expect(windowLabel('weekly')).toBe('Weekly')
+    expect(windowLabel('weekly · opus')).toBe('Weekly · opus')
+    expect(windowLabel('5h · this device')).toBe('5h · this device')
   })
 })
 
-describe('tightestWindow + foldUsageBarState', () => {
+describe('fmtCountdown', () => {
+  const now = 1_800_000_000
+  it('gives two units above an hour', () => {
+    expect(fmtCountdown(null, now)).toBe('')
+    expect(fmtCountdown(now, now)).toBe('soon')
+    expect(fmtCountdown(now + 30, now)).toBe('1m')
+    expect(fmtCountdown(now + 42 * 60, now)).toBe('42m')
+    expect(fmtCountdown(now + 4 * 3600 + 42 * 60, now)).toBe('4h 42m')
+    expect(fmtCountdown(now + 4 * 86_400 + 12 * 3600 + 59, now)).toBe('4d 12h')
+  })
+})
+
+describe('pace', () => {
+  const now = 1_800_000_000
+  const WEEK = 7 * 86_400
+  /** A weekly window `elapsed`% through with `used`% used. */
+  const week = (used: number, elapsed: number) => ({
+    name: 'weekly',
+    usedPercent: used,
+    resetsAt: now + Math.round(WEEK * (1 - elapsed / 100)),
+    windowSecs: WEEK,
+  })
+
+  it('places now inside the window', () => {
+    expect(windowElapsed(week(0, 30), now)).toBeCloseTo(30)
+    expect(windowElapsed({ ...week(0, 30), windowSecs: null }, now)).toBeNull()
+    expect(windowElapsed({ ...week(0, 30), resetsAt: null }, now)).toBeNull()
+    // A reset already past, or a window longer than advertised, clamps.
+    expect(windowElapsed({ ...week(0, 0), resetsAt: now - 5 }, now)).toBe(100)
+    expect(
+      windowElapsed({ ...week(0, 0), resetsAt: now + 2 * WEEK }, now),
+    ).toBe(0)
+  })
+
+  it("judges Mitch's cases against the clock, not the percent", () => {
+    expect(windowPace(week(10, 20), now)).toBe('normal')
+    expect(windowPace(week(50, 55), now)).toBe('normal')
+    expect(windowPace(week(80, 30), now)).toBe('alert')
+  })
+
+  it('goes green with real headroom, red running ahead or near the wall', () => {
+    expect(windowPace(week(20, 60), now)).toBe('go')
+    expect(windowPace(week(35, 60), now)).toBe('go')
+    expect(windowPace(week(36, 60), now)).toBe('normal')
+    expect(windowPace(week(74, 60), now)).toBe('normal')
+    expect(windowPace(week(75, 60), now)).toBe('alert')
+    // 90% is a wall even an hour before reset.
+    expect(windowPace(week(92, 99), now)).toBe('alert')
+  })
+
+  it('reads unknown-length windows as normal unless at the wall', () => {
+    const unknown = {
+      name: 'promo',
+      usedPercent: 60,
+      resetsAt: null,
+      windowSecs: null,
+    }
+    expect(windowPace(unknown, now)).toBe('normal')
+    expect(windowPace({ ...unknown, usedPercent: 95 }, now)).toBe('alert')
+  })
+
+  it('lets the worst window speak for the account and the bar', () => {
+    expect(worstPace([], now)).toBeNull()
+    expect(worstPace([week(5, 50), week(10, 60)], now)).toBe('go')
+    expect(worstPace([week(5, 50), week(50, 55)], now)).toBe('normal')
+    expect(worstPace([week(5, 50), week(80, 30)], now)).toBe('alert')
+    const acct = (limits: ReturnType<typeof week>[]) => ({
+      ...account('claude', 'Personal', []),
+      limits,
+    })
+    expect(usagePace([acct([week(5, 50)]), acct([week(80, 30)])], now)).toBe(
+      'alert',
+    )
+    expect(usagePace([acct([])], now)).toBeNull()
+  })
+})
+
+describe('foldUsageBarState', () => {
   const report: UsageReport = {
     generatedAt: 1,
     providers: [
@@ -70,17 +152,25 @@ describe('tightestWindow + foldUsageBarState', () => {
         { name: '5h', usedPercent: 12 },
         { name: 'weekly', usedPercent: 41 },
       ]),
-      account('claude-psyke', 'Psyke', [{ name: '5h', usedPercent: 88.5 }]),
-      account('codex', 'Codex', []),
+      {
+        ...account('claude-psyke', 'Psyke', [
+          { name: '5h', usedPercent: 88.5 },
+        ]),
+        days: [
+          { label: 'Wed', tokens: 9_000 },
+          { label: 'Today', tokens: 1_000 },
+        ],
+      },
+      {
+        ...account('codex', 'Codex', []),
+        days: [{ label: 'Today', tokens: 500 }],
+      },
     ],
   }
-  it('picks the window nearest its limit', () => {
-    expect(tightestWindow(report.providers[0]!.limits)?.name).toBe('weekly')
-    expect(tightestWindow([])).toBeNull()
-  })
-  it('folds like usage.rs: tightest across accounts, histograms dropped', () => {
+  it('folds: tightest across accounts, today summed, histograms dropped', () => {
     const state = foldUsageBarState(report)
     expect(state.tightest).toBe(88.5)
+    expect(state.tokensToday).toBe(1_500)
     expect(state.accounts.map((a) => a.id)).toEqual([
       'claude',
       'claude-psyke',

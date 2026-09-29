@@ -441,18 +441,20 @@
 
 /* ---- usage ------------------------------------------------------------ */
 
-/* The cell: fg while fine, dim before the first scan, amber/red as the
- * tightest window fills (same tiers as the panel's meters). */
-.bar-right .bar-usage-off {
+/* Pace, not percent (components/usage.tsx): green with headroom, fg on pace,
+ * red when usage outruns the clock, dim before the first scan. One set of
+ * classes tints the cell, the card's glyph, pace labels and each row —
+ * scoped under `.bar` so it outranks the `.bar button` colour reset. */
+.bar .bar-pace-off {
   color: var(--dim, #8b90a5);
 }
-.bar-right .bar-usage-ok {
+.bar .bar-pace-normal {
   color: var(--fg, #dde1f0);
 }
-.bar-right .bar-usage-warn {
-  color: var(--warn, #d29922);
+.bar .bar-pace-go {
+  color: var(--good, #3fb950);
 }
-.bar-right .bar-usage-danger {
+.bar .bar-pace-alert {
   color: var(--danger, #f85149);
 }
 
@@ -461,29 +463,98 @@
   display: inline-flex;
 }
 
-/* Right-anchored like battery; accounts stack. */
+/* Right-anchored like battery. Roomier than the other cards — it's read, not
+ * glanced at: generous rhythm, hairline rules between blocks, colour spent
+ * only where it means something (pace, the provider marks). */
 .bar-usage-card {
   right: 0;
-  width: 360px;
+  width: 384px;
+  padding: 22px 24px 16px;
   gap: 0;
+}
+
+.bar-usage-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 20px;
+}
+
+.bar-usage-top > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.bar-usage-glyph {
+  display: inline-flex;
+  color: var(--fg, #dde1f0);
+}
+
+.bar-usage-title {
+  color: var(--fg, #dde1f0);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.bar-usage-today {
+  color: var(--dim, #7f86a5);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* The overall pace: a tinted tile in the head's corner. */
+.bar-usage-badge {
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+/* One block per provider, ruled off above. */
+.bar-usage-provider {
+  border-top: 1px solid var(--border, #34364a);
+  padding: 18px 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.bar-usage-provider-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--fg, #dde1f0);
+  font-size: 14px;
+  font-weight: 700;
+}
+.bar-usage-provider-head svg {
+  flex-shrink: 0;
+}
+.bar-usage-claude svg {
+  color: var(--accent, #ff6b8c);
 }
 
 .bar-usage-account {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  margin-top: 10px;
+  gap: 12px;
 }
 
 .bar-usage-head {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .bar-usage-name {
   color: var(--fg, #dde1f0);
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -496,20 +567,30 @@
   white-space: nowrap;
 }
 
-.bar-usage-pct {
-  color: var(--fg, #dde1f0);
+.bar-usage-pace {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* "on pace" is the resting state — it shouldn't shout. */
+.bar-usage-pace.bar-pace-normal {
+  color: var(--dim, #7f86a5);
+  font-weight: 400;
 }
 
 .bar-usage-row {
   display: grid;
-  grid-template-columns: minmax(0, 12ch) 1fr 4ch 4ch;
+  grid-template-columns: 11ch 1fr 7ch;
   align-items: center;
-  gap: 8px;
-  color: var(--dim, #7f86a5);
-  line-height: 16px;
+  gap: 16px;
+  line-height: 18px;
 }
 
 .bar-usage-row-name {
+  color: var(--fg, #dde1f0);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -517,52 +598,50 @@
 
 .bar-usage-track {
   position: relative;
-  height: 3px;
-  background: var(--border, #34364a);
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--fg, #dde1f0) 14%, transparent);
 }
 
+/* The fill takes the row's pace colour through currentColor. */
 .bar-usage-fill {
   position: absolute;
   inset: 0 auto 0 0;
-  background: var(--fg, #dde1f0);
+  border-radius: 3px;
+  background: currentColor;
 }
 
-.bar-usage-row-pct {
-  text-align: right;
-  color: var(--fg, #dde1f0);
+/* Where "now" sits in the window: fill left of the tick is on pace. */
+.bar-usage-tick {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: currentColor;
+  box-shadow: 0 0 0 1px var(--bg, rgba(20, 21, 29, 0.96));
 }
 
 .bar-usage-row-reset {
   text-align: right;
-}
-
-/* Tone on a row tints its fill and value; the card's own tone classes are
- * scoped here so the cell rules above (`.bar-right .bar-usage-*`) don't
- * recolour the whole card. */
-.bar-usage-card .bar-usage-warn .bar-usage-fill,
-.bar-usage-card .bar-usage-warn.bar-usage-pct {
-  background: var(--warn, #d29922);
-  color: var(--warn, #d29922);
-}
-.bar-usage-card .bar-usage-warn .bar-usage-row-pct,
-.bar-usage-card .bar-usage-warn.bar-usage-pct {
-  color: var(--warn, #d29922);
-  background: none;
-}
-.bar-usage-card .bar-usage-danger .bar-usage-fill {
-  background: var(--danger, #f85149);
-}
-.bar-usage-card .bar-usage-danger .bar-usage-row-pct,
-.bar-usage-card .bar-usage-danger.bar-usage-pct {
-  color: var(--danger, #f85149);
+  color: var(--dim, #7f86a5);
+  white-space: nowrap;
 }
 
 .bar-usage-note {
   color: var(--dim, #7f86a5);
-  font-size: 10px;
+  font-size: 11px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.bar-usage-foot {
+  border-top: 1px solid var(--border, #34364a);
+  padding-top: 14px;
+  color: var(--dim, #7f86a5);
+  font-size: 11px;
 }
 
 /* ---- awake ------------------------------------------------------------ */

@@ -10,11 +10,17 @@ import {
 import { DynamicIcon, type IconName } from 'lucide-react/dynamic'
 import type { ReactNode } from 'react'
 
+import { ClaudeIcon, CodexIcon } from '../components/brand-icons'
 import {
-  fmtResetShort,
+  PACE_LABEL,
+  fmtCountdown,
+  fmtTokens,
   providerName,
-  tightestWindow,
-  usageTone,
+  usagePace,
+  windowElapsed,
+  windowLabel,
+  windowPace,
+  worstPace,
 } from '../components/usage'
 import {
   agentAge,
@@ -39,6 +45,7 @@ import type {
   BarSnapshot,
   BarWidget,
   BatteryDetail,
+  LimitWindow,
   UsageBarAccount,
   UsageBarState,
   WidgetAction,
@@ -852,19 +859,60 @@ export function UsageMeterIcon({
   )
 }
 
-/** Card rows per account: head + one line per window (+ a note line). Kept
- * beside the card so the desktop can size its window before the card mounts. */
+/** Card height estimate: head, then per provider a header and per account a
+ * head + one row per window (+ a note). Only the first frame uses it —
+ * hover.ts measures the mounted card and corrects the window. */
 export function usageCardHeight(usage: UsageBarState | null): number {
   const accounts = usage?.accounts ?? []
+  const providers = new Set(accounts.map((a) => a.provider)).size
   const rows = accounts.reduce(
     (n, a) =>
       n +
-      26 +
-      a.limits.length * 18 +
-      (a.limitsNote || !a.limits.length ? 16 : 0),
+      46 +
+      a.limits.length * 30 +
+      (a.limitsNote || !a.limits.length ? 22 : 0),
     0,
   )
-  return 14 + 18 + rows + 34 + 12
+  return 24 + 60 + providers * 56 + rows + 44 + 16
+}
+
+const PROVIDER_ICONS: Record<string, ReactNode> = {
+  claude: <ClaudeIcon size={18} />,
+  codex: <CodexIcon size={18} />,
+}
+
+/** One window: label · track (fill = used, tick = how far through the window
+ * "now" is) · countdown to reset. Tinted by pace, never labelled with a %. */
+function UsageCardWindow({
+  window: l,
+  nowSecs,
+}: {
+  window: LimitWindow
+  nowSecs: number
+}) {
+  const elapsed = windowElapsed(l, nowSecs)
+  const used = Math.max(0, Math.min(100, l.usedPercent))
+  const title =
+    elapsed == null
+      ? `${l.name}: ${Math.round(used)}% used`
+      : `${l.name}: ${Math.round(used)}% used · ${Math.round(elapsed)}% through the window`
+  return (
+    <div
+      className={`bar-usage-row bar-pace-${windowPace(l, nowSecs)}`}
+      title={title}
+    >
+      <span className="bar-usage-row-name">{windowLabel(l.name)}</span>
+      <span className="bar-usage-track">
+        <span className="bar-usage-fill" style={{ width: `${used}%` }} />
+        {elapsed != null && (
+          <span className="bar-usage-tick" style={{ left: `${elapsed}%` }} />
+        )}
+      </span>
+      <span className="bar-usage-row-reset">
+        {fmtCountdown(l.resetsAt, nowSecs)}
+      </span>
+    </div>
+  )
 }
 
 function UsageCardAccount({
@@ -874,39 +922,22 @@ function UsageCardAccount({
   account: UsageBarAccount
   nowSecs: number
 }) {
-  const tight = tightestWindow(account.limits)
+  const pace = worstPace(account.limits, nowSecs)
   return (
     <div className="bar-usage-account">
       <div className="bar-usage-head">
         <span className="bar-usage-name">{account.label}</span>
-        <span className="bar-usage-sub">{providerName(account.provider)}</span>
-        {tight && (
-          <span
-            className={`bar-usage-pct bar-usage-${usageTone(tight.usedPercent)}`}
-          >
-            {Math.round(tight.usedPercent)}%
+        {account.account && (
+          <span className="bar-usage-sub">· {account.account}</span>
+        )}
+        {pace && (
+          <span className={`bar-usage-pace bar-pace-${pace}`}>
+            {PACE_LABEL[pace]}
           </span>
         )}
       </div>
       {account.limits.map((l) => (
-        <div
-          key={l.name}
-          className={`bar-usage-row bar-usage-${usageTone(l.usedPercent)}`}
-        >
-          <span className="bar-usage-row-name">{l.name}</span>
-          <span className="bar-usage-track">
-            <span
-              className="bar-usage-fill"
-              style={{ width: `${Math.max(0, Math.min(100, l.usedPercent))}%` }}
-            />
-          </span>
-          <span className="bar-usage-row-pct">
-            {Math.round(l.usedPercent)}%
-          </span>
-          <span className="bar-usage-row-reset">
-            {fmtResetShort(l.resetsAt, nowSecs)}
-          </span>
-        </div>
+        <UsageCardWindow key={l.name} window={l} nowSecs={nowSecs} />
       ))}
       {account.limits.length === 0 && !account.limitsNote && (
         <div className="bar-usage-note">no limits reported</div>
@@ -920,8 +951,8 @@ function UsageCardAccount({
   )
 }
 
-/** The usage card: every account's windows at a glance — CodexBar's provider
- * tiles, stacked. Clicking the cell opens the full panel. */
+/** The usage card: the overall pace up top, then each provider's accounts and
+ * their windows. Clicking the cell opens the full panel. */
 export function BarUsageCard({
   usage,
   nowSecs,
@@ -932,22 +963,51 @@ export function BarUsageCard({
   cardRef?: (el: HTMLElement | null) => void
 }) {
   const accounts = usage?.accounts ?? []
+  const pace = usagePace(accounts, nowSecs)
+  const groups = new Map<string, UsageBarAccount[]>()
+  for (const a of accounts)
+    groups.set(a.provider, [...(groups.get(a.provider) ?? []), a])
   return (
     <BarCard variant="usage" cardRef={cardRef}>
-      <BarCardTitle>Usage</BarCardTitle>
-      {accounts.length === 0 && <BarCardDim>scanning journals…</BarCardDim>}
-      {accounts.map((a) => (
-        <UsageCardAccount key={a.id} account={a} nowSecs={nowSecs} />
+      <div className="bar-usage-top">
+        <span className="bar-usage-glyph">
+          <UsageMeterIcon pct={usage?.tightest ?? null} size={30} />
+        </span>
+        <div>
+          <div className="bar-usage-title">Usage</div>
+          <div className="bar-usage-today">
+            {accounts.length === 0
+              ? 'scanning journals…'
+              : `${fmtTokens(usage?.tokensToday ?? 0)} tokens today`}
+          </div>
+        </div>
+        {pace && (
+          <span className={`bar-usage-badge bar-pace-${pace}`}>
+            {PACE_LABEL[pace]}
+          </span>
+        )}
+      </div>
+      {[...groups].map(([provider, list]) => (
+        <div key={provider} className="bar-usage-provider">
+          <div className={`bar-usage-provider-head bar-usage-${provider}`}>
+            {PROVIDER_ICONS[provider]}
+            <span>{providerName(provider)}</span>
+          </div>
+          {list.map((a) => (
+            <UsageCardAccount key={a.id} account={a} nowSecs={nowSecs} />
+          ))}
+        </div>
       ))}
-      <BarCardHint>click cell for usage ⏎</BarCardHint>
+      <div className="bar-usage-foot">click for usage ⏎</div>
     </BarCard>
   )
 }
 
 /**
- * The usage cell: the tiny meter plus the tightest window's percent across
- * every account — one cell, not one per account (minimal is the theme).
- * Dim until the first scan lands; amber from 70%, red from 90%.
+ * The usage cell: the tiny meter alone — no percent. Its colour is the pace
+ * across every account (worst wins): green with headroom to spin up agents,
+ * fg on pace, red when usage is outrunning the clock. Dim before the first
+ * scan.
  */
 export function BarUsageCell({
   usage,
@@ -960,18 +1020,13 @@ export function BarUsageCell({
   hover?: BarHoverApi
   onClick?: () => void
 }) {
-  const pct = usage?.tightest ?? null
-  const tone = pct == null ? 'off' : usageTone(pct)
-  const className = `bar-cell bar-usage-${tone}`
-  const body = (
-    <>
-      <UsageMeterIcon pct={pct} />
-      {pct != null && `${Math.round(pct)}%`}
-    </>
-  )
+  const pace = usage ? usagePace(usage.accounts, nowSecs) : null
+  const className = `bar-cell bar-pace-${pace ?? 'off'}`
+  const body = <UsageMeterIcon pct={usage?.tightest ?? null} />
+  const title = pace ? `Agent usage · ${PACE_LABEL[pace]}` : 'Agent usage'
   if (!hover) {
     return (
-      <BarCell className={className} title="Agent usage">
+      <BarCell className={className} title={title}>
         {body}
       </BarCell>
     )

@@ -29,6 +29,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(181, 185, 217, 0.12)',
     warn: '#d29922',
     danger: '#f85149',
+    good: '#3fb950',
   },
   dracula: {
     bg: '#282a36',
@@ -43,6 +44,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(68, 71, 90, 0.55)',
     warn: '#f1fa8c',
     danger: '#ff5555',
+    good: '#50fa7b',
   },
   terminal: {
     bg: '#000000',
@@ -57,6 +59,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(51, 255, 51, 0.12)',
     warn: '#33ff33',
     danger: '#ff3333',
+    good: '#33ff33',
   },
   amber: {
     bg: '#000000',
@@ -71,6 +74,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(255, 176, 0, 0.12)',
     warn: '#ffcf60',
     danger: '#ff5533',
+    good: '#e0a800',
   },
   catppuccin: {
     bg: '#1e1e2e',
@@ -85,6 +89,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(203, 166, 247, 0.14)',
     warn: '#f9e2af',
     danger: '#f38ba8',
+    good: '#a6e3a1',
   },
   gruvbox: {
     bg: '#282828',
@@ -99,6 +104,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(254, 128, 25, 0.14)',
     warn: '#fabd2f',
     danger: '#fb4934',
+    good: '#b8bb26',
   },
   monokai: {
     bg: '#272822',
@@ -113,6 +119,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(249, 38, 114, 0.14)',
     warn: '#e6db74',
     danger: '#ff6188',
+    good: '#a6e22e',
   },
   nord: {
     bg: '#2e3440',
@@ -127,6 +134,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(136, 192, 208, 0.14)',
     warn: '#ebcb8b',
     danger: '#bf616a',
+    good: '#a3be8c',
   },
   'one-dark': {
     bg: '#282c34',
@@ -141,6 +149,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(97, 175, 239, 0.14)',
     warn: '#e5c07b',
     danger: '#e06c75',
+    good: '#98c379',
   },
   'rose-pine': {
     bg: '#191724',
@@ -155,6 +164,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(235, 188, 186, 0.12)',
     warn: '#f6c177',
     danger: '#eb6f92',
+    good: '#31748f',
   },
   solarized: {
     bg: '#002b36',
@@ -169,6 +179,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(38, 139, 210, 0.14)',
     warn: '#b58900',
     danger: '#dc322f',
+    good: '#859900',
   },
   'solarized-light': {
     bg: '#fdf6e3',
@@ -183,6 +194,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(38, 139, 210, 0.12)',
     warn: '#b58900',
     danger: '#dc322f',
+    good: '#859900',
   },
   synthwave: {
     bg: '#262335',
@@ -197,6 +209,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(255, 126, 219, 0.14)',
     warn: '#fede5d',
     danger: '#fe4450',
+    good: '#72f1b8',
   },
   'tokyo-night': {
     bg: '#1a1b26',
@@ -211,6 +224,7 @@ const CURRENT_TUI_THEMES: Record<string, ThemeTokens> = {
     selected: 'rgba(122, 162, 247, 0.14)',
     warn: '#e0af68',
     danger: '#f7768e',
+    good: '#9ece6a',
   },
 }
 

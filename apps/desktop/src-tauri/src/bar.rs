@@ -18,9 +18,12 @@ pub const BAR_HEIGHT: f64 = 30.0;
 
 /// Extra logical height while a hover card is open — the strip can't host a
 /// popover inside 30px, so the whole window grows downward briefly. The page
-/// asks for the height its card needs; this is the fallback and the ceiling.
+/// asks for the height its card needs; this is the fallback. The ceiling is
+/// the display itself (`frame`) — a fixed one clipped the usage card once it
+/// listed every account's windows (2026-09-30); this cap only guards against
+/// a runaway measurement.
 const DROPDOWN_EXTRA: f64 = 130.0;
-const DROPDOWN_MAX: f64 = 480.0;
+const DROPDOWN_MAX: f64 = 4000.0;
 
 /// Extra height the open hover card wants, 0 when closed, and which bar
 /// (`bar-{i}`) is hosting it; the reframe heartbeat must agree with the hover
@@ -243,7 +246,7 @@ fn sync(app: &AppHandle) {
 /// frame differs: the heartbeat runs this every few seconds.
 fn frame(window: &tauri::WebviewWindow, index: usize, screen: &crate::screens::Screen) {
     let want_pos = tauri::LogicalPosition::new(screen.x, screen.y);
-    let want_size = tauri::LogicalSize::new(screen.width, wanted_height(index));
+    let want_size = tauri::LogicalSize::new(screen.width, wanted_height(index).min(screen.height));
     let scale = window.scale_factor().unwrap_or(screen.scale);
     let moved = window
         .outer_position()

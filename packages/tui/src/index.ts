@@ -88,20 +88,25 @@ export {
   UsagePanel,
   UsageTile,
   accountOptions,
+  PACE_LABEL,
+  fmtCountdown,
   fmtReset,
   fmtResetShort,
   fmtTokens,
   providerName,
-  tightestWindow,
-  usageTone,
+  usagePace,
+  windowElapsed,
+  windowLabel,
+  windowPace,
+  worstPace,
 } from './components/usage'
 export type {
   DayUsage,
   ModelUsage,
   ProviderUsage,
   UsagePanelProps,
+  UsagePace,
   UsageReport,
-  UsageTone,
 } from './components/usage'
 export {
   AGENT_GLYPHS,

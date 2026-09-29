@@ -23,4 +23,6 @@ export type ThemeTokens = {
   /** Alert tier below danger: bar cells and widget tones (battery low, weak wifi). */
   warn: string
   danger: string
+  /** Headroom tier: the usage monitor's "under pace, spin up agents" tone. */
+  good: string
 }

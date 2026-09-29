@@ -61,6 +61,9 @@ pub struct LimitWindow {
     pub name: String,
     pub used_percent: f64,
     pub resets_at: Option<u64>,
+    /// The window's full length in seconds, when known — with `resets_at` it
+    /// places "now" inside the window, which the usage pace is judged against.
+    pub window_secs: Option<u64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -765,7 +768,7 @@ fn parse_claude_limits(body: &str) -> Vec<LimitWindow> {
         return Vec::new();
     };
     let mut out = Vec::new();
-    let mut push = |name: &str, node: Option<&serde_json::Value>| {
+    let mut push = |name: &str, window_secs: u64, node: Option<&serde_json::Value>| {
         let Some(node) = node else { return };
         let Some(pct) = node.get("utilization").and_then(|u| u.as_f64()) else {
             return;
@@ -774,12 +777,13 @@ fn parse_claude_limits(body: &str) -> Vec<LimitWindow> {
             name: name.into(),
             used_percent: pct.clamp(0.0, 100.0),
             resets_at: node.get("resets_at").and_then(parse_reset_value),
+            window_secs: Some(window_secs),
         });
     };
-    push("5h session", v.get("five_hour"));
-    push("weekly · all models", v.get("seven_day"));
-    push("weekly · opus", v.get("seven_day_opus"));
-    push("weekly · sonnet", v.get("seven_day_sonnet"));
+    push("5h session", FIVE_HOURS, v.get("five_hour"));
+    push("weekly · all models", WEEK, v.get("seven_day"));
+    push("weekly · opus", WEEK, v.get("seven_day_opus"));
+    push("weekly · sonnet", WEEK, v.get("seven_day_sonnet"));
     for entry in v
         .get("limits")
         .and_then(|l| l.as_array())
@@ -812,10 +816,12 @@ fn parse_claude_limits(body: &str) -> Vec<LimitWindow> {
         if out.iter().any(|w: &LimitWindow| w.name == name) {
             continue;
         }
+        let window_secs = claude_window_secs(group, entry.get("kind").and_then(|k| k.as_str()));
         out.push(LimitWindow {
             name,
             used_percent: pct.clamp(0.0, 100.0),
             resets_at: entry.get("resets_at").and_then(parse_reset_value),
+            window_secs,
         });
     }
     out
@@ -832,6 +838,7 @@ fn codex_account_limits(
                     name: format!("{} · this device", humanize_window(l.window_minutes * 60)),
                     used_percent: l.used_percent.clamp(0.0, 100.0),
                     resets_at: l.resets_at,
+                    window_secs: (l.window_minutes > 0).then_some(l.window_minutes * 60),
                 }],
                 Some(note),
             ),
@@ -922,6 +929,7 @@ fn parse_codex_limits(body: &str) -> Vec<LimitWindow> {
                 },
                 used_percent: pct.clamp(0.0, 100.0),
                 resets_at: w.get("reset_at").and_then(|r| r.as_u64()),
+                window_secs: (window > 0).then_some(window),
             });
         }
     };
@@ -936,6 +944,22 @@ fn parse_codex_limits(body: &str) -> Vec<LimitWindow> {
         push_windows(label, extra.get("rate_limit"));
     }
     out
+}
+
+const FIVE_HOURS: u64 = 5 * 3600;
+const WEEK: u64 = 7 * 86_400;
+
+/// A `limits[]` entry carries no length, only a `group`/`kind` word; read the
+/// length off it when it names one ("weekly", "five_hour", …), else unknown.
+fn claude_window_secs(group: Option<&str>, kind: Option<&str>) -> Option<u64> {
+    let words = format!("{} {}", group.unwrap_or(""), kind.unwrap_or("")).to_lowercase();
+    if words.contains("week") || words.contains("seven_day") {
+        Some(WEEK)
+    } else if words.contains("five_hour") || words.contains("5h") || words.contains("session") {
+        Some(FIVE_HOURS)
+    } else {
+        None
+    }
 }
 
 /// Window length in seconds → "5h" / "weekly" / "30m".
@@ -1117,6 +1141,13 @@ mod tests {
         // +10:00 offset: 09:00 AEST on the 19th = 23:00Z on the 18th.
         assert_eq!(limits[1].resets_at, Some(1_787_094_000));
         assert_eq!(limits[3].resets_at, Some(1_787_011_420));
+        // Lengths: fixed for the flat fields, read off `group` for limits[].
+        let lengths: Vec<Option<u64>> = limits.iter().map(|l| l.window_secs).collect();
+        assert_eq!(
+            lengths,
+            vec![Some(18_000), Some(604_800), Some(604_800), Some(604_800)]
+        );
+        assert_eq!(claude_window_secs(None, Some("promo")), None);
         assert!(parse_claude_limits("not json").is_empty());
     }
 
@@ -1138,6 +1169,7 @@ mod tests {
         assert_eq!(names, vec!["weekly", "5h", "weekly · GPT-5.3-Codex-Spark"]);
         assert_eq!(limits[0].used_percent, 5.0);
         assert_eq!(limits[1].resets_at, Some(1_786_840_000));
+        assert_eq!(limits[1].window_secs, Some(18_000));
         assert!(parse_codex_limits("{}").is_empty());
     }
 
@@ -1174,6 +1206,7 @@ mod tests {
             name: "weekly".into(),
             used_percent: pct,
             resets_at: None,
+            window_secs: None,
         };
         // First failure with an empty cache: nothing to serve, reason surfaces.
         let (w, note) = resolve_limits(&mut cache, "claude", Err("offline".into()), 1000);

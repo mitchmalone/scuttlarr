@@ -3,9 +3,12 @@ import type { PluginState } from '@scuttlarr/tui/plugins'
 
 import manifest from './manifest.json'
 
+const FIVE_HOURS = 5 * 3600
+const WEEK = 7 * 86_400
+
 /**
  * Fictional usage in the shape usage.rs emits — two Claude subscriptions plus
- * Codex. The cell, tiles, and panel are the real components; only these
+ * Codex, one per pace: on pace, slow down, go go go. The cell, tiles, and panel are the real components; only these
  * numbers are made up (AGENTS invariant 10). Shared by the website's demo and
  * the kit's stories.
  */
@@ -20,12 +23,23 @@ export function usageReportAt(nowSecs: number): UsageReport {
         label: 'Personal',
         account: 'blackbeard@example.com',
         limits: [
-          { name: '5h session', usedPercent: 38, resetsAt: t + 5400 },
-          { name: 'weekly', usedPercent: 62, resetsAt: t + 172_800 },
+          {
+            name: '5h session',
+            usedPercent: 38,
+            resetsAt: t + 5400,
+            windowSecs: FIVE_HOURS,
+          },
+          {
+            name: 'weekly',
+            usedPercent: 62,
+            resetsAt: t + 172_800,
+            windowSecs: WEEK,
+          },
           {
             name: 'weekly · opus',
             usedPercent: 21,
             resetsAt: t + 172_800,
+            windowSecs: WEEK,
           },
         ],
         limitsNote: null,
@@ -50,8 +64,18 @@ export function usageReportAt(nowSecs: number): UsageReport {
         label: 'Psyke',
         account: 'captain@psyke.example',
         limits: [
-          { name: '5h session', usedPercent: 91, resetsAt: t + 1800 },
-          { name: 'weekly', usedPercent: 74, resetsAt: t + 259_200 },
+          {
+            name: '5h session',
+            usedPercent: 91,
+            resetsAt: t + 1800,
+            windowSecs: FIVE_HOURS,
+          },
+          {
+            name: 'weekly',
+            usedPercent: 74,
+            resetsAt: t + 259_200,
+            windowSecs: WEEK,
+          },
         ],
         limitsNote: null,
         days: [
@@ -74,8 +98,18 @@ export function usageReportAt(nowSecs: number): UsageReport {
         label: 'Codex',
         account: null,
         limits: [
-          { name: '5h', usedPercent: 12, resetsAt: t + 9000 },
-          { name: 'weekly', usedPercent: 33, resetsAt: t + 400_000 },
+          {
+            name: '5h',
+            usedPercent: 12,
+            resetsAt: t + 9000,
+            windowSecs: FIVE_HOURS,
+          },
+          {
+            name: 'weekly',
+            usedPercent: 8,
+            resetsAt: t + 400_000,
+            windowSecs: WEEK,
+          },
         ],
         limitsNote: null,
         days: [

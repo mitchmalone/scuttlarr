@@ -492,6 +492,21 @@
 .tui-meter-danger .tui-meter-right {
   color: var(--danger, #ff6b6b);
 }
+.tui-meter-good .tui-meter-fill {
+  background: var(--good, #3fb950);
+}
+.tui-meter-good .tui-meter-right {
+  color: var(--good, #3fb950);
+}
+
+.tui-meter-marker {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--_fg);
+}
 
 /* ---- Usage tiles (components/usage.tsx) ------------------------------ */
 
@@ -545,12 +560,24 @@
   flex-shrink: 0;
 }
 
-.tui-usage-tile-headline.tui-tone-warn {
-  color: var(--warn, #d29922);
+.tui-usage-tile-headline {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-.tui-usage-tile-headline.tui-tone-danger {
+.tui-usage-tile-headline.tui-pace-normal {
+  color: var(--_dim);
+}
+
+.tui-usage-tile-headline.tui-pace-go {
+  color: var(--good, #3fb950);
+  font-weight: 700;
+}
+
+.tui-usage-tile-headline.tui-pace-alert {
   color: var(--danger, #ff6b6b);
+  font-weight: 700;
 }
 
 .tui-usage-tile .tui-meter {

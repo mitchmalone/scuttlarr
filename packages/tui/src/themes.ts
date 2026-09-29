@@ -73,6 +73,7 @@ export function themeVars(
     // Alert tiers: the bar (a panel-kind window) and settings both reach for them.
     '--warn': t.warn,
     '--danger': t.danger,
+    '--good': t.good,
   }
   if (kind === 'panel') {
     return {

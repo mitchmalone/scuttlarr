@@ -3,9 +3,19 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-09-16 (live theme switch across terminals — proven on the primary Mac)
+> Last updated: 2026-09-30 (usage cell shows pace, not percent)
 
 ## Where we are
+
+**Usage pace, 2026-09-30 (dev-installed, PR open):** the usage cell is the meter glyph
+alone, tinted by pace — green "go go go" / fg "on pace" / red "slow down" (DECISIONS
+2026-09-30). Card redesigned roomier: overall pace tile + tokens today up top, accounts
+grouped under provider marks (official Claude/OpenAI SVGs, currentColor), a "now" tick
+on each track, `4h 42m` countdowns. New `good` theme token; `LimitWindow.windowSecs` in
+usage.rs; the bar's dropdown ceiling is now the display height, not 480px (the card
+clipped). **Open:** thresholds (±15/25 pts); worst-across-accounts for the cell;
+`tauri build`'s DMG step fails ("create-dmg: Not enough arguments") — dev installs use
+`--bundles app` meanwhile, release will need it fixed.
 
 **Live theme switch, 2026-09-16 (committed, dev-installed, proven live):** the Omarchy
 moment on macOS. DECISIONS 2026-09-16, plan `plans/done/2026-09-16-live-theme-terminals.md`.

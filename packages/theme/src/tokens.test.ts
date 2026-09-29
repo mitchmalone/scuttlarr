@@ -43,6 +43,7 @@ describe('toTokens', () => {
       selected: 'rgba(122, 162, 247, 0.14)',
       warn: '#e0af68',
       danger: '#f7768e',
+      good: '#9ece6a',
     })
   })
 

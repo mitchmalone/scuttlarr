@@ -54,48 +54,71 @@ export const providerName = (kind: string) => PROVIDER_NAMES[kind] ?? kind
  * not. Judged against how far through the window "now" is:
  *
  * - `alert` — used runs ≥ PACE_ALERT points ahead of elapsed, or ≥ 90% used
- *   whatever the clock says: slow down.
+ *   whatever the clock says: slow down. In the window's first PACE_EARLY
+ *   percent a burst after a reset is normal, so only a sprint (≥ PACE_SPRINT
+ *   points ahead) or the 90% wall alerts there.
  * - `go` — used trails elapsed by ≥ PACE_GO points: headroom, spin up agents.
- * - `normal` — roughly on pace, or the window's length is unknown.
+ * - `normal` — roughly on pace.
+ *
+ * A window whose length is unknown, or whose reset has already passed (a
+ * stale cached reading), can't be judged: `windowPace` calls it normal and
+ * the folds leave it out, so it can't hold the cell off green.
  */
 export type UsagePace = 'go' | 'normal' | 'alert'
 
 export const PACE_ALERT = 15
 export const PACE_GO = 25
+export const PACE_EARLY = 15
+export const PACE_SPRINT = 40
 const PACE_HARD_LIMIT = 90
 const PACE_RANK: Record<UsagePace, number> = { go: 0, normal: 1, alert: 2 }
 
 /** How far through its window "now" is, 0–100; null when the length or the
- * reset is unknown. */
+ * reset is unknown, or the reset has passed (the reading predates it). */
 export function windowElapsed(l: LimitWindow, nowSecs: number): number | null {
   if (l.resetsAt == null || !l.windowSecs) return null
   const left = l.resetsAt - nowSecs
+  if (left <= 0) return null
   const pct = (1 - left / l.windowSecs) * 100
   return Math.max(0, Math.min(100, pct))
 }
 
+/** Whether the window's reading is stale: its reset has already happened. */
+const resetPassed = (l: LimitWindow, nowSecs: number) =>
+  l.resetsAt != null && l.resetsAt <= nowSecs
+
 export function windowPace(l: LimitWindow, nowSecs: number): UsagePace {
+  if (resetPassed(l, nowSecs)) return 'normal'
   if (l.usedPercent >= PACE_HARD_LIMIT) return 'alert'
   const elapsed = windowElapsed(l, nowSecs)
   if (elapsed == null) return 'normal'
   const ahead = l.usedPercent - elapsed
-  if (ahead >= PACE_ALERT) return 'alert'
+  const alertAt = elapsed < PACE_EARLY ? PACE_SPRINT : PACE_ALERT
+  if (ahead >= alertAt) return 'alert'
   if (ahead <= -PACE_GO) return 'go'
   return 'normal'
 }
 
+/** Whether a window has a say in the folds: judgeable, or at the wall. */
+const judged = (l: LimitWindow, nowSecs: number) =>
+  !resetPassed(l, nowSecs) &&
+  (windowElapsed(l, nowSecs) != null || l.usedPercent >= PACE_HARD_LIMIT)
+
 /** Worst pace wins: one window running hot is the account's bottleneck, and
- * "go" only holds when every window has headroom. Null with no windows. */
+ * "go" only holds when every judged window has headroom. Windows that can't
+ * be judged sit out; with windows but none judged it's `normal`, with none
+ * at all null. */
 export function worstPace(
   limits: LimitWindow[],
   nowSecs: number,
 ): UsagePace | null {
   let worst: UsagePace | null = null
   for (const l of limits) {
+    if (!judged(l, nowSecs)) continue
     const p = windowPace(l, nowSecs)
     if (worst == null || PACE_RANK[p] > PACE_RANK[worst]) worst = p
   }
-  return worst
+  return worst ?? (limits.length > 0 ? 'normal' : null)
 }
 
 /** The bar cell's pace across every account — worst wins, as per account. */
@@ -147,7 +170,8 @@ export function fmtReset(resetsAt: number | null, nowSecs: number): string {
   return `resets in ${Math.round(s / 86_400)}d`
 }
 
-/** Two-unit countdown for the bar card: "4d 12h" / "4h 42m" / "12m" / "soon". */
+/** Two-unit countdown for the bar card: "4d 12h" / "4h 42m" / "12m" /
+ * "soon". */
 export function fmtCountdown(resetsAt: number | null, nowSecs: number): string {
   if (resetsAt == null) return ''
   const s = resetsAt - nowSecs

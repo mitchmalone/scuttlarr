@@ -952,10 +952,14 @@ const WEEK: u64 = 7 * 86_400;
 /// A `limits[]` entry carries no length, only a `group`/`kind` word; read the
 /// length off it when it names one ("weekly", "five_hour", …), else unknown.
 fn claude_window_secs(group: Option<&str>, kind: Option<&str>) -> Option<u64> {
-    let words = format!("{} {}", group.unwrap_or(""), kind.unwrap_or("")).to_lowercase();
-    if words.contains("week") || words.contains("seven_day") {
+    // Whole words, split on anything but letters and digits: "weekly_scoped"
+    // → weekly, scoped; "five_hour" → five, hour — so "15h" isn't a "5h".
+    let text = format!("{} {}", group.unwrap_or(""), kind.unwrap_or("")).to_lowercase();
+    let words: Vec<&str> = text.split(|c: char| !c.is_ascii_alphanumeric()).collect();
+    let has = |w: &str| words.contains(&w);
+    if has("week") || has("weekly") || (has("seven") && has("day")) {
         Some(WEEK)
-    } else if words.contains("five_hour") || words.contains("5h") || words.contains("session") {
+    } else if has("5h") || has("session") || (has("five") && has("hour")) {
         Some(FIVE_HOURS)
     } else {
         None
@@ -1148,6 +1152,9 @@ mod tests {
             vec![Some(18_000), Some(604_800), Some(604_800), Some(604_800)]
         );
         assert_eq!(claude_window_secs(None, Some("promo")), None);
+        assert_eq!(claude_window_secs(None, Some("seven_day")), Some(604_800));
+        assert_eq!(claude_window_secs(Some("five_hour"), None), Some(18_000));
+        assert_eq!(claude_window_secs(Some("15h"), None), None);
         assert!(parse_claude_limits("not json").is_empty());
     }
 

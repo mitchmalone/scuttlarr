@@ -1494,9 +1494,13 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
 - **Decision.** The bar's usage cell drops its percent and is coloured by **pace**: each
   window's percent used against how far through the window "now" is (`windowPace` in
   `packages/tui/src/components/usage.tsx`). `alert` (red) when used runs ≥ 15 points
-  ahead of elapsed or sits ≥ 90%; `go` (green, the new `good` theme token = palette
-  green) when it trails by ≥ 25 points; `normal` otherwise, or when the window's length
-  is unknown. Worst window wins, per account and across accounts for the cell. The card
+  ahead of elapsed or sits ≥ 90%; in a window's first 15% only a 40-point sprint (or
+  the 90% wall) alerts, since a burst right after a reset is ordinary. `go` (green, the
+  new `good` theme token = palette green) when used trails by ≥ 25 points; `normal`
+  otherwise. Worst judged window wins, per account and across accounts for the cell;
+  windows that can't be judged — unknown length, or a reset already past (a stale
+  reading) — sit out, so they can't hold the cell off green. The glyph fills whole once
+  data lands: its colour is the signal, and a part-fill would contradict it. The card
   and panel draw a tick at "now" on every track; the card shows reset countdowns, no
   percents; the panel keeps its percents as the detail view.
 - **Why.** 80% used an hour before reset is fine; 80% a day into the week is not. The

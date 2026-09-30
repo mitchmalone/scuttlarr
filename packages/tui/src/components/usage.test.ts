@@ -94,8 +94,9 @@ describe('pace', () => {
     expect(windowElapsed(week(0, 30), now)).toBeCloseTo(30)
     expect(windowElapsed({ ...week(0, 30), windowSecs: null }, now)).toBeNull()
     expect(windowElapsed({ ...week(0, 30), resetsAt: null }, now)).toBeNull()
-    // A reset already past, or a window longer than advertised, clamps.
-    expect(windowElapsed({ ...week(0, 0), resetsAt: now - 5 }, now)).toBe(100)
+    // A reset already past means the reading predates it: unknown.
+    expect(windowElapsed({ ...week(0, 0), resetsAt: now - 5 }, now)).toBeNull()
+    // A window longer than advertised clamps.
     expect(
       windowElapsed({ ...week(0, 0), resetsAt: now + 2 * WEEK }, now),
     ).toBe(0)
@@ -117,6 +118,29 @@ describe('pace', () => {
     expect(windowPace(week(92, 99), now)).toBe('alert')
   })
 
+  it('forgives a burst early in the window, not a sprint', () => {
+    const session = (used: number, elapsed: number) => ({
+      ...week(used, elapsed),
+      name: '5h session',
+      resetsAt: now + Math.round(5 * 3600 * (1 - elapsed / 100)),
+      windowSecs: 5 * 3600,
+    })
+    // 10 minutes into a session, 20% used; day one of a week, 30% used.
+    expect(windowPace(session(20, 3), now)).toBe('normal')
+    expect(windowPace(week(30, 14), now)).toBe('normal')
+    // Past the early stretch the ordinary gap applies again.
+    expect(windowPace(week(31, 15), now)).toBe('alert')
+    // A sprint alerts even early; so does the wall.
+    expect(windowPace(week(50, 10), now)).toBe('alert')
+    expect(windowPace(session(92, 3), now)).toBe('alert')
+  })
+
+  it('ignores a stale reading whose reset has passed', () => {
+    const stale = { ...week(91, 0), resetsAt: now - 60 }
+    expect(windowPace(stale, now)).toBe('normal')
+    expect(worstPace([stale, week(10, 60)], now)).toBe('go')
+  })
+
   it('reads unknown-length windows as normal unless at the wall', () => {
     const unknown = {
       name: 'promo',
@@ -126,6 +150,12 @@ describe('pace', () => {
     }
     expect(windowPace(unknown, now)).toBe('normal')
     expect(windowPace({ ...unknown, usedPercent: 95 }, now)).toBe('alert')
+    // …and they sit out the fold, so they can't hold the cell off green.
+    expect(worstPace([unknown, week(10, 60)], now)).toBe('go')
+    expect(
+      worstPace([{ ...unknown, usedPercent: 95 }, week(10, 60)], now),
+    ).toBe('alert')
+    expect(worstPace([unknown], now)).toBe('normal')
   })
 
   it('lets the worst window speak for the account and the bar', () => {
@@ -167,9 +197,8 @@ describe('foldUsageBarState', () => {
       },
     ],
   }
-  it('folds: tightest across accounts, today summed, histograms dropped', () => {
+  it('folds: today summed, histograms dropped', () => {
     const state = foldUsageBarState(report)
-    expect(state.tightest).toBe(88.5)
     expect(state.tokensToday).toBe(1_500)
     expect(state.accounts.map((a) => a.id)).toEqual([
       'claude',
@@ -178,8 +207,8 @@ describe('foldUsageBarState', () => {
     ])
     expect('days' in state.accounts[0]!).toBe(false)
     expect(
-      foldUsageBarState({ generatedAt: 0, providers: [] }).tightest,
-    ).toBeNull()
+      foldUsageBarState({ generatedAt: 0, providers: [] }).tokensToday,
+    ).toBe(0)
   })
 })
 

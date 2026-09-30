@@ -124,8 +124,6 @@ export interface UsageBarAccount {
 /** The cached report (usage.rs `UsageReport`), folded for the cell and card
  * by `foldUsageBarState`. */
 export interface UsageBarState {
-  /** Highest used-percent across every account's windows — the glyph's fill. */
-  tightest: number | null
   /** Tokens across every account today. */
   tokensToday: number
   accounts: UsageBarAccount[]

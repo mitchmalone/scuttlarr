@@ -818,8 +818,10 @@ export function BarWifiCell({
 
 /**
  * CodexBar's "tiny usage meter" as a Lucide-box glyph: a 20×8 rounded track
- * with a fill for the tightest window. Drawn, not iconed — no lucide glyph
- * says "how full is the bucket" at 14px.
+ * with a `pct` fill. Drawn, not iconed — no lucide glyph says "how full is
+ * the bucket" at 14px. The usage cell fills it whole once data lands: its
+ * colour is the pace, and a part-fill beside it would be a second, clashing
+ * signal (a nearly full meter in green).
  */
 export function UsageMeterIcon({
   pct,
@@ -875,6 +877,10 @@ export function usageCardHeight(usage: UsageBarState | null): number {
   )
   return 24 + 60 + providers * 56 + rows + 44 + 16
 }
+
+/** Full once there's data, an empty outline before the first scan. */
+const glyphFill = (usage: UsageBarState | null) =>
+  usage && usage.accounts.length > 0 ? 100 : null
 
 const PROVIDER_ICONS: Record<string, ReactNode> = {
   claude: <ClaudeIcon size={18} />,
@@ -971,7 +977,7 @@ export function BarUsageCard({
     <BarCard variant="usage" cardRef={cardRef}>
       <div className="bar-usage-top">
         <span className="bar-usage-glyph">
-          <UsageMeterIcon pct={usage?.tightest ?? null} size={30} />
+          <UsageMeterIcon pct={glyphFill(usage)} size={30} />
         </span>
         <div>
           <div className="bar-usage-title">Usage</div>
@@ -1022,7 +1028,7 @@ export function BarUsageCell({
 }) {
   const pace = usage ? usagePace(usage.accounts, nowSecs) : null
   const className = `bar-cell bar-pace-${pace ?? 'off'}`
-  const body = <UsageMeterIcon pct={usage?.tightest ?? null} />
+  const body = <UsageMeterIcon pct={glyphFill(usage)} />
   const title = pace ? `Agent usage · ${PACE_LABEL[pace]}` : 'Agent usage'
   if (!hover) {
     return (

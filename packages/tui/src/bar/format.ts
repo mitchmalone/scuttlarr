@@ -234,8 +234,7 @@ export function widgetHealth(
 /* ---- usage ----------------------------------------------------------- */
 
 /** The bar's fold of a usage report: per-account windows, histograms
- * dropped, plus the tightest window overall (the meter glyph's fill) and
- * today's tokens across every account (the card's subtitle). */
+ * dropped, plus today's tokens across every account (the card's subtitle). */
 export function foldUsageBarState(report: {
   generatedAt?: number
   providers: (UsageBarAccount & { days?: { tokens: number }[] })[]
@@ -250,15 +249,10 @@ export function foldUsageBarState(report: {
       limitsNote,
     }),
   )
-  let tightest: number | null = null
-  for (const a of accounts)
-    for (const l of a.limits)
-      tightest =
-        tightest == null ? l.usedPercent : Math.max(tightest, l.usedPercent)
   // `days` runs oldest first, today last.
   const tokensToday = report.providers.reduce(
     (sum, p) => sum + (p.days?.at(-1)?.tokens ?? 0),
     0,
   )
-  return { tightest, tokensToday, accounts }
+  return { tokensToday, accounts }
 }

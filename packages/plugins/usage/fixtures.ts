@@ -8,8 +8,9 @@ const WEEK = 7 * 86_400
 
 /**
  * Fictional usage in the shape usage.rs emits — two Claude subscriptions plus
- * Codex, one per pace: on pace, slow down, go go go. The cell, tiles, and panel are the real components; only these
- * numbers are made up (AGENTS invariant 10). Shared by the website's demo and
+ * Codex, one per pace: on pace, slow down, go go go. The cell, tiles, and
+ * panel are the real components; only these numbers are made up (AGENTS
+ * invariant 10). Shared by the website's demo and
  * the kit's stories.
  */
 export function usageReportAt(nowSecs: number): UsageReport {

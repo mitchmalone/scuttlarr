@@ -3,9 +3,17 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-10-01 (awake holds until it ends; crash relaunch)
+> Last updated: 2026-10-01 (v0.7.0 released — the first scuttlarr release)
 
 ## Where we are
+
+**v0.7.0 released 2026-10-01** — the first release as scuttlarr (notes
+`docs/releases/v0.7.0.md`). Signed, notarized, Gatekeeper-accepted; smoke-tested
+fresh-profile (throwaway HOME: 157 ms cold start, first-run panel) and upgrade-path (0.6.0
+→ 0.7.0, config/themes/frecency/clips identical). CI fan-out green: tap now has
+`Casks/scuttlarr.rb` 0.7.0 and `launcharr.rb` deprecated → scuttlarr; Notion and the
+mitchmalone.com deploy hook ran. The in-app self-update path can be live-proven from the
+next release on.
 
 **awake for an unattended Mac, 2026-10-01 (dev-installed):** DECISIONS 2026-10-01, plan
 `plans/active/awake.md` slice F. `manual` holds no longer expire (was 12 h) and every hold

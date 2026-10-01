@@ -99,7 +99,7 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
       canonical domain (Vercel project already exists as `scuttlarr-web`); launcharr.com
       301 → scuttlarr.com. scuttlarr's `apps/www` landing copy (manifesto, curl line)
       merges in; its repo's site is retired.
-- [ ] 1.7 (built + dev-installed 2026-09-11, see STATUS) Ship as v0.x with release notes: "launcharr is now scuttlarr; paths moved, nothing
+- [x] 1.7 (released as v0.7.0, 2026-10-01) Ship as v0.x with release notes: "launcharr is now scuttlarr; paths moved, nothing
       to do". Verify on the primary Mac via `scripts/dev-install.sh` first (quiet install).
 
 ### Phase 2 — Port setup (packages/setup)

@@ -61,8 +61,7 @@ cmd_defaults() {
   sc_log "${SC_DEFAULTS_CHANGED} of ${SC_DEFAULTS_SEEN} keys would change"
   (( apply )) || { sc_log "run with --apply to change them"; return 0; }
   if (( ! yes )); then
-    local reply
-    read -q "reply?apply? [y/N] " || { print >&2; sc_log "left as is"; return 0; }
+    sc_confirm "apply?" || { print >&2; sc_log "left as is"; return 0; }
     print >&2
   fi
   sc_defaults_run apply
@@ -93,8 +92,7 @@ cmd_shell() {
   sc_log "$(( SC_SHELL_CHANGED - SC_SHELL_PLUGINS )) of ${SC_SHELL_SEEN} files would change, ${SC_SHELL_PLUGINS} plugin(s) to clone"
   (( apply )) || { sc_log "run with --apply to write them"; return 0; }
   if (( ! yes )); then
-    local reply
-    read -q "reply?apply? [y/N] " || { print >&2; sc_log "left as is"; return 0; }
+    sc_confirm "apply?" || { print >&2; sc_log "left as is"; return 0; }
     print >&2
   fi
   sc_shell_run apply
@@ -135,8 +133,7 @@ cmd_remove() {
   sc_log "${SC_REMOVE_PATHS} owned path(s) to remove, ${SC_REMOVE_RESTORED} original(s) to restore, ${SC_REMOVE_DEFAULTS} default(s) to put back"
   sc_log "overlay $(sc_tilde "$SCUTTLARR_OVERLAY") stays; so do Homebrew and the app"
   if (( ! yes )); then
-    local reply
-    read -q "reply?remove? [y/N] " || { print >&2; sc_log "left as is"; return 0; }
+    sc_confirm "remove?" || { print >&2; sc_log "left as is"; return 0; }
     print >&2
   fi
   sc_remove_run apply

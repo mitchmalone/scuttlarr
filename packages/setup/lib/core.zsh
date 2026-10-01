@@ -30,6 +30,15 @@ sc_err()  { print -r -- "${_sc_c_err}✗${_sc_c_off} $*" >&2; }
 sc_head() { print -r -- "${_sc_c_acc}${(U)1}${_sc_c_off}" >&2; }
 sc_die()  { sc_err "$@"; exit 1; }
 
+# Ask once, y/N. zsh's `read -q` reads the terminal itself, not stdin, so a
+# caller with stdin redirected (a script, a test, `</dev/null`) would still be
+# asked — only ask when stdin is a terminal; anything else is a no.
+sc_confirm() {
+  [[ -t 0 ]] || return 1
+  local reply
+  read -q "reply?$1 [y/N] "
+}
+
 # ---- helpers -----------------------------------------------------------------
 
 # Ensure the state directory exists (first write creates it).

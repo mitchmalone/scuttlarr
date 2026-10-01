@@ -954,3 +954,12 @@ built-in included: the Studio Display has to be unplugged. With no display at al
 invents a 1920x1080 `Display` placeholder, and with the lid closed and nothing else it
 lights the built-in `Color LCD` anyway — so the iPad screen is never disconnected unless
 a real display is there to take over. A display change can lock the session.
+
+### 2026-10-01 · zsh `read -q` reads the terminal, not stdin — tests passed in agent shells, prompted in Ghostty
+
+`scripts/release.sh`'s gate failed in a real terminal: `remove.test.zsh` declines the
+`remove? [y/N]` question by feeding stdin from `/dev/null`, but `read -q` reads the
+controlling terminal, so in Ghostty the test asked Mitch and took the answer. Agent shells
+have no terminal, so it always passed there. The CLI now asks through `sc_confirm`, which
+treats a non-terminal stdin as no. Lesson: run the gate under a pty
+(`python3 -c 'import pty; pty.spawn(["pnpm","verify"])'`) before a release.

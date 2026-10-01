@@ -931,3 +931,13 @@ The CLI now writes `~/.local/share/com.vercel.cli/auth.json` (XDG data dir) and 
 `~/Library/Application Support/com.vercel.cli/auth.json` untouched, so the widget kept
 sending an Aug 25 token and `vercel whoami` couldn't fix it. `widgets/vercel.ts` reads
 both and uses the token that expires last.
+
+### 2026-10-01 · launchd starts jobs with no locale; tmux mangles `-F` output without one
+
+The first launchd-run build collapsed every agent into one group. launchd gives a job no
+`LANG`/`LC_*` (an `open`-launched app had one), and tmux in the C locale escapes the tabs
+in `list-panes -F` output to `_`, so the pane parse came back empty. Fixed twice: `tmux -u`
+in `agents.rs` (1c235c6), and `EnvironmentVariables { LANG }` in the login item plist,
+read from `AppleLocale` at patch time, so every child gets the locale it had before.
+Lesson: changing _how_ a process is launched changes its environment — diff `ps eww`
+before and after.

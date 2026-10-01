@@ -78,6 +78,8 @@ export interface AwakeState {
   released: string | null
   /** Re-armed at launch from the previous run's persisted hold. */
   resumed: boolean
+  /** macOS's own sleep is switched off for this hold (needs the sudoers rule). */
+  sleepOff: boolean
 }
 
 /** Mirrors OtherHolder in power.rs. */

@@ -209,6 +209,7 @@ fn arm_with(
         });
     }
     start_watchdog();
+    sync_override();
     Ok(())
 }
 
@@ -217,6 +218,22 @@ pub fn release() {
     *RELEASED.lock().unwrap() = None;
     *SESSION.lock().unwrap() = None;
     forget_persisted();
+    sync_override();
+}
+
+/// Bring macOS's own sleep switch in line with whether a hold is armed
+/// (`sleep_override`): off while held, back on otherwise. Called on every arm
+/// and release, and once at launch to undo what a crashed run left behind.
+pub fn sync_override() {
+    crate::sleep_override::reconcile_soon(state_dir(), || {
+        SESSION.lock().map(|s| s.is_some()).unwrap_or(false)
+    });
+}
+
+/// Orderly quit: sleep comes back on. `awake.json` stays, so the next launch
+/// resumes the hold — and switches sleep off again with it.
+pub fn on_quit() {
+    crate::sleep_override::reconcile(&state_dir(), false);
 }
 
 fn release_because(reason: &'static str) {
@@ -226,6 +243,8 @@ fn release_because(reason: &'static str) {
         *RELEASED.lock().unwrap() = Some(reason);
         crate::logbook::breadcrumb("awake", &format!("released by rail: {reason}"));
         forget_persisted();
+        drop(session);
+        sync_override();
     }
 }
 
@@ -261,6 +280,13 @@ struct Persisted {
 /// hold in the developer's real state dir.
 #[cfg(test)]
 static PERSIST_DIR: Mutex<Option<std::path::PathBuf>> = Mutex::new(None);
+
+fn state_dir() -> std::path::PathBuf {
+    persisted_path()
+        .parent()
+        .map(std::path::Path::to_path_buf)
+        .unwrap_or_default()
+}
 
 fn persisted_path() -> std::path::PathBuf {
     #[cfg(test)]
@@ -431,6 +457,9 @@ pub struct AwakeState {
     pub released: Option<String>,
     /// This session was re-armed at launch from the previous run's `awake.json`.
     pub resumed: bool,
+    /// macOS's own sleep is switched off on our account (`sleep_override`):
+    /// lid closed on battery stays up too, and a crash leaves no gap.
+    pub sleep_off: bool,
 }
 
 /// Cheap in-memory snapshot; rails are re-checked inline so a passed deadline
@@ -449,6 +478,7 @@ pub fn state() -> AwakeState {
             spec: s.spec.clone(),
             released,
             resumed: s.resumed,
+            sleep_off: crate::sleep_override::engaged(),
         },
         None => AwakeState {
             released,

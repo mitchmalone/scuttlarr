@@ -210,6 +210,14 @@ while <app>/off`); `caffeine`/`caffeinate`/`keep-awake` are fuzzy aliases of the
       _Proven: `kill -9` → back in 7 s, hold resumed._
 - [ ] Hands-check: Quit from the tray stays quit (exit 0 is not relaunched).
 - [ ] Hands-check: a held Mac survives `sudo fdesetup authrestart` with the hold back.
+- [x] macOS sleep off while a hold is armed (`sleep_override.rs`, `sudo -n pmset -a
+    disablesleep`), rule installed by `scuttlarr sudoers on` (DECISIONS 2026-10-01).
+      _Proven: resumed hold → `SleepDisabled 1` + marker; `kill -9` → still 1 through
+      the gap, relaunched in 1 s._ Covers slice E's lid-on-battery case without the helper.
+- [x] Login item plist carries `LANG` (launchd gives none; tmux broke without it).
+- [ ] Hands-check: releasing a hold brings sleep back (`SleepDisabled 0`, marker gone).
+- [ ] Mitch: `scuttlarr sudoers on` once, so the override doesn't lean on Amphetamine's
+      rule (`/etc/sudoers.d/amphetamine_PowerProtect` allows the same two commands).
 
 ### Slice E — lid closed on battery (deferred, own milestone)
 

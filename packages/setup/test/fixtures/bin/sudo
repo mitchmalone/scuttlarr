@@ -1,0 +1,15 @@
+#!/bin/zsh
+# A fake `sudo` for tests: runs the command as the current user, dropping the
+# `-o <owner> -g <group>` that only root may pass to install(1), and logs each
+# call to $FAKE_SUDO_LOG.
+emulate -L zsh
+setopt err_exit no_unset
+print -r -- "$*" >> "${FAKE_SUDO_LOG:?FAKE_SUDO_LOG unset}"
+local -a args; args=()
+while (( $# )); do
+  case "$1" in
+    -o|-g) shift 2 ;;
+    *) args+=("$1"); shift ;;
+  esac
+done
+exec "${args[@]}"

@@ -11,7 +11,12 @@
 `plans/active/awake.md` slice F. `manual` holds no longer expire (was 12 h) and every hold
 survives a reboot; `awake until oct 16` (dates, optional year/time); the login item
 relaunches a crash (`KeepAlive`, `login_item.rs`) — proven `kill -9` → back in 7 s with
-the hold. **Hands-check pending:** tray Quit stays quit; hold survives an authrestart.
+the hold. Every hold also switches macOS sleep off (`sleep_override.rs`, `sudo -n pmset
+-a disablesleep`; rule via `scuttlarr sudoers on`, DECISIONS 2026-10-01) — lid closed on
+battery and the crash gap covered, proven live; plist carries `LANG` (launchd gives none,
+which broke tmux parsing — JOURNAL). **Pending:** Mitch runs `scuttlarr sudoers on`
+(Amphetamine's identical rule covers it meanwhile); tray Quit stays quit; release
+restores sleep; hold survives an authrestart.
 Context: two weeks away over Screens; display mode stays in dotfiles `remote-mode`
 (BetterDisplay virtual iPad screen) for now.
 

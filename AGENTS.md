@@ -82,6 +82,10 @@ it in `docs/DECISIONS.md`.
    `colorpicker` ask for **Screen Recording** once (2× magnifier, DECISIONS 2026-08-17);
    off — and until granted — it's Apple's `NSColorSampler`, which needs nothing. Nothing
    ever prompts unless that toggle is flipped.
+   Root, once, by the user's own hand: `scuttlarr sudoers on` (terminal, one password)
+   installs a rule allowing exactly `pmset -a disablesleep 0|1`, so `awake` can switch
+   macOS sleep off while a hold is armed. The app only runs `sudo -n` — it never asks
+   (DECISIONS 2026-10-01).
 2. **Network is allowed; telemetry is not.** The desktop app may talk to the network
    wherever a feature needs it (retired the zero-network invariant, DECISIONS
    2026-09-04). Fetches are fail-visible, cached, and off the hot path. What stays

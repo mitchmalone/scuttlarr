@@ -66,6 +66,15 @@ _sc_remove_paths() {
         elif [[ "$mode" == apply ]]; then
           rm -f "$(sc_touched_copy_path "$target")"
         fi ;;
+      root)
+        if [[ -e "$target" ]]; then
+          (( SC_REMOVE_PATHS++, SC_REMOVE_CHANGED++ ))
+          if [[ "$mode" == apply ]]; then
+            _sc_sudo /bin/rm -f "$target" && sc_ok "$shown: removed (sudo)"
+          else
+            sc_log "$shown: remove (asks for your password)"
+          fi
+        fi ;;
       *) sc_warn "$shown: unknown manifest mode '$m' — left alone" ;;
     esac
     if sc_adopted_has "$target"; then

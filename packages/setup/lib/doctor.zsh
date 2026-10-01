@@ -73,6 +73,12 @@ sc_doctor() {
         elif [[ "$(print -r -- "$block" | shasum -a 256 | cut -d' ' -f1)" != "$source" ]]; then
           sc_warn "$(sc_tilde "$target"): the scuttlarr include was edited"; (( problems++ ))
         fi ;;
+      root)
+        if [[ ! -f "$target" ]]; then
+          sc_warn "$target: missing — \`scuttlarr sudoers on\` puts it back"; (( problems++ ))
+        elif [[ "$(sc_hash "$target")" != "$source" ]]; then
+          sc_warn "$target: edited since scuttlarr wrote it"; (( problems++ ))
+        fi ;;
       *) sc_warn "$(sc_tilde "$target"): unknown manifest mode '$mode'"; (( problems++ )) ;;
     esac
   done < <(sc_manifest_list)

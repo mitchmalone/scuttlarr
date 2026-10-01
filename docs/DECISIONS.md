@@ -1545,3 +1545,25 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
   2026-09-14) sat visibly apart from every other cell. That exception is withdrawn.
 - **Alternatives.** Per-cell exceptions (rejected: the one we made was the one that
   looked wrong).
+
+### 2026-10-01 · awake switches macOS sleep off while it holds — via a two-command sudoers rule, not a helper (yet)
+
+- **Decision.** While a hold is armed, `sleep_override.rs` runs
+  `sudo -n /usr/bin/pmset -a disablesleep 1`, and `0` when it ends — on release, a rail,
+  an orderly quit, or a launch with nothing to resume. A crash keeps it (the gap before
+  launchd's relaunch is exactly what it covers). Ownership is a `sleep-override` marker
+  beside `awake.json`; sleep someone else disabled is never re-enabled by us. `sudo -n`
+  only succeeds under a passwordless rule, installed once by `scuttlarr sudoers on`
+  (`/etc/sudoers.d/scuttlarr`, 0444, this user, those two commands; manifest mode
+  `root`; `off` and `remove` sudo-delete it). Without the rule nothing prompts and the
+  hold runs on assertions alone; the panel says which. AGENTS.md invariant 1 names the
+  carve-out. The login item also gains `LANG` (from `AppleLocale`), since launchd
+  starts jobs without one.
+- **Why.** "Awake modes aren't useful if they don't take care of everything" (Mitch).
+  Assertions can't cover lid close on battery or the seconds after a crash with the lid
+  shut; `disablesleep` covers both and is root. A sudoers rule is the smallest root:
+  hours not days, works from ad-hoc dev builds, and the exact shape Amphetamine ships.
+- **Alternatives.** The slice E `SMAppService` helper (deferred, not rejected: replaces
+  the rule once releases are signed — needs signing, an XPC surface and days). A password
+  dialog per arm (rejected: invariant 13, and an unattended Mac can't type). Asking the
+  user to run `pmset` by hand (rejected: that's the gap this closes).

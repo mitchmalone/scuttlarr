@@ -53,6 +53,7 @@ mod settings_panes;
 mod settings_window;
 mod setup;
 mod shortcut;
+mod sleep_override;
 mod sysread;
 mod system_commands;
 mod terminal;
@@ -82,7 +83,7 @@ pub(crate) fn apply_launch_at_login(app: &tauri::AppHandle, enabled: bool) {
         autolaunch.disable()
     };
     match result {
-        Ok(()) if enabled => login_item::keep_alive_on_crash(),
+        Ok(()) if enabled => login_item::supervise(),
         Ok(()) => {}
         Err(e) => eprintln!("[scuttlarr] launch-at-login ({enabled}) failed: {e}"),
     }
@@ -275,7 +276,11 @@ pub fn run() {
             // A keep-awake hold the previous run left behind (awake.json) is
             // re-armed now — assertions first, then a toast once the webview
             // can render it, so a resumed hold never goes unannounced.
-            if let Some(resumed) = power::resume() {
+            let resumed = power::resume();
+            // Undo a sleep override a crashed run left with nothing to resume
+            // (resume re-engages its own when a hold comes back).
+            power::sync_override();
+            if let Some(resumed) = resumed {
                 let handle = app.handle().clone();
                 std::thread::spawn(move || {
                     std::thread::sleep(std::time::Duration::from_millis(1500));
@@ -305,6 +310,7 @@ pub fn run() {
             // Orderly quit takes the supervised `borders` child with us (desktop.rs).
             if let tauri::RunEvent::Exit = event {
                 desktop::shutdown();
+                power::on_quit();
             }
         });
 }

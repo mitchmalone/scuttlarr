@@ -6,7 +6,8 @@
 # Modes: symlink (→ base), generated (rendered; hash recorded), adopted (the
 # original was moved to state/adopted/), touched (a marker-bounded stanza we
 # appended to a file that stays the user's; the stanza's hash is recorded and
-# remove strips it). This file is the whole basis for
+# remove strips it), root (a root-owned file written through sudo — only the
+# sudoers rule, lib/sudoers.zsh; its hash is recorded and remove sudo-deletes it). This file is the whole basis for
 # `doctor` and `remove` — a write that isn't here didn't happen, as far as
 # scuttlarr is concerned.
 

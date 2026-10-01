@@ -20,6 +20,7 @@ source "$SCUTTLARR_BASE/lib/link.zsh"
 source "$SCUTTLARR_BASE/lib/migrations.zsh"
 source "$SCUTTLARR_BASE/lib/shell.zsh"
 source "$SCUTTLARR_BASE/lib/remove.zsh"
+source "$SCUTTLARR_BASE/lib/sudoers.zsh"
 
 usage() {
   cat <<EOF
@@ -32,6 +33,7 @@ scuttlarr ${SCUTTLARR_VERSION} — scuttle the ship, sail the wreck.
   scuttlarr shell --apply          write them (adopting what's there), clone the zsh plugins
   scuttlarr link | unlink          put scuttlarr on PATH (~/.local/bin), or take it off
   scuttlarr migrate                run the base migrations this machine hasn't yet
+  scuttlarr sudoers on | off       let awake switch macOS sleep off while it holds (one password)
   scuttlarr remove                 undo every owned path and default; asks, --yes skips
   scuttlarr help | version
 
@@ -152,6 +154,7 @@ main() {
     unlink)   cmd_unlink "$@" ;;
     migrate)  cmd_migrate "$@" ;;
     remove)   cmd_remove "$@" ;;
+    sudoers)  sc_sudoers "$@" ;;
     version)  print -r -- "$SCUTTLARR_VERSION" ;;
     help|-h|--help) usage ;;
     *) sc_err "unknown command '$cmd'"; usage; return 1 ;;

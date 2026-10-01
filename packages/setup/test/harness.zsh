@@ -34,6 +34,7 @@ source "$SCUTTLARR_BASE/lib/link.zsh"
 source "$SCUTTLARR_BASE/lib/migrations.zsh"
 source "$SCUTTLARR_BASE/lib/shell.zsh"
 source "$SCUTTLARR_BASE/lib/remove.zsh"
+source "$SCUTTLARR_BASE/lib/sudoers.zsh"
 
 _t_where() { print -r -- "${funcfiletrace[2]:-?}"; }
 

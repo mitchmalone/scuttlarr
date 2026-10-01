@@ -84,6 +84,13 @@ Each owned path has exactly one mode, recorded in the manifest:
 | **generated**      | Base ⊕ overlay merges: `.zshrc`, the Brewfile, `launcharr/config.json`, `aerospace.toml` | Rendered by the CLI; doctor re-renders and diffs       |
 | **adopted**        | A file that existed before scuttlarr                                                     | Moved to `state/adopted/`, never overwritten silently  |
 | **touched**        | A file that stays yours but carries one stanza of ours (`~/.config/git/config`)          | Marker-bounded; doctor hashes the block, remove strips |
+| **root**           | The one root-owned file: `/etc/sudoers.d/scuttlarr` (`scuttlarr sudoers on`)             | Hash recorded; doctor diffs it, remove sudo-deletes    |
+
+`scuttlarr sudoers on` installs a two-command rule — `pmset -a disablesleep 1` and `0`,
+this user, no password — so the app's `awake` can switch macOS sleep off while a hold is
+armed (lid closed on battery, no gap after a crash). The app only ever runs `sudo -n`:
+without the rule it asks nothing and holds on power assertions alone. `off` removes it
+(DECISIONS 2026-10-01).
 
 Adopt **moves, never overwrites**. Where it makes sense the original is offered back as
 an overlay (an old `.zshrc` → `zsh/99-adopted.zsh`, off by default).

@@ -143,6 +143,11 @@ it in `docs/DECISIONS.md`.
     labelled Enter, a report is a panel line or a bar cell; both keep the prompt's focus
     discipline (invariant 6), a modal breaks it. The one AppleScript dialog is the file
     picker in `desktop.rs`, which the user asked for by clicking.
+14. **No emoji.** Never as a glyph in the app, the bar, plugins or the site — a glyph is
+    a lucide icon (or a `packages/tui` icon) sized with `ICON_PROPS`, coloured by theme
+    tokens. Never in docs, comments, commit messages or copy either. The only emoji
+    scuttlarr shows are the user's own content: the emoji picker's results
+    (DECISIONS 2026-10-01).
 
 ## Performance budgets (requirements, not aspirations)
 

@@ -1533,3 +1533,15 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
   what launchd already does). An "indefinite" flag beside `manual` (rejected: manual
   already says it). Leaving crash recovery to `pmset disablesleep` (complementary, not a
   replacement: that's root, machine-wide, and outside the app).
+
+### 2026-10-01 · No emoji, anywhere we author
+
+- **Decision.** No emoji in anything scuttlarr authors: UI glyphs (app, bar, plugins,
+  site), docs, comments, commit messages, copy. Glyphs are lucide or `packages/tui`
+  icons with `ICON_PROPS` and theme colours. The emoji picker's results are the one
+  place emoji appear — they are the user's content, not ours. AGENTS.md invariant 14.
+- **Why.** An emoji is a full-colour picture the theme can't retint and the icon set
+  can't match; the lightbulb emoji the lights cell carried (allowed as an exception
+  2026-09-14) sat visibly apart from every other cell. That exception is withdrawn.
+- **Alternatives.** Per-cell exceptions (rejected: the one we made was the one that
+  looked wrong).

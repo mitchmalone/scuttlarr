@@ -28,7 +28,16 @@ class SetupNeeded extends Error {
 }
 
 const API = 'https://api.vercel.com'
-const CLI_DIR = join(homedir(), 'Library/Application Support/com.vercel.cli')
+// The CLI's store moved: older CLIs used Application Support; 61 writes the
+// XDG data dir and leaves the old file to rot (JOURNAL 2026-10-01). Read both
+// and trust whichever token expires last.
+const CLI_DIRS = [
+  join(
+    process.env.XDG_DATA_HOME ?? join(homedir(), '.local/share'),
+    'com.vercel.cli',
+  ),
+  join(homedir(), 'Library/Application Support/com.vercel.cli'),
+]
 const MAX_ROWS = 12
 
 const TONES: Record<string, WidgetTone> = {
@@ -86,8 +95,19 @@ function readJson(path: string): Record<string, unknown> {
 
 /** Token + team from the env, else the Vercel CLI's own store. */
 function credentials(): { token: string | null; team: string | null } {
-  const auth = readJson(join(CLI_DIR, 'auth.json'))
-  const cfg = readJson(join(CLI_DIR, 'config.json'))
+  const stores = CLI_DIRS.map((dir) => ({
+    auth: readJson(join(dir, 'auth.json')),
+    cfg: readJson(join(dir, 'config.json')),
+  })).filter((s) => typeof s.auth.token === 'string')
+  const expiry = (s: (typeof stores)[number]) =>
+    typeof s.auth.expiresAt === 'number' ? s.auth.expiresAt : 0
+  const { auth, cfg } = stores.reduce<{
+    auth: Record<string, unknown>
+    cfg: Record<string, unknown>
+  }>((a, b) => (!a.auth.token || expiry(b) > expiry(a) ? b : a), {
+    auth: {},
+    cfg: {},
+  })
   const token = process.env.VERCEL_TOKEN ?? (auth.token as string | undefined)
   const team =
     process.env.VERCEL_TEAM_ID ?? (cfg.currentTeam as string | undefined)

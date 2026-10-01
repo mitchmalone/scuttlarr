@@ -924,3 +924,10 @@ into one ungrouped cell. Fix: every tmux spawn goes through `agents::tmux_comman
 which adds `-u`; `theme.rs` called bare `tmux`, which isn't on launchd's PATH at all,
 and now uses the same Homebrew fallbacks. Any other child that reads the locale runs in
 C under launchd too.
+
+### 2026-10-01 · Vercel CLI 61 moved its credential store
+
+The CLI now writes `~/.local/share/com.vercel.cli/auth.json` (XDG data dir) and leaves
+`~/Library/Application Support/com.vercel.cli/auth.json` untouched, so the widget kept
+sending an Aug 25 token and `vercel whoami` couldn't fix it. `widgets/vercel.ts` reads
+both and uses the token that expires last.

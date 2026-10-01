@@ -4,6 +4,7 @@ import {
   type AwakeReading,
   type AwakeUntil,
   agentsWorking,
+  awayNote,
   endsLabel,
   evaluate,
   formatClock,
@@ -459,10 +460,38 @@ describe('labels', () => {
     expect(formatClock(12, 0)).toBe('12:00 pm')
   })
 
+  it('says whether away mode will work, and what to do if not', () => {
+    const ok = { installed: true, screenReady: true, others: [] }
+    expect(awayNote(ok)).toBe(
+      'Screens on the iPad fills the screen. This Mac shows nothing else.',
+    )
+    expect(awayNote({ ...ok, screenReady: false })).toBe(
+      'Screens on the iPad fills the screen. This Mac shows nothing else.',
+    )
+    expect(awayNote({ ...ok, installed: false })).toBe(
+      'Needs BetterDisplay (Pro) installed — it makes the iPad-sized screen.',
+    )
+    expect(awayNote({ ...ok, others: ['Studio Display'] })).toBe(
+      'Screens will also show the Studio Display. Unplug it — macOS won’t let it be switched off.',
+    )
+    expect(awayNote({ ...ok, others: ['Color LCD'] })).toBe(
+      'Screens will also show the built-in screen. Close the lid.',
+    )
+    expect(awayNote({ ...ok, others: ['Color LCD', 'LG UltraFine'] })).toBe(
+      'Screens will also show the built-in screen and the LG UltraFine. Close the lid and unplug the other display.',
+    )
+    expect(awayNote(null)).toBe(
+      'Screens on the iPad fills the screen. This Mac shows nothing else.',
+    )
+  })
+
   it('describes what stays on', () => {
     expect(holdLabel(false, false)).toBe('Mac awake, screen can sleep')
     expect(holdLabel(true, true)).toBe(
       'Mac and screen both on · drives spinning',
+    )
+    expect(holdLabel(false, false, true)).toBe(
+      'Mac awake, screen can sleep · away mode',
     )
   })
 

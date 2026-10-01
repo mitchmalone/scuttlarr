@@ -139,6 +139,8 @@ struct Session {
     _held: Vec<Assertion>,
     display: bool,
     disks: bool,
+    /// Away mode: the iPad virtual screen is held as the display (`away`).
+    away: bool,
     since: Instant,
     until_epoch_ms: Option<i64>,
     battery_floor: Option<u8>,
@@ -157,16 +159,27 @@ static RELEASED: Mutex<Option<&'static str>> = Mutex::new(None);
 pub fn arm(
     display: bool,
     disks: bool,
+    away: bool,
     until_epoch_ms: Option<i64>,
     battery_floor: Option<u8>,
     spec: Option<String>,
 ) -> CmdResult<()> {
-    arm_with(display, disks, until_epoch_ms, battery_floor, spec, false)
+    arm_with(
+        display,
+        disks,
+        away,
+        until_epoch_ms,
+        battery_floor,
+        spec,
+        false,
+    )
 }
 
+#[allow(clippy::too_many_arguments)] // one per persisted field; a struct would just rename them
 fn arm_with(
     display: bool,
     disks: bool,
+    away: bool,
     until_epoch_ms: Option<i64>,
     battery_floor: Option<u8>,
     spec: Option<String>,
@@ -190,6 +203,7 @@ fn arm_with(
         _held: held,
         display,
         disks,
+        away,
         since: Instant::now(),
         until_epoch_ms,
         battery_floor,
@@ -202,6 +216,7 @@ fn arm_with(
         persist(&Persisted {
             display,
             disks,
+            away,
             until_epoch_ms,
             battery_floor,
             spec,
@@ -210,6 +225,11 @@ fn arm_with(
     }
     start_watchdog();
     sync_override();
+    if away {
+        crate::away::start();
+    } else {
+        crate::away::end();
+    }
     Ok(())
 }
 
@@ -219,6 +239,7 @@ pub fn release() {
     *SESSION.lock().unwrap() = None;
     forget_persisted();
     sync_override();
+    crate::away::end();
 }
 
 /// Bring macOS's own sleep switch in line with whether a hold is armed
@@ -234,6 +255,7 @@ pub fn sync_override() {
 /// resumes the hold — and switches sleep off again with it.
 pub fn on_quit() {
     crate::sleep_override::reconcile(&state_dir(), false);
+    crate::away::stop();
 }
 
 fn release_because(reason: &'static str) {
@@ -245,6 +267,7 @@ fn release_because(reason: &'static str) {
         forget_persisted();
         drop(session);
         sync_override();
+        crate::away::end();
     }
 }
 
@@ -270,6 +293,9 @@ fn release_because(reason: &'static str) {
 struct Persisted {
     display: bool,
     disks: bool,
+    /// Absent in files written before away mode.
+    #[serde(default)]
+    away: bool,
     until_epoch_ms: Option<i64>,
     battery_floor: Option<u8>,
     spec: Option<String>,
@@ -381,6 +407,7 @@ pub fn resume() -> Option<AwakeState> {
     match arm_with(
         p.display,
         p.disks,
+        p.away,
         p.until_epoch_ms,
         p.battery_floor,
         p.spec,
@@ -446,6 +473,8 @@ pub struct AwakeState {
     pub armed: bool,
     pub display: bool,
     pub disks: bool,
+    /// Away mode is holding the iPad screen as the display.
+    pub away: bool,
     /// Seconds since arming; 0 when not armed.
     pub elapsed_seconds: u64,
     pub until_epoch_ms: Option<i64>,
@@ -472,6 +501,7 @@ pub fn state() -> AwakeState {
             armed: true,
             display: s.display,
             disks: s.disks,
+            away: s.away,
             elapsed_seconds: s.since.elapsed().as_secs(),
             until_epoch_ms: s.until_epoch_ms,
             battery_floor: s.battery_floor,
@@ -495,6 +525,8 @@ pub struct AwakeStatus {
     pub state: AwakeState,
     /// Every *other* process holding a sleep-preventing assertion.
     pub others: Vec<OtherHolder>,
+    /// Whether away mode can work right now (BetterDisplay, other displays).
+    pub away: crate::away::AwayReading,
 }
 
 /// Another process's sleep-preventing assertion, as the panel lists it.
@@ -521,6 +553,7 @@ pub fn status() -> AwakeStatus {
     AwakeStatus {
         state: state(),
         others,
+        away: crate::away::reading(),
     }
 }
 
@@ -606,6 +639,7 @@ mod tests {
         Persisted {
             display: false,
             disks: false,
+            away: false,
             until_epoch_ms: until,
             battery_floor: None,
             spec: Some(spec.into()),
@@ -738,6 +772,7 @@ Kernel Assertions: 0x100=MAGICWAKE
         arm(
             false,
             false,
+            false,
             None,
             None,
             Some("{\"until\":{\"kind\":\"manual\"}}".into()),
@@ -755,13 +790,13 @@ Kernel Assertions: 0x100=MAGICWAKE
     #[test]
     fn passed_deadline_releases_and_records_why() {
         let _guard = serial();
-        arm(false, false, Some(now_epoch_ms() - 1), None, None).expect("arm");
+        arm(false, false, false, Some(now_epoch_ms() - 1), None, None).expect("arm");
         // state() re-checks rails inline — no watchdog tick needed.
         let s = state();
         assert!(!s.armed);
         assert_eq!(s.released.as_deref(), Some("deadline"));
         // The next arm clears the reason.
-        arm(false, false, None, None, None).expect("arm");
+        arm(false, false, false, None, None, None).expect("arm");
         assert_eq!(state().released, None);
         release();
     }
@@ -783,6 +818,7 @@ mod persist_tests {
     fn arm_persists_and_release_forgets() {
         let _guard = super::tests::serial();
         arm(
+            false,
             false,
             false,
             Some(now_epoch_ms() + 60_000),

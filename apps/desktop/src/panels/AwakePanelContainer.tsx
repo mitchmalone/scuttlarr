@@ -57,6 +57,7 @@ export function AwakePanelContainer({ onClose }: { onClose: () => void }) {
       invoke('awake_arm', {
         display: spec.screen,
         disks: spec.disks,
+        away: spec.away ?? false,
         untilEpochMs: untilDeadline(spec.until, new Date()),
         batteryFloor: spec.floor,
         spec: JSON.stringify(spec),

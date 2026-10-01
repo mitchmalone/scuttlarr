@@ -211,11 +211,18 @@ while <app>/off`); `caffeine`/`caffeinate`/`keep-awake` are fuzzy aliases of the
 - [ ] Hands-check: Quit from the tray stays quit (exit 0 is not relaunched).
 - [ ] Hands-check: a held Mac survives `sudo fdesetup authrestart` with the hold back.
 - [x] macOS sleep off while a hold is armed (`sleep_override.rs`, `sudo -n pmset -a
-    disablesleep`), rule installed by `scuttlarr sudoers on` (DECISIONS 2026-10-01).
+disablesleep`), rule installed by `scuttlarr sudoers on` (DECISIONS 2026-10-01).
       _Proven: resumed hold → `SleepDisabled 1` + marker; `kill -9` → still 1 through
       the gap, relaunched in 1 s._ Covers slice E's lid-on-battery case without the helper.
 - [x] Login item plist carries `LANG` (launchd gives none; tmux broke without it).
-- [ ] Hands-check: releasing a hold brings sleep back (`SleepDisabled 0`, marker gone).
+- [x] Releasing a hold brings sleep back (`SleepDisabled 0`, marker gone). _Seen
+      2026-10-01: an agents hold released itself on idle._
+- [x] Away mode checkbox (`away.rs`, BetterDisplay `iPad` virtual screen held as the
+      display; DECISIONS 2026-10-01). Unit-tested parsing and copy.
+- [ ] Hands-check, before the trip: Studio Display unplugged, lid closed, charger in,
+      `awake` with Away ticked → Screens on the iPad fills the screen, no bands.
+- [ ] Retire dotfiles `remote-mode` (script, LaunchAgent, chezmoi BetterDisplay script) —
+      two owners of the iPad screen fight.
 - [ ] Mitch: `scuttlarr sudoers on` once, so the override doesn't lean on Amphetamine's
       rule (`/etc/sudoers.d/amphetamine_PowerProtect` allows the same two commands).
 

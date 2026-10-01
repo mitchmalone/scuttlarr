@@ -71,11 +71,19 @@ pub fn agents_status() -> Vec<crate::agents::AgentSession> {
 pub fn awake_arm(
     display: bool,
     disks: bool,
+    away: Option<bool>,
     until_epoch_ms: Option<i64>,
     battery_floor: Option<u8>,
     spec: Option<String>,
 ) -> crate::error::CmdResult<()> {
-    crate::power::arm(display, disks, until_epoch_ms, battery_floor, spec)
+    crate::power::arm(
+        display,
+        disks,
+        away.unwrap_or(false),
+        until_epoch_ms,
+        battery_floor,
+        spec,
+    )
 }
 
 /// awake: release everything held.

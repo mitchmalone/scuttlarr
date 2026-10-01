@@ -1567,3 +1567,26 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
   the rule once releases are signed — needs signing, an XPC surface and days). A password
   dialog per arm (rejected: invariant 13, and an unattended Mac can't type). Asking the
   user to run `pmset` by hand (rejected: that's the gap this closes).
+
+### 2026-10-01 · Away mode is a checkbox on `awake`: BetterDisplay's iPad screen held as the display; `awake_arm` gains `away`
+
+- **Decision.** The awake panel's "What stays on" gains **Away mode — remote in from the
+  iPad**. Ticked, the hold also keeps a BetterDisplay virtual screen named `iPad` (4:3,
+  1366x1024 HiDPI on a 2732x2048 backing) connected as this Mac's display, re-checked
+  every 60 s by `away.rs` (create once, connect, pick the mode by name). Ending the hold
+  disconnects it when a real display is back to take over; an orderly quit or crash
+  leaves it for the resumed hold. `awake_arm` gains an optional `away: bool` (a
+  parameter on an existing command, not a new command); `AwakeState.away`,
+  `AwakeStatus.away: AwayReading { installed, screenReady, others }` mirrored in
+  `@scuttlarr/core`. The panel line (`awayNote`) says what Screens will show and the one
+  thing to do when it isn't only the iPad screen (unplug the external, close the lid).
+  Retires the dotfiles `remote-mode` script, its LaunchAgent and its `caffeinate`.
+- **Why.** Screens streams every framebuffer at its own size and can't resize the Mac;
+  with the Studio Display attached the iPad gets a letterboxed 5K desktop. One
+  iPad-shaped screen as the only display fixes it (proven over Screens, 2026-10-01). A
+  hold already owns "stay up while I'm away"; the display is the same intent, so it's one
+  checkbox, not a second tool with its own keep-awake.
+- **Alternatives.** Our own `CGVirtualDisplay` (rejected: private API; BetterDisplay owns
+  that hack and ships a CLI). A separate `remote` panel or command (rejected: two places
+  to arm one intent). Disconnecting the Studio Display in software (impossible:
+  BetterDisplay's `set -connected=off` fails for physical displays — unplug it).

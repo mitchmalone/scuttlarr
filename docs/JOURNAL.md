@@ -941,3 +941,16 @@ in `agents.rs` (1c235c6), and `EnvironmentVariables { LANG }` in the login item 
 read from `AppleLocale` at patch time, so every child gets the locale it had before.
 Lesson: changing _how_ a process is launched changes its environment — diff `ps eww`
 before and after.
+
+### 2026-10-01 · BetterDisplay's CLI: trust `system_profiler`, pick modes by name, physical displays won't disconnect
+
+Learned building away mode (and by the dotfiles `remote-mode` script before it). The CLI
+is the app binary (`BetterDisplay.app/Contents/MacOS/BetterDisplay get|set|create`).
+`get -connected` answers an ambiguous `on,off` — `system_profiler SPDisplaysDataType
+-json` is the truth (`_name`, `_spdisplays_pixels`, ~0.3 s). Mode numbers shift between
+connects, so the mode is chosen by its label (`1366x1024 HiDPI`) from
+`-displayModeList`. `set -connected=off` returns `Failed.` for every physical display,
+built-in included: the Studio Display has to be unplugged. With no display at all macOS
+invents a 1920x1080 `Display` placeholder, and with the lid closed and nothing else it
+lights the built-in `Color LCD` anyway — so the iPad screen is never disconnected unless
+a real display is there to take over. A display change can lock the session.

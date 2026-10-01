@@ -16,6 +16,9 @@ export type AwakeSpec = {
   screen: boolean
   /** Also keep external drives spinning. */
   disks: boolean
+  /** Away mode: the iPad-sized virtual screen is this Mac's only display, so
+   * a Screens session fits the iPad. Absent in specs from before it existed. */
+  away?: boolean
   until: AwakeUntil
   /** Release when the battery falls to this percent (off AC). null = no rail. */
   floor: number | null
@@ -69,6 +72,8 @@ export interface AwakeState {
   armed: boolean
   display: boolean
   disks: boolean
+  /** Away mode is holding the iPad screen as the display. */
+  away: boolean
   elapsedSeconds: number
   untilEpochMs: number | null
   batteryFloor: number | null
@@ -89,10 +94,21 @@ export interface OtherHolder {
   display: boolean
 }
 
+/** Mirrors AwayReading in away.rs: whether away mode can work right now. */
+export interface AwayReading {
+  /** BetterDisplay is installed. */
+  installed: boolean
+  /** The iPad screen is connected at its mode. */
+  screenReady: boolean
+  /** Every other display macOS shows — Screens would show these too. */
+  others: string[]
+}
+
 /** Mirrors AwakeStatus in power.rs — what `awake_status` returns. */
 export interface AwakeStatus {
   state: AwakeState
   others: OtherHolder[]
+  away: AwayReading
 }
 
 export function parseSpec(json: string | null): AwakeSpec | null {
@@ -454,9 +470,42 @@ export function endsLabel(until: AwakeUntil, deadline: number | null): string {
 }
 
 /** What stays on, as the user observes it. */
-export function holdLabel(screen: boolean, disks: boolean): string {
-  const base = screen ? 'Mac and screen both on' : 'Mac awake, screen can sleep'
-  return disks ? `${base} · drives spinning` : base
+export function holdLabel(
+  screen: boolean,
+  disks: boolean,
+  away = false,
+): string {
+  let label = screen ? 'Mac and screen both on' : 'Mac awake, screen can sleep'
+  if (disks) label += ' · drives spinning'
+  if (away) label += ' · away mode'
+  return label
+}
+
+/** The built-in display, as `system_profiler` names it. */
+const BUILT_IN = 'Color LCD'
+
+/** Away mode's line: what Screens will show, and the one thing to do when
+ * that isn't just the iPad screen. Unknown (null) reads as fine. */
+export function awayNote(r: AwayReading | null): string {
+  if (r && !r.installed) {
+    return 'Needs BetterDisplay (Pro) installed — it makes the iPad-sized screen.'
+  }
+  const others = r?.others ?? []
+  if (others.length === 0) {
+    return 'Screens on the iPad fills the screen. This Mac shows nothing else.'
+  }
+  const builtIn = others.includes(BUILT_IN)
+  const external = others.filter((o) => o !== BUILT_IN)
+  const names = [
+    ...(builtIn ? ['the built-in screen'] : []),
+    ...external.map((o) => `the ${o}`),
+  ]
+  const shown = `Screens will also show ${names.join(' and ')}.`
+  if (builtIn && external.length > 0) {
+    return `${shown} Close the lid and unplug the other display${external.length > 1 ? 's' : ''}.`
+  }
+  if (builtIn) return `${shown} Close the lid.`
+  return `${shown} Unplug ${external.length > 1 ? 'them' : 'it'} — macOS won’t let ${external.length > 1 ? 'them' : 'it'} be switched off.`
 }
 
 export function formatMinutes(minutes: number): string {

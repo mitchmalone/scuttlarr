@@ -17,8 +17,9 @@ battery and the crash gap covered, proven live; plist carries `LANG` (launchd gi
 which broke tmux parsing — JOURNAL). **Pending:** Mitch runs `scuttlarr sudoers on`
 (Amphetamine's identical rule covers it meanwhile); tray Quit stays quit; release
 restores sleep; hold survives an authrestart.
-Context: two weeks away over Screens; display mode stays in dotfiles `remote-mode`
-(BetterDisplay virtual iPad screen) for now.
+**Away mode** (same day): a checkbox on the awake panel holds BetterDisplay's `iPad`
+virtual screen as the display so Screens fits the iPad (`away.rs`, DECISIONS
+2026-10-01); replaces the dotfiles `remote-mode` script, which still needs retiring.
 
 **Usage pace, 2026-09-30 (dev-installed, PR open):** the usage cell is the meter glyph
 alone, tinted by pace — green "go go go" / fg "on pace" / red "slow down" (DECISIONS

@@ -16,6 +16,7 @@ mod agents;
 mod appearance;
 mod ask;
 mod audio;
+mod away;
 mod bar;
 mod bar_constrain;
 mod bar_modules;

@@ -14,11 +14,18 @@ const base = {
   onClose: noop,
 }
 
+const AWAY_OK = {
+  installed: true,
+  screenReady: false,
+  others: ['Studio Display'],
+}
+
 const SLEEPING: AwakeStatus = {
   state: {
     armed: false,
     display: false,
     disks: false,
+    away: false,
     elapsedSeconds: 0,
     untilEpochMs: null,
     batteryFloor: null,
@@ -27,6 +34,7 @@ const SLEEPING: AwakeStatus = {
     resumed: false,
     sleepOff: false,
   },
+  away: AWAY_OK,
   others: [
     { app: 'Terminal', seconds: 4 * 3600 + 12 * 60, display: false },
     { app: 'Music', seconds: 22 * 60, display: false },
@@ -38,6 +46,7 @@ const ARMED_AGENTS: AwakeStatus = {
     armed: true,
     display: false,
     disks: false,
+    away: false,
     elapsedSeconds: 42 * 60,
     untilEpochMs: null,
     batteryFloor: 20,
@@ -51,6 +60,7 @@ const ARMED_AGENTS: AwakeStatus = {
     resumed: false,
     sleepOff: false,
   },
+  away: AWAY_OK,
   others: SLEEPING.others,
 }
 
@@ -66,6 +76,7 @@ const ARMED_TIMER: AwakeStatus = {
       floor: 20,
     }),
   },
+  away: AWAY_OK,
   others: [],
 }
 
@@ -101,6 +112,7 @@ export const awakePanelStories = defineStories('AwakePanel (app)', [
         {...base}
         status={{
           state: { ...SLEEPING.state, released: 'floor' },
+          away: AWAY_OK,
           others: [],
         }}
       />

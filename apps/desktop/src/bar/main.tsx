@@ -314,7 +314,11 @@ function BarWindow() {
             card={
               <BarAwakeCard
                 armed={a?.armed ?? false}
-                holdLabel={spec ? holdLabel(spec.screen, spec.disks) : null}
+                holdLabel={
+                  spec
+                    ? holdLabel(spec.screen, spec.disks, spec.away ?? false)
+                    : null
+                }
                 endsLabel={
                   spec ? endsLabel(spec.until, a?.untilEpochMs ?? null) : null
                 }

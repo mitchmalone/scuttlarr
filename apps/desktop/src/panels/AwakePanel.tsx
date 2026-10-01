@@ -8,6 +8,7 @@
 import type { AwakeSpec, AwakeStatus, AwakeUntil } from '@scuttlarr/core/awake'
 import {
   DEFAULT_FLOOR,
+  awayNote,
   endsLabel,
   formatClock,
   formatMinutes,
@@ -41,6 +42,7 @@ export interface AwakePanelProps {
 interface Form {
   screen: boolean
   disks: boolean
+  away: boolean
   untilKind: AwakeUntil['kind']
   timerMinutes: number
   clockHour: number
@@ -52,6 +54,7 @@ interface Form {
 const DEFAULT_FORM: Form = {
   screen: false,
   disks: false,
+  away: false,
   untilKind: 'manual',
   timerMinutes: 120,
   clockHour: 18,
@@ -123,7 +126,9 @@ function ArmedView({ status, onRelease, onClose }: AwakePanelProps) {
     >
       <ListRow
         icon="●"
-        label={spec ? holdLabel(spec.screen, spec.disks) : 'Mac stays awake'}
+        label={
+          spec ? holdLabel(spec.screen, spec.disks, s.away) : 'Mac stays awake'
+        }
         right={formatSeconds(s.elapsedSeconds)}
       />
       <ListRow
@@ -136,6 +141,7 @@ function ArmedView({ status, onRelease, onClose }: AwakePanelProps) {
           label={`Lets go if the battery drops below ${s.batteryFloor}% unplugged.`}
         />
       )}
+      {s.away && <ListRow dim label={`Away mode. ${awayNote(status!.away)}`} />}
       <ListRow
         dim
         label={
@@ -265,6 +271,15 @@ function FormView({
       () => set({ disks: !form.disks }),
     ),
   )
+  row(
+    listRow(
+      check(form.away),
+      'Away mode — remote in from the iPad',
+      awayNote(status?.away ?? null),
+      undefined,
+      () => set({ away: !form.away }),
+    ),
+  )
   const untilRows: FormRow[] = []
   untilRows.push(
     listRow(
@@ -390,6 +405,7 @@ function FormView({
     onArm({
       screen: form.screen,
       disks: form.disks,
+      away: form.away,
       until: formUntil(form, currentSsid),
       floor: form.floor ? DEFAULT_FLOOR : null,
     })

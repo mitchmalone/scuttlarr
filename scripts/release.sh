@@ -106,6 +106,9 @@ cd "$DESKTOP"
 jq ".version = \"$VERSION\"" package.json > package.json.tmp && mv package.json.tmp package.json
 jq ".version = \"$VERSION\"" src-tauri/tauri.conf.json > t.tmp && mv t.tmp src-tauri/tauri.conf.json
 sed -i '' "s/^version = \".*\"/version = \"$VERSION\"/" src-tauri/Cargo.toml
+# jq rewrites JSON in its own layout; put it back in the repo's, or the release
+# commit fails CI's format check (the gate above ran before the bump).
+pnpm prettier --write package.json src-tauri/tauri.conf.json >/dev/null
 (cd src-tauri && cargo check -q 2>/dev/null || cargo check)   # refresh Cargo.lock
 for v in $(jq -r .version package.json) $(jq -r .version src-tauri/tauri.conf.json); do
   [[ "$v" == "$VERSION" ]] || die "version bump mismatch"

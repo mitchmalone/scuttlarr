@@ -1,15 +1,15 @@
 {
-  "version": "0.6.0",
-  "date": "2026-08-20",
+  "version": "0.7.0",
+  "date": "2026-10-01",
   "signed": true,
   "artifacts": {
     "zip": {
-      "url": "https://github.com/mitchmalone/scuttlarr/releases/download/v0.6.0/scuttlarr-0.6.0.zip",
-      "sha256": "56dfdbd5900810e3040430101fff493f4b65ae81317381e7b5f5a19bd453998d"
+      "url": "https://github.com/mitchmalone/scuttlarr/releases/download/v0.7.0/scuttlarr-0.7.0.zip",
+      "sha256": "1eae468400150e1a708183cf5345a44be546a2c5e74417c1205270d66ddcea5d"
     },
     "dmg": {
-      "url": "https://github.com/mitchmalone/scuttlarr/releases/download/v0.6.0/scuttlarr-0.6.0.dmg",
-      "sha256": "b8ef4a623433116c077bbb7d46db9899979a7238c7c7fc9e0fad3d85f5975ad3"
+      "url": "https://github.com/mitchmalone/scuttlarr/releases/download/v0.7.0/scuttlarr-0.7.0.dmg",
+      "sha256": "3263ffbd5d0cc4518a8d5ee5bde4ddaf5776cbb989f1e6c2d2b5be86a22f2d16"
     }
   }
 }

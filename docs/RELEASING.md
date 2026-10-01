@@ -48,8 +48,10 @@ scripts/release.sh 0.4.0          # or --unsigned while the cert is pending
 - **check** — notes exist without placeholders; `release.json` version matches the tag
   (fails the release rather than pushing corrections — branch-protection-safe); release
   assets all present.
-- **homebrew** — bumps `Casks/scuttlarr.rb` version + zip sha in the tap repo
-  (`Casks/launcharr.rb` stays as a deprecated alias; CI never touches it). Gated on
+- **homebrew** — writes `Casks/scuttlarr.rb` whole in the tap repo from the template
+  `.github/cask/scuttlarr.rb` (version + zip sha filled in) — change the cask there, never
+  in the tap. `Casks/launcharr.rb` stays at 0.6.0 as a deprecated alias: the job adds its
+  `deprecate! … replacement_cask: "scuttlarr"` once and otherwise leaves it alone. Gated on
   `vars.HOMEBREW_TAP_REPO` + `secrets.HOMEBREW_TAP_TOKEN`.
 - **notion** — sets `Version` on the Scuttlarr row. Gated on `vars.NOTION_RELEASE_PAGE` +
   `secrets.NOTION_API_KEY`.

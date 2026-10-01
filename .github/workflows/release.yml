@@ -64,6 +64,7 @@ jobs:
     needs: check
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Check configuration
         id: config
         env:
@@ -86,9 +87,15 @@ jobs:
           ZIP_SHA=$(awk -v f="scuttlarr-$VERSION.zip" '$2==f{print $1}' SHA256SUMS)
           [ -n "$ZIP_SHA" ] || { echo "::error::zip sha not found in SHA256SUMS"; exit 1; }
           git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/${{ vars.HOMEBREW_TAP_REPO }}.git" tap
+          # The cask is generated whole from the template in this repo; the tap is output.
+          sed -e "s/@VERSION@/$VERSION/" -e "s/@SHA256@/$ZIP_SHA/" \
+            .github/cask/scuttlarr.rb > tap/Casks/scuttlarr.rb
           cd tap
-          sed -i -e "s/version \".*\"/version \"$VERSION\"/" \
-                 -e "s/sha256 \".*\"/sha256 \"$ZIP_SHA\"/" Casks/scuttlarr.rb
+          # launcharr.rb stays at its last release as a deprecated alias pointing here;
+          # added once, never otherwise touched.
+          if [ -f Casks/launcharr.rb ] && ! grep -q 'deprecate!' Casks/launcharr.rb; then
+            sed -i 's|^  depends_on arch: :arm64|  deprecate! date: "2026-10-01", because: "is now scuttlarr", replacement_cask: "scuttlarr"\n\n  depends_on arch: :arm64|' Casks/launcharr.rb
+          fi
           git config user.name "scuttlarr release bot"
           git config user.email "actions@users.noreply.github.com"
           git add -A

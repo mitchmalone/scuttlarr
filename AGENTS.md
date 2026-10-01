@@ -46,8 +46,9 @@ pnpm monorepo:
 | `packages/theme` | _(planned, phase 3)_ Omarchy model: `themes/<name>/colors.toml`, templates, pure renderer, committed per-app renders                          |
 | `packages/setup` | scuttlarr's zsh CLI (ported 2026-09-11): install, defaults, Brewfile, shell, Caps→Hyper, duti, migrations, remove, manifest — `docs/SETUP.md` |
 
-The only external repo is the generated satellite `mitchmalone/homebrew-tap` (shared tap; `Casks/scuttlarr.rb`; `launcharr.rb` stays as a deprecated alias),
-written by the release pipeline — fix the generator, not the output.
+The only external repo is the generated satellite `mitchmalone/homebrew-tap` (shared tap; `Casks/scuttlarr.rb`, generated whole from `.github/cask/scuttlarr.rb`;
+`launcharr.rb` stays at 0.6.0 as a deprecated alias), written by the release pipeline —
+fix the generator, not the output.
 
 **Rust owns the OS, TypeScript owns the experience.** Anything touching AppKit, the
 filesystem, or process launch is a small, boring, well-named Rust command; everything with

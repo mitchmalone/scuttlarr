@@ -22,7 +22,7 @@
 ## Install
 
 ```sh
-brew install mitchmalone/tap/launcharr
+brew install --cask mitchmalone/tap/scuttlarr
 ```
 
 Or grab the dmg / zip below, or build from source (README).

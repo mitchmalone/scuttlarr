@@ -66,8 +66,9 @@ the `scuttlarr` source of `updates ⏎` — GitHub `releases/latest` every 6 h, 
 after sha256 + `codesign` team verification, relaunches; Settings → General "Check for
 scuttlarr updates" (default on, off = no request). **Not live-proven:** the install path
 needs a signed release newer than the installed one — the dev build is ad-hoc signed and
-correctly shows no `scuttlarr` source. **Tap:** `Casks/scuttlarr.rb` still doesn't exist
-(1.5); when created it needs `auto_updates true` (RELEASING).
+correctly shows no `scuttlarr` source. **Tap:** the release workflow generates
+`Casks/scuttlarr.rb` (with `auto_updates true`) from `.github/cask/scuttlarr.rb` on the
+first scuttlarr tag, v0.7.0 (notes `docs/releases/v0.7.0.md`).
 
 **Unification into scuttlarr, 2026-09-11 — phases 0–4 landed in one day, all local,
 not pushed, dev-installed on the primary Mac.** launcharr and scuttlarr fold into this

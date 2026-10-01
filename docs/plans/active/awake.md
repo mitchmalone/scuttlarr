@@ -2,7 +2,7 @@
 title: awake — keep-alive sessions
 status: active # planned | active | done — only the slice actually in flight is `active`
 created: 2026-08-16
-updated: 2026-08-19
+updated: 2026-10-01
 links:
   - ../done/battery-hover-card.md # battery readings + hover card this reuses
   - ../done/agent-monitoring.md # agent state that drives the "while agents work" trigger
@@ -139,6 +139,9 @@ list — reusing `src/bar/hover.ts` and the battery card's shape.
       documented-but-unverified behaviour, same category as slice E's measurement.
       _Code shipped; needs a human to close the lid: arm via `awake ⏎` once slice B
       lands (or `pmset -g assertions` while a test holds), lid closed, plugged in._
+      _Observed 2026-10-01: lid closed on AC, Mac stayed up for a working session over
+      Screens with scuttlarr's hold in the list — not isolated (caffeinate and
+      screensharingd held too), not yet multi-day._
 - [x] `power.rs`: small `unsafe` module over IOKit (`IOPMAssertionCreateWithName` /
       `IOPMAssertionRelease`), safety comment per block, assertions named `launcharr`.
       Types: system-awake, display-awake, disk-awake, and system-awake-on-AC (the one that
@@ -197,6 +200,17 @@ while <app>/off`); `caffeine`/`caffeinate`/`keep-awake` are fuzzy aliases of the
       click releases; card shows hold/ends/elapsed + the others list (pmset on card-open
       only).
 
+### Slice F — unattended for weeks (2026-10-01)
+
+- [x] No age cap on `manual`, no reboot rule: every hold resumes except a passed deadline
+      (DECISIONS 2026-10-01).
+- [x] `awake until <date>` — `oct 16`, `16 oct 2026`, `2026-10-16`, optional `[at] 9am`.
+- [x] Login item relaunches a crash (`KeepAlive { SuccessfulExit = false }`,
+      `login_item.rs`); self-update and dev-install relaunch through the launchd job.
+      _Proven: `kill -9` → back in 7 s, hold resumed._
+- [ ] Hands-check: Quit from the tray stays quit (exit 0 is not relaunched).
+- [ ] Hands-check: a held Mac survives `sudo fdesetup authrestart` with the hold back.
+
 ### Slice E — lid closed on battery (deferred, own milestone)
 
 - [ ] **Measure first**: `sudo pmset -b disablesleep 1`, lid closed on battery, confirm the
@@ -245,9 +259,9 @@ while <app>/off`); `caffeine`/`caffeinate`/`keep-awake` are fuzzy aliases of the
 
 ## Risks / open questions
 
-- **Assertions die with the process.** If launcharr crashes mid-agent-run the Mac sleeps.
-  Amphetamine has the identical property, so it's parity rather than regression — but the
-  bar cell should make "armed" unmissable so a silent loss is noticed.
+- **Assertions die with the process.** Mitigated 2026-10-01: launchd relaunches a crash
+  within ~10 s and the hold resumes from `awake.json`. The window in between is covered
+  only by whatever else holds the Mac (or `pmset disablesleep`).
 - **Does a blocked agent count as working?** Drafted as yes (it's waiting on _you_, and
   sleeping the Mac loses the session). Wrong answer means the Mac stays up all night when an
   agent stalls overnight — the battery rail is the backstop. Wants a real-use verdict before

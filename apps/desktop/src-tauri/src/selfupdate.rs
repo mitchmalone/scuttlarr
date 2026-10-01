@@ -420,13 +420,14 @@ fn swap_bundle(installed: &Path, new_app: &Path, dir: &Path) -> Result<(), Strin
     Ok(())
 }
 
-/// `open -g` in a second, from a child that outlives us, then an orderly exit
-/// — the same teardown `RunEvent::Exit` runs, so the supervised `borders`
-/// child does not outlive the process.
+/// Relaunch in a second, from a child that outlives us — through the launchd
+/// job when it's loaded, so crash relaunch keeps covering the new instance
+/// (`login_item`) — then an orderly exit: the same teardown `RunEvent::Exit`
+/// runs, so the supervised `borders` child does not outlive the process.
 fn relaunch(bundle: &Path) {
     let path = bundle.to_string_lossy().into_owned();
     let _ = Command::new("/bin/sh")
-        .args(["-c", "sleep 1; /usr/bin/open -g \"$0\"", &path])
+        .args(["-c", &crate::login_item::relaunch_script(), &path])
         .spawn();
     std::thread::sleep(Duration::from_millis(300));
     crate::desktop::shutdown();

@@ -206,7 +206,6 @@ fn arm_with(
             battery_floor,
             spec,
             armed_epoch_ms: now_epoch_ms(),
-            boot_epoch_secs: boot_epoch_secs(),
         });
     }
     start_watchdog();
@@ -238,19 +237,14 @@ fn release_because(reason: &'static str) {
 // therefore mirrored to `awake.json` in the state dir at arm time and removed
 // on any release; `resume()` at launch re-arms it if it still makes sense:
 //
-// - a deadline (`timer`/`clock`) is a wall-clock promise, honoured only while
-//   it's still ahead;
+// - a deadline (`timer`/`clock`/`date`) is a wall-clock promise, honoured only
+//   while it's still ahead;
 // - a condition hold (`agents`/`app`/`power`/…) is re-armed and the TypeScript
 //   evaluator releases it on its first tick if the condition already fails;
-// - `manual` — "until I say stop" — has no natural end, so it resumes only
-//   within `MANUAL_RESUME_MAX_MS` of arming;
-// - never across a reboot: the boot time is stamped, and a mismatch discards.
-//
-// This is the one place Rust peeks at the spec (`until.kind == "manual"`),
-// and only to cap it — the spec's semantics stay TypeScript's.
-
-/// How long a `manual` hold may still resume after it was armed.
-const MANUAL_RESUME_MAX_MS: i64 = 12 * 60 * 60 * 1000;
+// - `manual` — "until I say stop" — resumes, however long ago it was armed;
+// - all of these across a reboot too: a hold is the user's intent, not this
+//   boot's (DECISIONS 2026-10-01). Only the user, a deadline, a condition or
+//   the battery floor ends one.
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -261,9 +255,6 @@ struct Persisted {
     battery_floor: Option<u8>,
     spec: Option<String>,
     armed_epoch_ms: i64,
-    /// `kern.boottime` when armed — a different boot means the machine
-    /// slept/reset for real and the hold is not intent any more.
-    boot_epoch_secs: Option<i64>,
 }
 
 /// Tests point persistence at a scratch dir so `cargo test` never plants a
@@ -312,41 +303,10 @@ fn forget_persisted() {
     }
 }
 
-/// Seconds since the epoch at which this kernel booted (`kern.boottime`).
-fn boot_epoch_secs() -> Option<i64> {
-    let out = Command::new("/usr/sbin/sysctl")
-        .args(["-n", "kern.boottime"])
-        .output()
-        .ok()?;
-    parse_boottime(&String::from_utf8_lossy(&out.stdout))
-}
-
-/// `{ sec = 1787000000, usec = 123456 } Wed Aug 19 09:00:00 2026` → 1787000000.
-fn parse_boottime(out: &str) -> Option<i64> {
-    let rest = out.split("sec =").nth(1)?;
-    rest.trim_start()
-        .split(|c: char| !c.is_ascii_digit())
-        .next()?
-        .parse()
-        .ok()
-}
-
-/// Whether a persisted session should be re-armed now, given the current
-/// time and boot. Pure, so the rules are testable without IOKit.
-fn should_resume(p: &Persisted, now_ms: i64, boot: Option<i64>) -> bool {
-    if p.boot_epoch_secs.is_some() && boot.is_some() && p.boot_epoch_secs != boot {
-        return false;
-    }
-    if let Some(at) = p.until_epoch_ms {
-        return now_ms < at;
-    }
-    let manual = p
-        .spec
-        .as_deref()
-        .and_then(|s| serde_json::from_str::<serde_json::Value>(s).ok())
-        .map(|v| v["until"]["kind"] == "manual")
-        .unwrap_or(true);
-    !manual || now_ms - p.armed_epoch_ms < MANUAL_RESUME_MAX_MS
+/// Whether a persisted session should be re-armed now. Pure, so the rule is
+/// testable without IOKit: everything resumes except a deadline already past.
+fn should_resume(p: &Persisted, now_ms: i64) -> bool {
+    p.until_epoch_ms.is_none_or(|at| now_ms < at)
 }
 
 /// The launch toast for a resumed hold: what's still holding, and for how long
@@ -380,13 +340,13 @@ pub fn resume() -> Option<AwakeState> {
             return None;
         }
     };
-    let (now, boot) = (now_epoch_ms(), boot_epoch_secs());
-    if !should_resume(&p, now, boot) {
+    let now = now_epoch_ms();
+    if !should_resume(&p, now) {
         crate::logbook::breadcrumb(
             "awake",
             &format!(
-                "not resuming: until {:?} now {now} armed {} boot {:?}/{:?}",
-                p.until_epoch_ms, p.armed_epoch_ms, p.boot_epoch_secs, boot
+                "not resuming: until {:?} now {now} armed {}",
+                p.until_epoch_ms, p.armed_epoch_ms
             ),
         );
         forget_persisted();
@@ -620,49 +580,39 @@ mod tests {
             battery_floor: None,
             spec: Some(spec.into()),
             armed_epoch_ms: armed,
-            boot_epoch_secs: Some(1000),
         }
-    }
-
-    #[test]
-    fn parses_boottime() {
-        assert_eq!(
-            parse_boottime("{ sec = 1787000000, usec = 123456 } Wed Aug 19 09:00:00 2026\n"),
-            Some(1787000000)
-        );
-        assert_eq!(parse_boottime("garbage"), None);
     }
 
     #[test]
     fn resume_honours_a_deadline_only_while_ahead() {
         let timer = persisted(Some(5_000), r#"{"until":{"kind":"timer","minutes":5}}"#, 0);
-        assert!(should_resume(&timer, 4_999, Some(1000)));
-        assert!(!should_resume(&timer, 5_000, Some(1000)));
+        assert!(should_resume(&timer, 4_999));
+        assert!(!should_resume(&timer, 5_000));
     }
 
     #[test]
-    fn resume_never_crosses_a_reboot() {
-        let timer = persisted(Some(5_000), r#"{"until":{"kind":"timer","minutes":5}}"#, 0);
-        assert!(!should_resume(&timer, 100, Some(2000)));
-        // Unknown boot on either side: can't tell, so the other rules decide.
-        assert!(should_resume(&timer, 100, None));
-    }
-
-    #[test]
-    fn resume_caps_manual_and_keeps_conditions() {
+    fn resume_never_expires_manual_or_conditions() {
+        const TWO_WEEKS_MS: i64 = 14 * 24 * 60 * 60 * 1000;
+        // Indefinitely means indefinitely: no age cap on "until I say stop".
         let manual = persisted(None, r#"{"until":{"kind":"manual"}}"#, 0);
-        assert!(should_resume(&manual, MANUAL_RESUME_MAX_MS - 1, Some(1000)));
-        assert!(!should_resume(&manual, MANUAL_RESUME_MAX_MS, Some(1000)));
+        assert!(should_resume(&manual, TWO_WEEKS_MS * 4));
         // A condition hold has no deadline; the TS evaluator ends it if the
         // condition already fails, so Rust always resumes it.
         let agents = persisted(None, r#"{"until":{"kind":"agents"}}"#, 0);
-        assert!(should_resume(&agents, MANUAL_RESUME_MAX_MS * 3, Some(1000)));
-        // No spec at all is treated as manual (the conservative reading).
+        assert!(should_resume(&agents, TWO_WEEKS_MS));
         let bare = Persisted {
             spec: None,
             ..persisted(None, "", 0)
         };
-        assert!(!should_resume(&bare, MANUAL_RESUME_MAX_MS, Some(1000)));
+        assert!(should_resume(&bare, TWO_WEEKS_MS));
+    }
+
+    #[test]
+    fn reads_a_file_written_before_the_boot_stamp_was_dropped() {
+        let old = r#"{"display":false,"disks":false,"untilEpochMs":null,"batteryFloor":20,
+            "spec":"{}","armedEpochMs":1,"bootEpochSecs":1787000000}"#;
+        let p: Persisted = serde_json::from_str(old).unwrap();
+        assert!(should_resume(&p, 2));
     }
 
     /// Trimmed from a real `pmset -g assertions`: the summary table (which
@@ -814,7 +764,6 @@ mod persist_tests {
         let json = std::fs::read_to_string(&path).expect("awake.json written at arm");
         let p: Persisted = serde_json::from_str(&json).unwrap();
         assert!(p.until_epoch_ms.is_some());
-        assert!(p.boot_epoch_secs.is_some(), "boot time stamped");
         release();
         assert!(!path.exists(), "awake.json removed on release");
     }

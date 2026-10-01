@@ -258,6 +258,51 @@ describe('deadlines', () => {
     expect(tomorrow.getDate()).toBe(17)
   })
 
+  it('a date without a year is its next occurrence, held to the end of that day', () => {
+    const now = new Date('2026-10-01T12:00:00')
+    const oct16 = new Date(
+      untilDeadline({ kind: 'date', month: 10, day: 16 }, now)!,
+    )
+    expect([oct16.getFullYear(), oct16.getMonth(), oct16.getDate()]).toEqual([
+      2026, 9, 16,
+    ])
+    expect([oct16.getHours(), oct16.getMinutes()]).toEqual([23, 59])
+    const sep1 = new Date(
+      untilDeadline({ kind: 'date', month: 9, day: 1 }, now)!,
+    )
+    expect(sep1.getFullYear()).toBe(2027)
+  })
+
+  it('a date takes an explicit time and year', () => {
+    const now = new Date('2026-10-01T12:00:00')
+    const at = new Date(
+      untilDeadline(
+        { kind: 'date', year: 2026, month: 10, day: 16, hour: 9, minute: 30 },
+        now,
+      )!,
+    )
+    expect([at.getDate(), at.getHours(), at.getMinutes()]).toEqual([16, 9, 30])
+    // Today, with the time still ahead, is today.
+    const today = new Date(
+      untilDeadline({ kind: 'date', month: 10, day: 1, hour: 18 }, now)!,
+    )
+    expect([today.getFullYear(), today.getDate()]).toEqual([2026, 1])
+  })
+
+  it('a date already past, or impossible, has no deadline', () => {
+    const now = new Date('2026-10-01T12:00:00')
+    expect(
+      untilDeadline({ kind: 'date', year: 2026, month: 9, day: 1 }, now),
+    ).toBeNull()
+    // 29 Feb resolves to the next leap year rather than rolling into March.
+    const leap = new Date(
+      untilDeadline({ kind: 'date', month: 2, day: 29 }, now)!,
+    )
+    expect([leap.getFullYear(), leap.getMonth(), leap.getDate()]).toEqual([
+      2028, 1, 29,
+    ])
+  })
+
   it('conditions have no deadline', () => {
     expect(untilDeadline({ kind: 'agents' }, new Date())).toBeNull()
     expect(untilDeadline({ kind: 'manual' }, new Date())).toBeNull()
@@ -296,6 +341,50 @@ describe('grammar', () => {
     expect(parseAwakeArgs('until 12am')).toEqual({
       kind: 'arm',
       until: { kind: 'clock', hour: 0, minute: 0 },
+    })
+  })
+
+  it('parses dates, either order, optional year and time', () => {
+    const oct16 = { kind: 'date', month: 10, day: 16 }
+    expect(parseAwakeArgs('until oct 16')).toEqual({
+      kind: 'arm',
+      until: oct16,
+    })
+    expect(parseAwakeArgs('until 16 Oct')).toEqual({
+      kind: 'arm',
+      until: oct16,
+    })
+    expect(parseAwakeArgs('until october 16')).toEqual({
+      kind: 'arm',
+      until: oct16,
+    })
+    expect(parseAwakeArgs('until 16 oct 2026')).toEqual({
+      kind: 'arm',
+      until: { ...oct16, year: 2026 },
+    })
+    expect(parseAwakeArgs('until 2026-10-16')).toEqual({
+      kind: 'arm',
+      until: { ...oct16, year: 2026 },
+    })
+    expect(parseAwakeArgs('until oct 16 9am')).toEqual({
+      kind: 'arm',
+      until: { ...oct16, hour: 9, minute: 0 },
+    })
+    expect(parseAwakeArgs('until 16 oct at 6:30pm')).toEqual({
+      kind: 'arm',
+      until: { ...oct16, hour: 18, minute: 30 },
+    })
+  })
+
+  it('rejects impossible dates', () => {
+    expect(parseAwakeArgs('until oct 32')).toBeNull()
+    expect(parseAwakeArgs('until feb 30')).toBeNull()
+    expect(parseAwakeArgs('until 2026-13-01')).toBeNull()
+    expect(parseAwakeArgs('until oct 16 25:00')).toBeNull()
+    // A bare number stays a clock time.
+    expect(parseAwakeArgs('until 16')).toEqual({
+      kind: 'arm',
+      until: { kind: 'clock', hour: 16, minute: 0 },
     })
   })
 
@@ -343,6 +432,21 @@ describe('labels', () => {
         new Date('2026-08-16T18:00:00').getTime(),
       ),
     ).toBe('until 6:00 pm')
+    expect(
+      endsLabel(
+        { kind: 'date', month: 10, day: 16 },
+        new Date('2026-10-16T23:59:00').getTime(),
+      ),
+    ).toBe('until 16 Oct, 11:59 pm')
+  })
+
+  it('states how a date ends', () => {
+    expect(untilLabel({ kind: 'date', month: 10, day: 16 })).toBe(
+      'until the end of 16 Oct',
+    )
+    expect(
+      untilLabel({ kind: 'date', year: 2027, month: 1, day: 2, hour: 9 }),
+    ).toBe('until 2 Jan 2027, 9:00 am')
   })
 
   it('formats durations and clocks', () => {

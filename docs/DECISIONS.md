@@ -1511,3 +1511,25 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
 - **Alternatives.** Projecting used/elapsed to a run-out ratio (rejected: explodes in the
   first minutes of a window); keeping the 70/90 absolute tiers beside pace (rejected:
   two colour systems on one cell disagree).
+
+### 2026-10-01 · A keep-awake hold lasts until it ends — no age cap, across reboots; the login item relaunches a crash
+
+- **Decision.** Supersedes the resume rules of 2026-08-19. `resume()` re-arms every
+  persisted hold except a deadline already past: `manual` no longer expires after 12 h,
+  and the `kern.boottime` stamp is gone, so a hold survives a reboot too. Only the user,
+  a deadline, a condition, or the battery floor ends one. `awake until <date>` joins the
+  grammar (`oct 16`, `16 oct 2026`, `2026-10-16`, optional `[at] 9am`; no time = the end
+  of that day), a deadline Rust already enforces. The login item's plist gains
+  `KeepAlive { SuccessfulExit = false }` after each registration (`login_item.rs`), so
+  launchd relaunches a crashed or killed app and its hold resumes; Quit exits 0 and
+  stays quit. Self-update and `scripts/dev-install.sh` relaunch through the launchd job
+  when it's loaded, so the new instance stays supervised.
+- **Why.** "Until I turn it off" meant "until about lunchtime tomorrow, or the next
+  crash": a two-week unattended Mac (Mitch travelling, reaching it over Screens) loses its
+  hold to any relaunch after 12 h, any crash, or any authrestart. The cap and the reboot
+  rule guarded against a forgotten hold; the bar cell already makes an armed hold
+  unmissable, and the battery floor protects an unplugged Mac.
+- **Alternatives.** A separate supervisor process (rejected: a second resident thing for
+  what launchd already does). An "indefinite" flag beside `manual` (rejected: manual
+  already says it). Leaving crash recovery to `pmset disablesleep` (complementary, not a
+  replacement: that's root, machine-wide, and outside the app).

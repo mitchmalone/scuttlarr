@@ -19,6 +19,13 @@ if [[ "${1:-}" == "--build" ]]; then
 fi
 [[ -d "$BUILT" ]] || { echo "no build at $BUILT — run with --build" >&2; exit 1; }
 
+# The login item relaunches a crashed or killed app (KeepAlive, DECISIONS
+# 2026-10-01), so a launchd-run instance is stopped through launchd — a pkill
+# would have it relaunch the old binary mid-copy.
+JOB="gui/$(id -u)/scuttlarr"
+PLIST="$HOME/Library/LaunchAgents/scuttlarr.plist"
+launchctl bootout "$JOB" 2>/dev/null || true
+
 # Quit politely (SIGTERM lets the tray icon and panel go away cleanly), then
 # make sure. `open` on a running instance would only re-activate it (LEARNINGS).
 for proc in scuttlarr launcharr; do
@@ -40,7 +47,12 @@ fi
 # Finder notices, resource forks and permissions kept.
 ditto "$BUILT" "$DEST"
 
-# -g: launch without bringing it to the foreground. scuttlarr is an accessory
-# app anyway, but a fresh bundle's first launch otherwise steals focus.
-open -g "$DEST"
+# Relaunch through launchd when the login item is on (RunAtLoad starts it and
+# launchd supervises it from here); otherwise -g: launch without bringing it to
+# the foreground — a fresh bundle's first launch otherwise steals focus.
+if [[ -f "$PLIST" ]] && launchctl bootstrap "gui/$(id -u)" "$PLIST" 2>/dev/null; then
+  :
+else
+  open -g "$DEST"
+fi
 echo "installed $(plutil -extract CFBundleShortVersionString raw "$DEST/Contents/Info.plist") → $DEST (relaunched in the background)"

@@ -902,3 +902,14 @@ Reading three plist strings per app (bundle id, `CFBundleName`, executable) duri
 index scan: the scan of ~140 bundles stays under the 500 ms budget with room to spare
 (`indexer::tests::scan_is_inside_the_index_budget_with_keywords` asserts it). `plist`
 was already a dependency; `icons.rs` reads the same files for the icon name.
+
+### 2026-10-01 · launchd reads a LaunchAgent plist only at login or bootstrap
+
+Patching `~/Library/LaunchAgents/scuttlarr.plist` changes nothing for the job already
+loaded: `launchctl print gui/$UID/scuttlarr` keeps showing the old properties until a
+`bootout` + `bootstrap` (or the next login). So the first `dev-install.sh` after the
+KeepAlive change writes the file, and the second one is the one launchd obeys. Also: an
+app started with `open` is not the job's process, even with the job loaded, so launchd
+never relaunches it — that's why the relaunch paths go through `launchctl bootstrap` /
+`kickstart`. Proven: `kill -9` on the launchd-run app, back in 7 s, hold resumed (from an
+`awake.json` in the old format, with `bootEpochSecs`).

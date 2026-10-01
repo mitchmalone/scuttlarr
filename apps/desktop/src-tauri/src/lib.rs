@@ -37,6 +37,7 @@ mod hooks;
 mod icons;
 mod indexer;
 mod logbook;
+mod login_item;
 mod loupe;
 mod panel;
 mod permissions;
@@ -80,8 +81,10 @@ pub(crate) fn apply_launch_at_login(app: &tauri::AppHandle, enabled: bool) {
     } else {
         autolaunch.disable()
     };
-    if let Err(e) = result {
-        eprintln!("[scuttlarr] launch-at-login ({enabled}) failed: {e}");
+    match result {
+        Ok(()) if enabled => login_item::keep_alive_on_crash(),
+        Ok(()) => {}
+        Err(e) => eprintln!("[scuttlarr] launch-at-login ({enabled}) failed: {e}"),
     }
 }
 

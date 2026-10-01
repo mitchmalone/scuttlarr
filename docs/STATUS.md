@@ -3,9 +3,17 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-09-30 (usage cell shows pace, not percent)
+> Last updated: 2026-10-01 (awake holds until it ends; crash relaunch)
 
 ## Where we are
+
+**awake for an unattended Mac, 2026-10-01 (dev-installed):** DECISIONS 2026-10-01, plan
+`plans/active/awake.md` slice F. `manual` holds no longer expire (was 12 h) and every hold
+survives a reboot; `awake until oct 16` (dates, optional year/time); the login item
+relaunches a crash (`KeepAlive`, `login_item.rs`) — proven `kill -9` → back in 7 s with
+the hold. **Hands-check pending:** tray Quit stays quit; hold survives an authrestart.
+Context: two weeks away over Screens; display mode stays in dotfiles `remote-mode`
+(BetterDisplay virtual iPad screen) for now.
 
 **Usage pace, 2026-09-30 (dev-installed, PR open):** the usage cell is the meter glyph
 alone, tinted by pace — green "go go go" / fg "on pace" / red "slow down" (DECISIONS

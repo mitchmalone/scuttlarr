@@ -131,10 +131,9 @@ pub fn current_name(state: &Path) -> Option<String> {
 }
 
 fn tmux(args: &[&str]) -> Option<String> {
-    let out = std::process::Command::new("tmux")
-        .args(args)
-        .output()
-        .ok()?;
+    let out = crate::agents::TMUX_BINS
+        .iter()
+        .find_map(|bin| crate::agents::tmux_command(bin).args(args).output().ok())?;
     out.status
         .success()
         .then(|| String::from_utf8_lossy(&out.stdout).into_owned())

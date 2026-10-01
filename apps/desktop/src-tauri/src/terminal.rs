@@ -145,8 +145,8 @@ fn ghostty_running() -> bool {
 }
 
 fn tmux_clients() -> Vec<TmuxClient> {
-    for bin in ["tmux", "/opt/homebrew/bin/tmux", "/usr/local/bin/tmux"] {
-        if let Ok(out) = Command::new(bin)
+    for bin in crate::agents::TMUX_BINS {
+        if let Ok(out) = crate::agents::tmux_command(bin)
             .args([
                 "list-clients",
                 "-F",
@@ -241,8 +241,8 @@ fn open_ghostty() -> CmdResult<()> {
 fn tmux_new_window(session: &str, command: Option<&str>) -> CmdResult<()> {
     let shell = login_shell();
     let argv = tmux_window_command(command, &shell);
-    for bin in ["tmux", "/opt/homebrew/bin/tmux", "/usr/local/bin/tmux"] {
-        let mut cmd = Command::new(bin);
+    for bin in crate::agents::TMUX_BINS {
+        let mut cmd = crate::agents::tmux_command(bin);
         cmd.args(["new-window", "-t", session]);
         if let Some(argv) = &argv {
             cmd.arg(argv);

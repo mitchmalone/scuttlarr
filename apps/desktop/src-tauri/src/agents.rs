@@ -697,9 +697,23 @@ fn validate_target(target: &str) -> CmdResult<()> {
         .ok_or_else(|| CmdError::Internal(format!("bad tmux target: {target:?}")))
 }
 
+/// Where tmux may live: PATH first, then Homebrew's two prefixes — a login
+/// item run by launchd gets `/usr/bin:/bin:/usr/sbin:/sbin` and nothing else.
+pub(crate) const TMUX_BINS: [&str; 3] = ["tmux", "/opt/homebrew/bin/tmux", "/usr/local/bin/tmux"];
+
+/// A tmux invocation with `-u`. Without a UTF-8 locale (launchd sets no
+/// LANG/LC_*) tmux escapes every non-ASCII byte *and the tab* in `-F` output
+/// to `_`, so tab-separated reads parse to nothing and agents lose their
+/// groups (field bug 2026-10-01, JOURNAL). `-u` forces UTF-8 regardless.
+pub(crate) fn tmux_command(bin: &str) -> std::process::Command {
+    let mut cmd = std::process::Command::new(bin);
+    cmd.arg("-u");
+    cmd
+}
+
 fn tmux(args: &[&str]) -> Option<()> {
-    for bin in ["tmux", "/opt/homebrew/bin/tmux", "/usr/local/bin/tmux"] {
-        if let Ok(status) = std::process::Command::new(bin).args(args).status() {
+    for bin in TMUX_BINS {
+        if let Ok(status) = tmux_command(bin).args(args).status() {
             return status.success().then_some(());
         }
     }
@@ -707,8 +721,8 @@ fn tmux(args: &[&str]) -> Option<()> {
 }
 
 fn tmux_out(args: &[&str]) -> Option<String> {
-    for bin in ["tmux", "/opt/homebrew/bin/tmux", "/usr/local/bin/tmux"] {
-        if let Ok(out) = std::process::Command::new(bin).args(args).output() {
+    for bin in TMUX_BINS {
+        if let Ok(out) = tmux_command(bin).args(args).output() {
             if out.status.success() {
                 return Some(String::from_utf8_lossy(&out.stdout).into_owned());
             }
@@ -795,6 +809,14 @@ fn now_secs() -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn tmux_is_always_forced_to_utf8() {
+        // launchd gives the app no locale; without -u tmux turns the -F tabs
+        // into `_` and every layout read parses empty.
+        let cmd = tmux_command("tmux");
+        assert_eq!(cmd.get_args().next(), Some(std::ffi::OsStr::new("-u")));
+    }
 
     fn event(session: &str, state: &str) -> AgentEvent {
         AgentEvent {

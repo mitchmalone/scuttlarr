@@ -913,3 +913,14 @@ app started with `open` is not the job's process, even with the job loaded, so l
 never relaunches it — that's why the relaunch paths go through `launchctl bootstrap` /
 `kickstart`. Proven: `kill -9` on the launchd-run app, back in 7 s, hold resumed (from an
 `awake.json` in the old format, with `bootEpochSecs`).
+
+### 2026-10-01 · launchd runs the app with no locale, and tmux mangles `-F` output
+
+Once the login item became the app's launchd job (KeepAlive), its environment shrank to
+`PATH=/usr/bin:/bin:/usr/sbin:/sbin`, `HOME`, `TMPDIR` — no `LANG`/`LC_*`. In the C
+locale tmux escapes every non-ASCII byte **and the tab** in `list-panes -F` output to
+`_`, so `parse_panes` read zero panes, the layout was untrusted, and every agent fell
+into one ungrouped cell. Fix: every tmux spawn goes through `agents::tmux_command`,
+which adds `-u`; `theme.rs` called bare `tmux`, which isn't on launchd's PATH at all,
+and now uses the same Homebrew fallbacks. Any other child that reads the locale runs in
+C under launchd too.

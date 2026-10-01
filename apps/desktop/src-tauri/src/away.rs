@@ -22,10 +22,12 @@ const BETTERDISPLAY_APP: &str = "/Applications/BetterDisplay.app";
 const BETTERDISPLAY: &str = "/Applications/BetterDisplay.app/Contents/MacOS/BetterDisplay";
 /// The virtual screen's name, as macOS and BetterDisplay both report it.
 pub const SCREEN: &str = "iPad";
-/// A 13-inch iPad: 4:3, 1366x1024 points on a 2732x2048 backing.
-const MODE: &str = "1366x1024 HiDPI";
-const BACKING: &str = "2732 x 2048";
-const RESOLUTIONS: &str = "1366x1024,1194x896,1024x768,1194x834";
+/// 4:3 like the 13-inch iPad, at MacBook-sized workspace: 1600x1200 points on a
+/// 3200x2400 backing, which Screens scales down to the iPad's 2752x2064 panel. The
+/// iPad's own 1366x1024 read as cramped for a Mac desktop (Mitch, 2026-10-01).
+const MODE: &str = "1600x1200 HiDPI";
+const BACKING: &str = "3200 x 2400";
+const RESOLUTIONS: &str = "1366x1024,1600x1200,2048x1536,1194x896,1024x768,1194x834";
 const CHECK_EVERY: Duration = Duration::from_secs(60);
 
 /// Bumped on every start/stop; a check loop exits once it no longer matches.
@@ -134,9 +136,23 @@ fn ensure() -> Result<(), &'static str> {
         std::thread::sleep(Duration::from_secs(5));
     }
     if !screen_ready(&displays()) {
-        let modes = betterdisplay(&["get", &format!("-name={SCREEN}"), "-displayModeList"])
-            .unwrap_or_default();
-        let n = mode_number(&modes, MODE).ok_or("no 1366x1024 HiDPI mode")?;
+        let list = || {
+            betterdisplay(&["get", &format!("-name={SCREEN}"), "-displayModeList"])
+                .unwrap_or_default()
+        };
+        let mut n = mode_number(&list(), MODE);
+        if n.is_none() {
+            // A screen made before this mode existed: give it the current list.
+            betterdisplay(&[
+                "set",
+                &format!("-name={SCREEN}"),
+                &format!("-resolutionList={RESOLUTIONS}"),
+            ]);
+            crate::logbook::breadcrumb("away", "updated the iPad screen's resolution list");
+            std::thread::sleep(Duration::from_secs(2));
+            n = mode_number(&list(), MODE);
+        }
+        let n = n.ok_or("no 1600x1200 HiDPI mode")?;
         betterdisplay(&[
             "set",
             &format!("-name={SCREEN}"),
@@ -148,7 +164,7 @@ fn ensure() -> Result<(), &'static str> {
     if screen_ready(&displays()) {
         Ok(())
     } else {
-        Err("still not at 1366x1024 HiDPI")
+        Err("still not at 1600x1200 HiDPI")
     }
 }
 
@@ -253,7 +269,7 @@ mod tests {
     /// Studio Display plus the iPad screen (2026-10-01).
     const PROFILE: &str = r#"{"SPDisplaysDataType":[{"_name":"Apple M5 Max","spdisplays_ndrvs":[
         {"_name":"Studio Display","_spdisplays_pixels":"5120 x 2880","spdisplays_main":"spdisplays_yes"},
-        {"_name":"iPad","_spdisplays_pixels":"2732 x 2048","_spdisplays_resolution":"1366 x 1024 @ 60.00Hz"}
+        {"_name":"iPad","_spdisplays_pixels":"3200 x 2400","_spdisplays_resolution":"1600 x 1200 @ 60.00Hz"}
     ]}]}"#;
 
     #[test]

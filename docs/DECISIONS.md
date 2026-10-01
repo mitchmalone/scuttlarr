@@ -1590,3 +1590,15 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
   that hack and ships a CLI). A separate `remote` panel or command (rejected: two places
   to arm one intent). Disconnecting the Studio Display in software (impossible:
   BetterDisplay's `set -connected=off` fails for physical displays — unplug it).
+
+### 2026-10-01 · Away mode's screen is 1600x1200 HiDPI, not the iPad's 1366x1024
+
+- **Decision.** The iPad virtual screen is held at 1600x1200 points (3200x2400 backing),
+  still 4:3; Screens scales it to the iPad's 2752x2064 panel. The resolution list gains
+  1600x1200 and 2048x1536, and `away.rs` pushes the list onto a screen created before
+  either existed.
+- **Why.** 1366x1024 is the iPad's own scale: crisp, but a cramped Mac desktop. Tried live
+  over Screens: 1600x1200 "looked really good" (Mitch) — MacBook-sized workspace, still
+  sharp after the downscale.
+- **Alternatives.** A setting for the size (deferred: one size has been asked for; add it
+  when a second iPad or taste does). 2048x1536 (too dense to read at iPad distance).

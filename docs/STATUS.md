@@ -7,6 +7,13 @@
 
 ## Where we are
 
+**Away for two weeks, from 2026-10-02:** the MacBook Pro is lid-closed on AC at Mitch's
+desk, held by `awake` with away mode (iPad screen 1600x1200 HiDPI, sleep off), on
+ethernet with Wi-Fi off, reached over Tailscale (`mitch`) by mosh/SSH/Screens. Proven
+overnight. Software Update: Rapid Security Responses off (`CriticalUpdateInstall=0`, turn
+back on when home); Tailscale auto-update off (`tailscale set --auto-update=false` + app
+Sparkle keys). Known residual risk: a reboot stops at FileVault pre-boot.
+
 **v0.7.0 released 2026-10-01** — the first release as scuttlarr (notes
 `docs/releases/v0.7.0.md`). Signed, notarized, Gatekeeper-accepted; smoke-tested
 fresh-profile (throwaway HOME: 157 ms cold start, first-run panel) and upgrade-path (0.6.0

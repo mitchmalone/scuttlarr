@@ -134,7 +134,7 @@ list — reusing `src/bar/hover.ts` and the battery card's shape.
 
 ### Slice A — the assertion core
 
-- [ ] **Measure first**: `PreventSystemSleep` held on AC, lid closed, confirm the machine
+- [x] **Measure first**: `PreventSystemSleep` held on AC, lid closed, confirm the machine
       stays up on current macOS/Apple Silicon — it's an acceptance criterion resting on
       documented-but-unverified behaviour, same category as slice E's measurement.
       _Code shipped; needs a human to close the lid: arm via `awake ⏎` once slice B
@@ -219,12 +219,14 @@ disablesleep`), rule installed by `scuttlarr sudoers on` (DECISIONS 2026-10-01).
       2026-10-01: an agents hold released itself on idle._
 - [x] Away mode checkbox (`away.rs`, BetterDisplay `iPad` virtual screen held as the
       display; DECISIONS 2026-10-01). Unit-tested parsing and copy.
-- [ ] Hands-check, before the trip: Studio Display unplugged, lid closed, charger in,
+- [x] Hands-check, before the trip: Studio Display unplugged, lid closed, charger in,
       `awake` with Away ticked → Screens on the iPad fills the screen, no bands.
-- [ ] Retire dotfiles `remote-mode` (script, LaunchAgent, chezmoi BetterDisplay script) —
-      two owners of the iPad screen fight.
-- [ ] Mitch: `scuttlarr sudoers on` once, so the override doesn't lean on Amphetamine's
-      rule (`/etc/sudoers.d/amphetamine_PowerProtect` allows the same two commands).
+      _2026-10-01: proven over Screens; then held overnight with no sleep event (power
+      log), app up 19 h; Wi-Fi off with ethernet + Tailscale, mosh never dropped._
+- [x] Retire dotfiles `remote-mode` (script, LaunchAgent, chezmoi BetterDisplay script) —
+      two owners of the iPad screen fight. _Removed 2026-10-01._
+- [x] Mitch: `scuttlarr sudoers on` once. _Installed 2026-10-01._
+- [x] Away screen at 1600x1200 HiDPI (DECISIONS 2026-10-01), tried live and kept.
 
 ### Slice E — lid closed on battery (deferred, own milestone)
 
@@ -246,8 +248,9 @@ disablesleep`), rule installed by `scuttlarr sudoers on` (DECISIONS 2026-10-01).
       API vocabulary survives in the UI. Verified by reading the panel cold.
 - [ ] A session armed on "while agents are working" holds through a real agent run and
       releases within ~1 min of the last agent going idle. _Needs a real run — Mitch._
-- [ ] `pmset -g assertions` shows launcharr's assertions by name while armed, and nothing
-      after release/quit/crash. _Verify live after first real arm._
+- [x] `pmset -g assertions` shows launcharr's assertions by name while armed, and nothing
+      after release/quit/crash. _Verified 2026-10-01: named while armed; gone and sleep
+      restored after an agents hold released._
 - [x] No other process's `caffeinate` is ever killed.
 - [x] **A hold survives a relaunch** (2026-08-19): the armed session is mirrored to
       `~/.local/state/launcharr/awake.json` at arm time and removed on any release;
@@ -259,7 +262,7 @@ disablesleep`), rule installed by `scuttlarr sudoers on` (DECISIONS 2026-10-01).
       after `ditto` + relaunch; a past-deadline file dropped and removed.
 - [x] Trigger evaluation costs no new spawn per bar tick; budgets unregressed (idle bar
       pays only the in-memory `awake` field on the existing snapshot).
-- [ ] Lid closed **on AC** keeps the machine up with no helper and no prompt.
+- [x] Lid closed **on AC** keeps the machine up with no helper and no prompt.
 - [ ] With slice E unshipped, the lid-on-battery row is visible, off, and explains itself.
 
 ## Out of scope

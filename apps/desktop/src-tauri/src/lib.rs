@@ -23,6 +23,7 @@ mod bar_modules;
 mod battery;
 mod bookmarks;
 mod clipboard;
+mod codex_desktop;
 mod colorpicker;
 mod commands;
 mod config;

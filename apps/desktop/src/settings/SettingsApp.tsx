@@ -901,10 +901,10 @@ function AgentsTab({ config, set }: { config: Config; set: SetFn }) {
           </label>
           <p className="hint">
             Activates the <code>?</code> command: press <code>?</code> in the
-            launcher to converse with your own agent CLI — your subscription,
-            your credentials. The spawned CLI is caged (empty working dir,
-            tightest tool restrictions it offers); Enter sends, follow-ups keep
-            context, Esc ends the conversation.
+            launcher to ask your selected agent. Claude answers in scuttlarr;
+            Codex opens a new chat in the desktop app. Both use your own
+            subscription and credentials. Enter sends the prompt. The agent
+            starts in an empty working directory with read-only access.
           </p>
           {agents.askMode && (
             <label className="check">
@@ -919,7 +919,7 @@ function AgentsTab({ config, set }: { config: Config; set: SetFn }) {
                 }
               >
                 <option value="claude">claude (Claude Code)</option>
-                <option value="codex">codex (Codex CLI)</option>
+                <option value="codex">codex (Codex desktop)</option>
               </select>
             </label>
           )}

@@ -439,6 +439,21 @@ export default function App() {
         setAskBusy(false)
         patchLastTurn((t) => ({ ...t, done: true }))
       }),
+      listen<{ Ok?: null; Err?: string }>('ask-handoff', (e) => {
+        setAskBusy(false)
+        if (
+          typeof e.payload === 'object' &&
+          e.payload !== null &&
+          'Err' in e.payload
+        ) {
+          setToast(`Codex: ${e.payload.Err}`)
+          return
+        }
+        resetAsk()
+        setRaw('')
+        setInputMode('launch')
+        invoke('hide_panel').catch(console.error)
+      }),
     ]
     return () => {
       for (const p of unlisteners) p.then((un) => un())
@@ -830,6 +845,16 @@ export default function App() {
         if (parsed.mode === 'ask') {
           const prompt = parsed.prompt.trim()
           if (!prompt || askBusy) return
+          if (config.agents.askProvider === 'codex') {
+            setAskBusy(true)
+            invoke('ask', { prompt, continueConversation: false }).catch(
+              (err) => {
+                setAskBusy(false)
+                setToast(`Codex: ${String(err)}`)
+              },
+            )
+            return
+          }
           askGotDelta.current = false
           setAskTurns((turns) => [
             ...turns,
@@ -901,11 +926,15 @@ export default function App() {
       : 'choose a browser (↑↓ then ⏎)'
     : loremMenu
       ? 'how much lorem? (↑↓ then ⏎)'
-      : askActive
-        ? askBusy
-          ? 'waiting for the answer…'
-          : 'ask a follow-up… (Esc ends)'
-        : 'Search for apps and commands…'
+      : parsed.mode === 'ask' &&
+          config.agents.askProvider === 'codex' &&
+          askBusy
+        ? 'opening Codex…'
+        : askActive
+          ? askBusy
+            ? 'waiting for the answer…'
+            : 'ask a follow-up… (Esc ends)'
+          : 'Search for apps and commands…'
 
   if (panelMode) {
     return (

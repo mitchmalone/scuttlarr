@@ -7,6 +7,8 @@
 
 ## Where we are
 
+**Codex desktop handoff, 2026-10-03 (PR pending):** `?` with Codex starts a fresh read-only desktop chat through the local app-server and opens it. Claude still answers inline. The app-server protocol was tested against a real Codex desktop chat; `pnpm verify` and the macOS app build passed. Installation of the new bundle on Amy's Mac is pending.
+
 **Away for two weeks, from 2026-10-02:** the MacBook Pro is lid-closed on AC at Mitch's
 desk, held by `awake` with away mode (iPad screen 1600x1200 HiDPI, sleep off), on
 ethernet with Wi-Fi off, reached over Tailscale (`mitch`) by mosh/SSH/Screens. Proven

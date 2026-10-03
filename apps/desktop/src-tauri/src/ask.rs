@@ -1,12 +1,6 @@
-//! Agent mode: `?` pipes a prompt to the user's own `claude` CLI — their
-//! subscription, their credentials, their network. scuttlarr spawns a process
-//! and streams stdout; it makes zero network requests itself (same family as
-//! the iTerm2 hand-off). Ported from the spike-ask-ai branch 2026-08-16;
-//! gated by `agents.askMode` (Settings → Agents, off by default).
-//!
-//! Rust is a dumb spawner: raw stream-json lines go to the frontend as
-//! `ask-chunk` events; parsing is TypeScript's job (src/lib/ask.ts).
-//! `ask-done` carries success.
+//! Agent mode: `?` streams Claude CLI answers inline, or starts a new Codex
+//! desktop chat through the installed Codex CLI's app-server. Both providers
+//! run in an empty, read-only question workspace.
 
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
@@ -68,9 +62,8 @@ fn find_cli(name: &str) -> CmdResult<String> {
     }
 }
 
-/// Fire a prompt at the selected agent CLI; stream stdout lines as
-/// `ask-chunk`, then `ask-done`. `continue_conversation` keeps context
-/// (`--continue` for claude, `exec resume --last` for codex).
+/// Send a prompt to the selected agent. Claude emits `ask-chunk` and
+/// `ask-done`; Codex emits `ask-handoff` after opening a fresh desktop chat.
 #[tauri::command]
 pub fn ask(
     app: AppHandle,
@@ -101,47 +94,41 @@ pub fn ask(
         .map_err(|e| CmdError::Internal(format!("app data dir: {e}")))?
         .join("ask-home");
     std::fs::create_dir_all(&cage)?;
+    if provider == "codex" {
+        std::thread::spawn(move || {
+            let result = crate::codex_desktop::handoff(&bin, &cage, &prompt);
+            let _ = app.emit("ask-handoff", result);
+        });
+        return Ok(());
+    }
     std::thread::spawn(move || {
         let mut cmd = Command::new(&bin);
         cmd.current_dir(&cage);
-        if provider == "codex" {
-            // Verified against codex-cli 0.147: `exec --json` emits
-            // thread/turn/item events; `resume --last` keeps context. Cage is
-            // read-only sandbox — codex has no per-tool disallow flag.
-            cmd.arg("exec");
-            if continue_conversation {
-                cmd.args(["resume", "--last"]);
-            }
-            cmd.args(["--json", "--sandbox", "read-only", "--skip-git-repo-check"]);
-            cmd.arg(&prompt);
-        } else {
-            // NB: --disallowedTools is VARIADIC — anything after it becomes a
-            // "tool name", including the prompt. The prompt must come first.
-            cmd.args(["-p", &prompt]);
-            if continue_conversation {
-                cmd.arg("--continue");
-            }
-            cmd.args([
-                "--output-format",
-                "stream-json",
-                "--include-partial-messages",
-                "--verbose",
-                "--disallowedTools",
-            ]);
-            // Variadic flag stays LAST and each tool is its own argument.
-            cmd.args([
-                "Bash",
-                "Read",
-                "Write",
-                "Edit",
-                "Glob",
-                "Grep",
-                "NotebookEdit",
-                "WebFetch",
-                "WebSearch",
-                "Task",
-            ]);
+        // NB: --disallowedTools is VARIADIC — anything after it becomes a
+        // "tool name", including the prompt. The prompt must come first.
+        cmd.args(["-p", &prompt]);
+        if continue_conversation {
+            cmd.arg("--continue");
         }
+        cmd.args([
+            "--output-format",
+            "stream-json",
+            "--include-partial-messages",
+            "--verbose",
+            "--disallowedTools",
+        ]);
+        cmd.args([
+            "Bash",
+            "Read",
+            "Write",
+            "Edit",
+            "Glob",
+            "Grep",
+            "NotebookEdit",
+            "WebFetch",
+            "WebSearch",
+            "Task",
+        ]);
         cmd.stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());

@@ -33,7 +33,10 @@ pub fn wifi() -> WifiState {
 /// Start the refresh threads. Cadences match the Sketchybar update_freqs.
 pub fn start() {
     std::thread::spawn(|| loop {
-        refresh_wifi();
+        // Off means off: no ipconfig/networksetup while the bar is hidden.
+        if crate::bar::enabled() {
+            refresh_wifi();
+        }
         std::thread::sleep(Duration::from_secs(20));
     });
 }

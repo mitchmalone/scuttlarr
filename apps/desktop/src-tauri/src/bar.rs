@@ -75,7 +75,9 @@ fn watch_mouse(app: AppHandle) {
         let mut was_inside: Option<usize> = None;
         loop {
             std::thread::sleep(std::time::Duration::from_millis(125));
-            let inside = mouse_in_bar();
+            // Off means off: no cursor polling while the bar is hidden. Fall
+            // through once to send the "left" event if the cursor was inside.
+            let inside = if enabled() { mouse_in_bar() } else { None };
             if inside.is_none() && was_inside.is_none() {
                 continue;
             }
@@ -122,13 +124,21 @@ tauri_panel! {
     })
 }
 
-/// The support threads (push, reframe, triggers, mouse) spawn once per
-/// process; they look windows up per tick, so they idle harmlessly while the
-/// bar is toggled off and re-attach when it returns.
+/// The support threads (push, reframe, triggers, mouse, wifi, widgets) spawn
+/// once per process and are never torn down (hidden, not destroyed). While the
+/// bar is toggled off each loop still wakes on its timer but returns before
+/// doing any work: no snapshot, no `aerospace`/`ipconfig`/`networksetup`
+/// spawns, no cursor reads, no widget ticks. Turning the bar back on pushes
+/// immediately and the loops resume on their next wake.
 static THREADS_STARTED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 /// `bar.enabled`, mirrored so the heartbeat knows whether to show or hide.
 static ENABLED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Whether `bar.enabled` is on right now; the support threads gate their work on it.
+pub(crate) fn enabled() -> bool {
+    ENABLED.load(std::sync::atomic::Ordering::Relaxed)
+}
 
 /// Which display id each `bar-{i}` was last framed to and whether that display
 /// was notched — so `sync` only re-frames and re-announces the notch on change.
@@ -151,6 +161,12 @@ pub fn set_enabled(app: &AppHandle, on: bool) {
             return;
         }
         sync(&handle);
+        if on {
+            // Resume promptly instead of waiting for the next heartbeat; off the
+            // main thread because the snapshot spawns processes.
+            let app = handle.clone();
+            std::thread::spawn(move || push(&app));
+        }
     });
 }
 
@@ -337,6 +353,10 @@ fn push_loop(app: AppHandle) {
 
 /// Also poked by agents.rs so state flips beat the 1 Hz tick.
 pub(crate) fn push(app: &AppHandle) {
+    // Off means off: the snapshot spawns aerospace and reads the battery.
+    if !enabled() {
+        return;
+    }
     let snap = snapshot();
     if snap.focused.is_none() && !snap.workspaces.is_empty() {
         eprintln!("[scuttlarr bar] push without focus: {snap:?}");
@@ -422,6 +442,10 @@ fn widget_trigger_id(name: &str) -> Option<&str> {
 fn watch(app: AppHandle) {
     std::thread::spawn(move || loop {
         std::thread::sleep(std::time::Duration::from_secs(5));
+        // Off means off: `set_enabled` already hid the windows.
+        if !enabled() {
+            continue;
+        }
         let handle = app.clone();
         let _ = app.run_on_main_thread(move || sync(&handle));
     });

@@ -3,7 +3,7 @@ use std::{fs, path::PathBuf, sync::mpsc, time::Duration};
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter, Manager};
 
-use crate::error::CmdResult;
+use crate::error::{CmdError, CmdResult};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 // `TerminalApp` names Terminal.app; renaming it to dodge the lint would be more
@@ -403,6 +403,35 @@ pub fn migrate_home(old: &std::path::Path, new: &std::path::Path) -> std::io::Re
     Ok(true)
 }
 
+/// The one config writer: pretty JSON to a temp file beside `config.json`, then rename
+/// over it, so a crash or a concurrent reader never sees a half-written file.
+pub fn save(config: &Config) -> CmdResult<()> {
+    save_at(&config_path(), config)
+}
+
+fn save_at(path: &std::path::Path, config: &Config) -> CmdResult<()> {
+    let json = serde_json::to_string_pretty(config)
+        .map_err(|e| CmdError::Internal(format!("config serialise failed: {e}")))?;
+    let dir = path
+        .parent()
+        .ok_or_else(|| CmdError::Internal(format!("{} has no parent dir", path.display())))?;
+    fs::create_dir_all(dir)?;
+    let tmp = path.with_extension(format!("json.tmp-{}", std::process::id()));
+    let written = fs::write(&tmp, json).and_then(|()| fs::rename(&tmp, path));
+    if written.is_err() {
+        let _ = fs::remove_file(&tmp);
+    }
+    Ok(written?)
+}
+
+/// Parse `raw` strictly and append `link`. A malformed file is an error, never defaults:
+/// the caller must not write anything back over a user's hand-edit.
+pub fn with_link(raw: &str, link: Link) -> Result<Config, serde_json::Error> {
+    let mut cfg: Config = serde_json::from_str(raw)?;
+    cfg.links.push(link);
+    Ok(cfg)
+}
+
 /// Load the config, writing the default file on first run so it's discoverable/editable.
 /// The bool is true when this call created the file — i.e. this is a first run.
 pub fn load_or_create() -> CmdResult<(Config, bool)> {
@@ -413,9 +442,8 @@ pub fn load_or_create() -> CmdResult<(Config, bool)> {
     }
     let path = config_path();
     if !path.exists() {
-        fs::create_dir_all(config_dir())?;
         let default = Config::default();
-        fs::write(&path, serde_json::to_string_pretty(&default).unwrap())?;
+        save(&default)?;
         return Ok((default, true));
     }
     let raw = fs::read_to_string(&path)?;
@@ -497,6 +525,50 @@ mod tests {
         assert_eq!(back.hotkey, "Alt+Space");
         assert_eq!(back.terminal, Terminal::Ghostty);
         assert!(back.bang_new_window);
+    }
+
+    fn link(name: &str) -> Link {
+        Link {
+            name: name.into(),
+            url: format!("https://{name}.test"),
+            trigger: None,
+            browser: None,
+        }
+    }
+
+    #[test]
+    fn with_link_appends_and_keeps_existing() {
+        let raw = r#"{"hotkey":"Cmd+Space","links":[{"name":"a","url":"https://a.test"}]}"#;
+        let cfg = with_link(raw, link("b")).unwrap();
+        assert_eq!(cfg.hotkey, "Cmd+Space");
+        let names: Vec<_> = cfg.links.iter().map(|l| l.name.as_str()).collect();
+        assert_eq!(names, ["a", "b"]);
+    }
+
+    #[test]
+    fn with_link_refuses_malformed_json() {
+        assert!(with_link(r#"{"hotkey": "Cmd+Space",,}"#, link("b")).is_err());
+        assert!(with_link("", link("b")).is_err());
+    }
+
+    #[test]
+    fn save_writes_valid_json_and_leaves_no_temp() {
+        let dir = std::env::temp_dir().join(format!("scuttlarr-save-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        let path = dir.join("nested").join("config.json");
+        let mut cfg = Config {
+            hotkey: "Cmd+Space".into(),
+            ..Config::default()
+        };
+        save_at(&path, &cfg).unwrap();
+        cfg.links.push(link("a"));
+        save_at(&path, &cfg).unwrap(); // overwrite goes through rename too
+        let back: Config = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+        assert_eq!(back.hotkey, "Cmd+Space");
+        assert_eq!(back.links.len(), 1);
+        let entries: Vec<_> = fs::read_dir(path.parent().unwrap()).unwrap().collect();
+        assert_eq!(entries.len(), 1, "only config.json remains");
+        let _ = fs::remove_dir_all(&dir);
     }
 
     #[test]

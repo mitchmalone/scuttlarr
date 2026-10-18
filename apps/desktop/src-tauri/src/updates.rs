@@ -19,8 +19,14 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 
-/// A finished report is served from cache this long before a refresh kicks.
-const CACHE_TTL: Duration = Duration::from_secs(6 * 3600);
+/// Each source is re-checked on its own interval: `CHEAP` for a check that
+/// finishes in well under a second, `SLOW` (the ceiling) for one that costs
+/// seconds of CPU or reaches someone else's rate-limited server.
+const CHEAP: Duration = Duration::from_secs(5 * 60);
+const SLOW: Duration = Duration::from_secs(30 * 60);
+/// A source whose last check failed is retried this soon, whatever its
+/// interval — a timeout on wake shouldn't sit in the bar for half an hour.
+const ERROR_RETRY: Duration = Duration::from_secs(5 * 60);
 /// A source's check command is killed if it runs longer than this.
 const CHECK_TIMEOUT: Duration = Duration::from_secs(60);
 
@@ -79,7 +85,7 @@ pub struct UpdateItem {
     pub kind: Option<String>,
 }
 
-static REPORT: Mutex<Option<(Instant, UpdatesReport)>> = Mutex::new(None);
+static REPORT: Mutex<Option<UpdatesReport>> = Mutex::new(None);
 static REFRESHING: AtomicBool = AtomicBool::new(false);
 /// The panel-owned upgrade: its report row plus the child's pid while it
 /// runs (for `cancel_upgrade`). Kept apart from REPORT so a refresh landing
@@ -88,25 +94,15 @@ static UPGRADE: Mutex<Option<(UpgradeRun, Option<u32>)>> = Mutex::new(None);
 /// Lines of output kept per run — enough to see what brew is doing.
 const TAIL_LINES: usize = 40;
 
-/// Cached report now; kicks a background refresh when never run or stale.
-/// Never blocks — the bar's 1 Hz snapshot always reads the cache.
+/// Cached report now; kicks a background refresh of the due rows when never
+/// run or any row is due. Never blocks — the bar's 1 Hz snapshot always
+/// reads the cache.
 pub fn report() -> UpdatesReport {
-    let stale = {
-        let cache = REPORT.lock().unwrap();
-        match cache.as_ref() {
-            Some((at, _)) => at.elapsed() > CACHE_TTL,
-            None => true,
-        }
-    };
-    if stale {
-        kick();
+    let cached = REPORT.lock().unwrap().clone();
+    if report_due(cached.as_ref(), now_secs()) {
+        kick(false);
     }
-    let mut r = REPORT
-        .lock()
-        .unwrap()
-        .as_ref()
-        .map(|(_, r)| r.clone())
-        .unwrap_or_default();
+    let mut r = cached.unwrap_or_default();
     r.refreshing = REFRESHING.load(Ordering::Relaxed);
     r.upgrade = UPGRADE.lock().unwrap().as_ref().map(|(run, _)| run.clone());
     r
@@ -206,7 +202,7 @@ pub fn upgrade(source: &str) -> Result<(), String> {
             );
         }
         drop(slot);
-        kick();
+        kick(true);
     });
     Ok(())
 }
@@ -249,18 +245,18 @@ fn tail_lines<R: Read + Send + 'static>(pipe: Option<R>) -> std::thread::JoinHan
 /// Force a refresh now; a no-op while one is already in flight (`r` in the
 /// panel, `touch triggers/plugin.updates`).
 pub fn refresh() {
-    kick();
+    kick(true);
 }
 
 /// After an upgrade is handed to the terminal the report is stale but we
 /// can't see when the upgrade finishes — so re-check a couple of times on a
 /// short fuse (brew takes a minute or two; a long cask install, longer)
-/// instead of leaving the old count in the bar for the rest of the TTL.
+/// instead of leaving the old count in the bar until the next interval.
 pub fn refresh_after_upgrade() {
     std::thread::spawn(|| {
         for secs in [90, 300, 900] {
             std::thread::sleep(Duration::from_secs(secs));
-            kick();
+            kick(true);
         }
     });
 }
@@ -293,22 +289,63 @@ pub fn upgrade_command(source: &str) -> Option<String> {
 /// Kick the first scan at launch (lib.rs setup) so the cache is warm by the
 /// time anything reads it.
 pub fn start() {
-    kick();
+    kick(true);
 }
 
-fn kick() {
+/// Refresh in the background: every present source when `force`, else only
+/// the rows that are due (or new). No-op while a refresh is in flight.
+fn kick(force: bool) {
     if REFRESHING.swap(true, Ordering::SeqCst) {
         return;
     }
-    std::thread::spawn(|| {
-        let report = scan();
-        crate::logbook::breadcrumb("updates", &summary(&report));
-        *REPORT.lock().unwrap() = Some((Instant::now(), report));
+    std::thread::spawn(move || {
+        let prev = REPORT.lock().unwrap().clone();
+        let report = scan(prev.as_ref(), force);
+        if force || moved(prev.as_ref(), &report) {
+            crate::logbook::breadcrumb("updates", &summary(&report));
+        }
+        *REPORT.lock().unwrap() = Some(report);
         REFRESHING.store(false, Ordering::SeqCst);
     });
 }
 
-/// One log line per refresh — the proof the check ran, and what it found
+/// How often a source is re-checked; zero (always due) for an unknown id.
+fn interval(id: &str) -> Duration {
+    if id == crate::selfupdate::SOURCE_ID {
+        // One request to GitHub's unauthenticated API (60/hour per IP), for
+        // releases that land days apart.
+        return SLOW;
+    }
+    SOURCES
+        .iter()
+        .find(|def| def.id == id)
+        .map_or(Duration::ZERO, |def| def.interval)
+}
+
+/// A row needs re-checking once its interval has passed, or `ERROR_RETRY`
+/// after a failed check. Wall-clock seconds, not `Instant`: macOS's
+/// monotonic clock stops during sleep, so a Mac that slept overnight would
+/// otherwise keep serving last night's rows.
+fn is_due(source: &UpdateSource, interval: Duration, now: u64) -> bool {
+    let wait = if source.error.is_some() {
+        interval.min(ERROR_RETRY)
+    } else {
+        interval
+    };
+    now.saturating_sub(source.checked_at) >= wait.as_secs()
+}
+
+fn report_due(cached: Option<&UpdatesReport>, now: u64) -> bool {
+    cached.is_none_or(|r| r.sources.iter().any(|s| is_due(s, interval(&s.id), now)))
+}
+
+/// Whether any row's result (count or error) differs from the last report —
+/// a five-minute cadence logs only what moved, not a line per tick.
+fn moved(prev: Option<&UpdatesReport>, next: &UpdatesReport) -> bool {
+    prev.is_none_or(|p| summary(p) != summary(next))
+}
+
+/// One log line per refresh that changed something — what it found
 /// (`brew 3 · mas 0 · pnpm error: …`), without opening the panel.
 fn summary(report: &UpdatesReport) -> String {
     let parts: Vec<String> = report
@@ -335,6 +372,7 @@ struct SourceDef {
     args: &'static [&'static str],
     upgrade_command: &'static str,
     parser: fn(&str) -> Result<Vec<UpdateItem>, String>,
+    interval: Duration,
 }
 
 /// Table order from the plan; the report preserves it.
@@ -343,9 +381,11 @@ const SOURCES: &[SourceDef] = &[
         id: "brew",
         label: "Homebrew",
         binary: "brew",
+        // ~3 s of Ruby per run; the other three take ~0.2 s.
         args: &["outdated", "--json=v2"],
         upgrade_command: "brew upgrade",
         parser: parse_brew,
+        interval: SLOW,
     },
     SourceDef {
         id: "mas",
@@ -354,6 +394,7 @@ const SOURCES: &[SourceDef] = &[
         args: &["outdated"],
         upgrade_command: "mas upgrade",
         parser: parse_mas,
+        interval: CHEAP,
     },
     SourceDef {
         id: "pnpm",
@@ -362,6 +403,7 @@ const SOURCES: &[SourceDef] = &[
         args: &["outdated", "-g", "--json"],
         upgrade_command: "pnpm update -g",
         parser: parse_pnpm,
+        interval: CHEAP,
     },
     SourceDef {
         id: "mise",
@@ -370,27 +412,45 @@ const SOURCES: &[SourceDef] = &[
         args: &["outdated", "--json"],
         upgrade_command: "mise upgrade",
         parser: parse_mise,
+        interval: CHEAP,
     },
 ];
 
-/// Every present source runs on its own thread, in parallel; the report is
-/// assembled once all have finished (or timed out).
-fn scan() -> UpdatesReport {
-    let present: Vec<(&'static SourceDef, PathBuf)> = SOURCES
+/// A report row: kept from the last report, or being checked on its thread.
+enum Row {
+    Kept(UpdateSource),
+    Checking(std::thread::JoinHandle<UpdateSource>),
+}
+
+/// Every present source that is due (all of them when `force`, or with no
+/// previous report) runs on its own thread, in parallel; the rest keep their
+/// last row. The report is assembled once every check has finished (or timed
+/// out), in table order.
+fn scan(prev: Option<&UpdatesReport>, force: bool) -> UpdatesReport {
+    let now = now_secs();
+    let keep = |id: &str| {
+        prev.and_then(|r| r.sources.iter().find(|s| s.id == id))
+            .filter(|s| !force && !is_due(s, interval(id), now))
+            .cloned()
+    };
+    let rows: Vec<Row> = SOURCES
         .iter()
         .filter_map(|def| locate(def.binary).map(|bin| (def, bin)))
-        .collect();
-    let handles: Vec<_> = present
-        .into_iter()
-        .map(|(def, bin)| std::thread::spawn(move || check_source(def, &bin)))
+        .map(|(def, bin)| match keep(def.id) {
+            Some(row) => Row::Kept(row),
+            None => Row::Checking(std::thread::spawn(move || check_source(def, &bin))),
+        })
         .collect();
     let mut sources: Vec<UpdateSource> = Vec::new();
     // scuttlarr itself first (selfupdate.rs); absent from dev/unsigned builds
     // and when `config.updates.checkSelf` is off — off means no request.
     if crate::selfupdate::eligible() {
-        sources.push(crate::selfupdate::check());
+        sources.push(keep(crate::selfupdate::SOURCE_ID).unwrap_or_else(crate::selfupdate::check));
     }
-    sources.extend(handles.into_iter().filter_map(|h| h.join().ok()));
+    sources.extend(rows.into_iter().filter_map(|row| match row {
+        Row::Kept(source) => Some(source),
+        Row::Checking(handle) => handle.join().ok(),
+    }));
     UpdatesReport {
         generated_at: now_secs(),
         refreshing: false,
@@ -937,5 +997,69 @@ mod tests {
             .collect::<Vec<_>>()
             .join(" && ");
         assert_eq!(upgrade_command("all"), Some(expected));
+    }
+
+    fn row(id: &str, checked_at: u64, error: Option<&str>) -> UpdateSource {
+        UpdateSource {
+            id: id.into(),
+            checked_at,
+            error: error.map(Into::into),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn a_healthy_row_is_due_once_its_interval_passes() {
+        let r = row("brew", 1_000, None);
+        assert!(!is_due(&r, SLOW, 1_000 + SLOW.as_secs() - 1));
+        assert!(is_due(&r, SLOW, 1_000 + SLOW.as_secs()));
+    }
+
+    #[test]
+    fn an_errored_row_retries_on_the_short_fuse() {
+        let r = row("mas", 1_000, Some("timed out after 60s"));
+        assert!(!is_due(&r, SLOW, 1_000 + ERROR_RETRY.as_secs() - 1));
+        assert!(is_due(&r, SLOW, 1_000 + ERROR_RETRY.as_secs()));
+    }
+
+    #[test]
+    fn a_clock_behind_checked_at_is_not_due() {
+        assert!(!is_due(&row("brew", 5_000, None), CHEAP, 1_000));
+    }
+
+    #[test]
+    fn every_interval_is_capped_at_thirty_minutes() {
+        assert!(SOURCES.iter().all(|def| def.interval <= SLOW));
+        assert!(interval(crate::selfupdate::SOURCE_ID) <= SLOW);
+        assert_eq!(interval("nonsense"), Duration::ZERO);
+    }
+
+    #[test]
+    fn report_is_due_when_never_run_or_any_row_is() {
+        assert!(report_due(None, 1_000));
+        let fresh = UpdatesReport {
+            sources: vec![row("brew", 1_000, None), row("mas", 1_000, None)],
+            ..Default::default()
+        };
+        assert!(!report_due(Some(&fresh), 1_001));
+        assert!(report_due(Some(&fresh), 1_000 + CHEAP.as_secs()));
+    }
+
+    #[test]
+    fn changes_only_counts_rows_whose_result_moved() {
+        let mut changed = row("pnpm", 2_000, None);
+        changed.items.push(UpdateItem::default());
+        let prev = UpdatesReport {
+            sources: vec![row("brew", 1_000, None), row("pnpm", 1_000, None)],
+            ..Default::default()
+        };
+        let next = UpdatesReport {
+            sources: vec![row("brew", 2_000, None), changed],
+            ..Default::default()
+        };
+        assert_eq!(summary(&next), "refreshed: brew 0 · pnpm 1");
+        assert!(moved(Some(&prev), &next));
+        assert!(!moved(Some(&next), &next));
+        assert!(moved(None, &next));
     }
 }

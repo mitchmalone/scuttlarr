@@ -973,3 +973,12 @@ commit exited 0 and left scuttlarr.com stale. It now lives in `apps/www/vercel.j
 `$VERCEL_GIT_PREVIOUS_SHA`, the last successful deploy. Exit 0 skips; an unset SHA (first
 deploy) or one outside the shallow clone (git exits 128) builds. Vercel caps the command at
 256 characters, so the path list stays inline.
+
+### 2026-10-18 · One `mas` timeout sat in the updates cell for six hours
+
+At 10:34 `mas outdated` ran past the 60 s check timeout, probably on a Mac just woken with
+the network not yet up; run again it takes 0.2 s. The report was cached whole for 6 h with
+no error handling, so the error stayed in the bar until the TTL ran out. Rows are now
+cached per source, an errored row retries in 5 min, and the clock is wall time
+(`checked_at`), not `Instant`: macOS's monotonic clock stops while the Mac sleeps, so an
+`Instant`-based TTL would keep serving last night's results after waking.

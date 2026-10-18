@@ -172,7 +172,7 @@ files runs under either.
 `packages/plugins/` holds the plugins scuttlarr ships — `usage` (the agent usage cell +
 `usage ⏎`), `calendar` (`cal ⏎`), and `updates` (app updates across brew, the App Store,
 pnpm and mise — a count in the bar, `updates ⏎` for the list; its `updates` provider
-shells out every 6 h, `touch triggers/plugin.updates` or `r` in the panel for now; `↵` on a
+re-checks each source every 5–30 min (an errored one in 5), `touch triggers/plugin.updates` or `r` in the panel for now; `↵` on a
 row upgrades that source in the panel with live output (`a` everything, `x` cancels), `t`
 hands it to your terminal instead). Same contract, two differences: their UI is
 Vite-bundled with the app, and their state comes from a Rust provider named in the

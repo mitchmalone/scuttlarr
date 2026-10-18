@@ -3,9 +3,15 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-10-01 (v0.7.0 released — the first scuttlarr release)
+> Last updated: 2026-10-18 (update checks: per-source intervals, errors retry in 5 min)
 
 ## Where we are
+
+**Update checks re-paced, 2026-10-18 (on main, unreleased):** `updates.rs` drops the
+single 6 h TTL for per-source intervals: mas, pnpm and mise (~0.2 s each) every 5 min;
+brew (~3 s of Ruby) and the GitHub self-check every 30 min, the ceiling. A source whose
+check errored retries in 5 min. Only due rows re-run; `r`, launch and upgrades still check
+everything. The logbook gets a line only when a result changes (JOURNAL 2026-10-18).
 
 **Away for two weeks, from 2026-10-02:** the MacBook Pro is lid-closed on AC at Mitch's
 desk, held by `awake` with away mode (iPad screen 1600x1200 HiDPI, sleep off), on
@@ -77,7 +83,7 @@ enforced). `scripts/mem.sh` + a memory line in the definition of done — **firs
 app 157–177 MB idle, over the 120 MB ceiling; borders 370–460 MB** (JOURNAL; the shrink
 is its own task). Invariants 12 (off means off) and 13 (no native alerts). `{clipboard}`,
 `{date}`, `{time}` in quicklinks, expanded at Enter. **Self-update:** `selfupdate.rs` as
-the `scuttlarr` source of `updates ⏎` — GitHub `releases/latest` every 6 h, `↵` installs
+the `scuttlarr` source of `updates ⏎` — GitHub `releases/latest` every 30 min, `↵` installs
 after sha256 + `codesign` team verification, relaunches; Settings → General "Check for
 scuttlarr updates" (default on, off = no request). **Not live-proven:** the install path
 needs a signed release newer than the installed one — the dev build is ad-hoc signed and

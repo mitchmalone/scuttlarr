@@ -1602,3 +1602,20 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
   sharp after the downscale.
 - **Alternatives.** A setting for the size (deferred: one size has been asked for; add it
   when a second iPad or taste does). 2048x1536 (too dense to read at iPad distance).
+
+### 2026-10-19 · The gate checks the layering, purity and coverage it used to trust
+
+- **Decision.** `pnpm verify` (and so CI) gains `cargo fmt --check`, `verify:coverage`
+  (`@vitest/coverage-v8`, floors for `packages/core` and `packages/theme` at the measured
+  numbers rounded down), `verify:deps` (dependency-cruiser: core and theme are leaves, tui
+  → core/theme, plugins → core/tui/theme, packages never import apps, www and desktop
+  never import each other, no runtime cycles) and `verify:sh` (shellcheck on the bash
+  scripts). The core purity lint extends to the clock and randomness, and `packages/theme/src`
+  gets the same rules. CI builds `apps/www`. New devDependencies: dependency-cruiser,
+  coverage-v8 (dev only, nothing ships).
+- **Why.** A 2026-10-19 review found the rules held by convention only: rustfmt ran in a
+  pre-commit hook agent shells skip, the layer rules had one ESLint pattern, nothing
+  measured "the most-tested code", and invariant 7 was checked only by Vercel.
+- **Alternatives.** knip, fast-check, cargo-deny/machete, gitleaks in CI (deferred to a
+  later pass, not rejected). Type-only cycles count as cycles (rejected for now: two exist
+  and are erased at build; a runtime cycle still fails).

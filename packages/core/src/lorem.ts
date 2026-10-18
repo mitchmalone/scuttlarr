@@ -192,14 +192,10 @@ function paragraph(rng: Rng, classic: boolean): string {
 }
 
 /**
- * Generate text at `volume`. `rng` returns [0, 1) — Math.random by default; pass a
- * seeded one for reproducible output.
+ * Generate text at `volume`. `rng` returns [0, 1) — the caller supplies it (core never
+ * reaches for randomness itself, invariant 5); pass a seeded one for reproducible output.
  */
-export function generateLorem(
-  volume: LoremVolume,
-  // eslint-disable-next-line no-restricted-properties -- last Math.random default; drop once apps/desktop App.tsx passes rng
-  rng: Rng = Math.random,
-): string {
+export function generateLorem(volume: LoremVolume, rng: Rng): string {
   switch (volume) {
     case 'title':
       return run(between(3, 6, rng), rng)

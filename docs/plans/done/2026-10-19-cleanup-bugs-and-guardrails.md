@@ -1,6 +1,6 @@
 ---
 title: Cleanup pass 1 — confirmed bugs + drift guardrails
-status: active
+status: done
 created: 2026-10-19
 updated: 2026-10-19
 links:
@@ -103,22 +103,22 @@ STATUS + this plan, and pushes.
 
 ## Steps
 
-- [ ] Plan written and committed (this file)
-- [ ] A: bar gating — `push` early-return, loops gated, wifi + widgets scheduler gated
-- [ ] A: `config::save` atomic + no-unwrap; three writers routed through it
-- [ ] A: `add_quicklink` refuses on parse error; pure append fn + tests
-- [ ] A: correct the "idle harmlessly" comment at `bar.rs:124`
-- [ ] B: `usePlugins` structural-equality skip
-- [ ] B: stable plugin panel component identity; test that it survives a re-poll
-- [ ] B: `updateConfig(mutate)` + queue; ThemePanel and appearance policy use it; tests
-- [ ] C: `cargo fmt --check` in `verify:rust`
-- [ ] C: coverage-v8 + `verify:coverage` with core/theme thresholds (numbers recorded here)
-- [ ] C: dependency-cruiser + `verify:deps`
-- [ ] C: purity lint for clock/random in core + theme; violations fixed
-- [ ] C: shellcheck `verify:sh`; release.sh notes fixed
-- [ ] C: CI builds `apps/www`
-- [ ] Lead: review each diff, merge, full `pnpm verify` green, CI green
-- [ ] Lead: STATUS updated; plan → `done/` in the closing commit
+- [x] Plan written and committed (this file)
+- [x] A: bar gating — `push` early-return, loops gated, wifi + widgets scheduler gated
+- [x] A: `config::save` atomic + no-unwrap; three writers routed through it
+- [x] A: `add_quicklink` refuses on parse error; pure append fn + tests
+- [x] A: correct the "idle harmlessly" comment at `bar.rs:124`
+- [x] B: `usePlugins` structural-equality skip
+- [x] B: stable plugin panel component identity; test that it survives a re-poll
+- [x] B: `updateConfig(mutate)` + queue; ThemePanel and appearance policy use it; tests
+- [x] C: `cargo fmt --check` in `verify:rust`
+- [x] C: coverage-v8 + `verify:coverage` with core/theme thresholds (numbers recorded here)
+- [x] C: dependency-cruiser + `verify:deps`
+- [x] C: purity lint for clock/random in core + theme; violations fixed
+- [x] C: shellcheck `verify:sh`; release.sh notes fixed
+- [x] C: CI builds `apps/www`
+- [x] Lead: review each diff, merge, full `pnpm verify` green, CI green
+- [x] Lead: STATUS updated; plan → `done/` in the closing commit
 - [ ] Dev-install + hands-check (only once Mitch confirms he's back at the desk — the away
       hold runs in this app; relaunching drops it)
 
@@ -126,12 +126,12 @@ STATUS + this plan, and pushes.
 
 - [ ] With `bar.enabled` toggled off at runtime, no `aerospace`/`ipconfig`/`networksetup`
       spawn from scuttlarr and no widget ticks run (checked with `ps`/`log` over 30 s)
-- [ ] A malformed `config.json` + `add_quicklink` → error surfaced, file byte-identical
-- [ ] config writes are tmp+rename; no `unwrap()` on serialisation in config paths
+- [x] A malformed `config.json` + `add_quicklink` → error surfaced, file byte-identical
+- [x] config writes are tmp+rename; no `unwrap()` on serialisation in config paths
 - [ ] An open `usage` panel keeps its selection across a 5 s poll
 - [ ] Theme switch from the panel doesn't revert a Settings change made after it opened
-- [ ] `pnpm verify` runs fmt-check, coverage thresholds, dependency rules, shellcheck; green
-- [ ] CI builds the site; green on main
+- [x] `pnpm verify` runs fmt-check, coverage thresholds, dependency rules, shellcheck; green
+- [x] CI builds the site; green on main
 - [ ] Memory: no process/window/watcher/cache added; bar-off should lower idle work. A
       `scripts/mem.sh` reading is taken at the hands-check, not required for merge
 
@@ -155,3 +155,35 @@ knip, fast-check, cargo-deny/machete, gitleaks; STATUS/ROADMAP/PRD rewrite.
   work (matcher property tests).
 - Merging: three branches touch disjoint files except possibly `pnpm-lock.yaml` (C only)
   and Prettier reflow; the lead resolves.
+
+## Outcome (2026-10-19)
+
+Merged to main from three worktree branches (A `cd71c85` `8058daa`, B `37e9fc7` `526b0f6`,
+C `e639cec`..`d98733b`) plus the lead's lorem follow-up. Gate green: 265 Rust, 561
+Vitest (core 242, theme 110, tui 94, desktop 75, plugins 31, www 9); site builds.
+
+- **A.** `bar::enabled()` gates `push` (before `snapshot()`), the 5 s re-sync, the 8 Hz
+  mouse poll (one pass still sends "left"), the 20 s wifi poll and the widgets scheduler;
+  `set_enabled(true)` pushes at once. Widgets state is read only by `bar::snapshot`; the
+  widgets dir watcher stays (event-driven, its push is gated). `config::save` is the one
+  writer (tmp `config.json.tmp-<pid>` + rename, no unwrap); `write_config`,
+  `add_quicklink`, `load_or_create` use it. `config::with_link` parses strictly. The
+  `watch_triggers` thread and the timer wake-ups still run while off (flag check only).
+- **B.** `samePlugins` skip in `usePlugins`; `plugins/panel-entry.tsx` holds one
+  `PluginPanel` component, entries carry `props: {id, settings}`. `lib/config-write.ts`
+  `updateConfig(mutate)` (fresh read, mutate, write, per-window promise chain; a failure
+  doesn't poison it); ThemePanelContainer and use-appearance-policy patch through it.
+- **C.** Coverage floors (rounded down from measured): core 94 / 88 / 91 / 95, theme
+  97 / 89 / 100 / 97 (statements / branches / functions / lines). dependency-cruiser
+  (`.dependency-cruiser.cjs`, `tsconfig.depcruise.json` for the www `@/` alias): core and
+  theme are leaves, tui → core/theme, plugins → core/tui/theme, packages never import
+  apps, www and desktop never import each other, no runtime cycles — all error, 0
+  violations. `no-circular` ignores type-only cycles (two today: theme
+  `palette.ts`/`tokens.ts`, tui `bar/types.ts`/`plugins.ts`). Purity lint bans
+  `Date.now`, zero-arg `new Date()`, `Math.random`, `performance`, `crypto` in core and
+  theme src (tests exempt); the one hit, lorem's `rng = Math.random` default, is now a
+  required parameter (App.tsx passes `Math.random`). shellcheck over `scripts/*.sh` and
+  `install/install.sh`; release.sh's DMG lookup now dies loudly when no DMG was built.
+
+**Still open:** the runtime hands-check (unchecked acceptance items above) — after a
+dev-install, once Mitch is back at the desk.

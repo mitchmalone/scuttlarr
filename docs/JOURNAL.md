@@ -982,3 +982,12 @@ no error handling, so the error stayed in the bar until the TTL ran out. Rows ar
 cached per source, an errored row retries in 5 min, and the clock is wall time
 (`checked_at`), not `Instant`: macOS's monotonic clock stops while the Mac sleeps, so an
 `Instant`-based TTL would keep serving last night's results after waking.
+
+### 2026-10-19 · Agent worktrees branch from a stale `origin/main`
+
+`git fetch` over SSH fails from agent shells (1Password agent), so the local
+`origin/main` ref lags whatever was pushed over the gh HTTPS helper. Worktree-isolated
+subagents were cut from that ref (8909b80), two commits behind local main: they could not
+see a plan committed minutes earlier, and their test counts came out lower. Merging was
+clean, but pass plans in the prompt (or refresh the ref first:
+`git -c credential.helper='!gh auth git-credential' fetch https://github.com/mitchmalone/scuttlarr.git main:refs/remotes/origin/main`).

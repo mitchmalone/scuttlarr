@@ -91,8 +91,10 @@ describe('generateLorem', () => {
     for (const w of words(p)) expect(w).toMatch(/^[a-z]+[.,]?$/)
   })
 
-  it('works with the default rng', () => {
-    expect(words(generateLorem('sentence')).length).toBeGreaterThan(0)
+  it('works with Math.random', () => {
+    expect(
+      words(generateLorem('sentence', Math.random)).length,
+    ).toBeGreaterThan(0)
   })
 })
 

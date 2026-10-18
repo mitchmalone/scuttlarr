@@ -679,7 +679,7 @@ export default function App() {
           break
         case 'lorem': {
           // Generated here, not in the row, so every Enter is a fresh draw.
-          const text = generateLorem(enter.volume)
+          const text = generateLorem(enter.volume, Math.random)
           invoke('copy_text', { text, keepOpen: true }).catch(console.error)
           setToast(loremToast(enter.volume))
           break

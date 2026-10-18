@@ -3,9 +3,21 @@
 > The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
 > History lives in git, `plans/done/`, and `JOURNAL.md`.
 >
-> Last updated: 2026-10-18 (update checks: per-source intervals, errors retry in 5 min)
+> Last updated: 2026-10-19 (cleanup pass 1: three bugs fixed, verify gate guards drift)
 
 ## Where we are
+
+**Cleanup pass 1, 2026-10-19 (on main, not dev-installed):** a code-health review led
+to plan `plans/done/2026-10-19-cleanup-bugs-and-guardrails.md`. Fixed: the bar turned off
+no longer snapshots, polls wifi or ticks widgets (invariant 12); one atomic config writer,
+and `add_quicklink` refuses a malformed config.json instead of writing defaults over it;
+plugin panels no longer remount on the 5 s poll; panel config writes re-read and patch.
+`pnpm verify` now also runs `cargo fmt --check`, coverage floors (core, theme),
+dependency-cruiser layering, a clock/random purity lint (core, theme) and shellcheck; CI
+builds the site (DECISIONS 2026-10-19). **Hands-check pending (Mitch, back at the
+desk):** dev-install, then the plan's unchecked acceptance items. **Next, needs Mitch:**
+the review's steps 3-5 (memory target, shared helpers + god-file splits, invariant 1/3
+and docs honesty pass, where away mode lives).
 
 **Update checks re-paced, 2026-10-18 (on main, unreleased):** `updates.rs` drops the
 single 6 h TTL for per-source intervals: mas, pnpm and mise (~0.2 s each) every 5 min;

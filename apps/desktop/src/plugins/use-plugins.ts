@@ -4,6 +4,14 @@ import { listen } from '@tauri-apps/api/event'
 import { useEffect, useState } from 'react'
 
 /**
+ * True when two polled payloads are structurally identical. The payload is
+ * plain JSON from Rust, so comparing serialisations is exact and cheap.
+ */
+export function samePlugins(a: PluginState[], b: PluginState[]): boolean {
+  return a === b || JSON.stringify(a) === JSON.stringify(b)
+}
+
+/**
  * The plugin list as plugins.rs sees it: one pull on mount, refreshed on the
  * `plugins-changed` event (discovery, install, remove, rebuild) and on a slow
  * poll so build results and service health land in windows that weren't
@@ -15,7 +23,9 @@ export function usePlugins(pollMs = 5000): PluginState[] {
     let live = true
     const pull = () =>
       invoke<PluginState[]>('plugins_list')
-        .then((p) => live && setPlugins(p))
+        .then(
+          (p) => live && setPlugins((cur) => (samePlugins(cur, p) ? cur : p)),
+        )
         .catch(console.error)
     pull()
     const un = listen('plugins-changed', pull)

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { pickTheme, pickThemeOther, policyInputs } from '../lib/appearance-ui'
 import type { Config } from '../lib/config'
+import { updateConfig } from '../lib/config-write'
 import { appearanceOf } from '../lib/theme'
 import {
   type AppearanceInputs,
@@ -40,11 +41,13 @@ export function ThemePanelContainer({ onClose }: { onClose: () => void }) {
       focusName={focusName}
       dark={resolveAppearance(appearance, policyInputs(inputs)).dark}
       onPick={(name, how) => {
-        const next =
-          how === 'other'
-            ? { ...config, ...pickThemeOther(config, inputs, name) }
-            : { ...config, ...pickTheme(config, inputs, name) }
-        invoke('write_config', { config: next })
+        // Patch the fresh config, not the copy read at mount.
+        updateConfig((c) => ({
+          ...c,
+          ...(how === 'other'
+            ? pickThemeOther(c, inputs, name)
+            : pickTheme(c, inputs, name)),
+        }))
           .then(onClose)
           .catch(console.error)
       }}

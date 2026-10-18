@@ -67,7 +67,7 @@ import {
   PANEL_TRIGGERS as STATIC_PANEL_TRIGGERS,
   panelEnabled,
 } from './panels/registry'
-import { PluginPanelHost } from './plugins/components'
+import { type PanelProps, pluginPanelEntry } from './plugins/panel-entry'
 import { usePlugins } from './plugins/use-plugins'
 
 /** Keep in sync with the CSS: input row + result rows + container border. */
@@ -102,7 +102,9 @@ const PANEL_COMPONENTS: Record<string, React.FC<{ onClose: () => void }>> = {
 type PanelEntry = {
   title: string
   hint: string
-  component: React.FC<{ onClose: () => void }>
+  component: React.FC<PanelProps>
+  /** Passed to `component` as props — plugin panels share one component. */
+  props?: Pick<PanelProps, 'id' | 'settings'>
   /** Plugin panels carry their manifest icon (lucide name). */
   icon?: string | null
   aliases?: string[]
@@ -190,16 +192,7 @@ export default function App() {
       const info = pluginPanelInfo(p)
       if (!info || !p.enabled || STATIC_PANELS[p.id]) continue
       const settings = config.widgets?.[p.id] ?? {}
-      dynamic[p.id] = {
-        title: info.title,
-        hint: info.hint,
-        icon: p.icon,
-        aliases: info.aliases,
-        triggers: info.triggers,
-        component: ({ onClose }) => (
-          <PluginPanelHost id={p.id} settings={settings} onClose={onClose} />
-        ),
-      }
+      dynamic[p.id] = pluginPanelEntry(p, info, settings)
     }
     return { ...STATIC_PANELS, ...dynamic }
   }, [plugins, config.widgets])
@@ -915,8 +908,11 @@ export default function App() {
           <span className="breadcrumb">{panelMode}</span>
         </div>
         {(() => {
-          const Active = PANELS[panelMode]?.component
-          return Active ? <Active onClose={closePanel} /> : null
+          const entry = PANELS[panelMode]
+          const Active = entry?.component
+          return Active ? (
+            <Active {...entry.props} onClose={closePanel} />
+          ) : null
         })()}
       </div>
     )

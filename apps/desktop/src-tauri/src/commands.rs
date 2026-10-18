@@ -576,14 +576,20 @@ pub fn add_quicklink(
 
     let path = crate::config::config_path();
     let raw = std::fs::read_to_string(&path)?;
-    let mut cfg: crate::config::Config = serde_json::from_str(&raw).unwrap_or_default();
-    cfg.links.push(crate::config::Link {
+    let link = crate::config::Link {
         name: name.trim().to_string(),
         url: url.clone(),
         trigger: None,
         browser: browser.filter(|b| !b.trim().is_empty()),
-    });
-    std::fs::write(&path, serde_json::to_string_pretty(&cfg).unwrap())?;
+    };
+    // A parse error refuses: never write defaults over a hand-edited file.
+    let cfg = crate::config::with_link(&raw, link).map_err(|e| {
+        CmdError::Internal(format!(
+            "{} is not valid JSON, quicklink not added: {e}",
+            path.display()
+        ))
+    })?;
+    crate::config::save(&cfg)?;
 
     // Favicon in the background; when it lands, re-annotate so the row gets its icon.
     let icon_dir = state.icon_dir.clone();
@@ -599,10 +605,7 @@ pub fn add_quicklink(
 /// Settings window save: validate by type, write pretty JSON; the watcher hot-applies.
 #[tauri::command]
 pub fn write_config(config: Config) -> CmdResult<()> {
-    let path = crate::config::config_path();
-    std::fs::create_dir_all(crate::config::config_dir())?;
-    std::fs::write(&path, serde_json::to_string_pretty(&config).unwrap())?;
-    Ok(())
+    crate::config::save(&config)
 }
 
 /// Open scuttlarr's editable surfaces from settings: the config file (default editor),

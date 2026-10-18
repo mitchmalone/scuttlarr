@@ -968,7 +968,13 @@ pub fn start(app: AppHandle) {
 
     // Scheduler: 1 Hz look for due widgets; each tick runs on its own thread,
     // one in flight per widget.
+    // Widgets only feed the bar, so no ticks while it is off (off means off);
+    // everything overdue runs on the first tick after it returns.
     std::thread::spawn(move || loop {
+        if !crate::bar::enabled() {
+            std::thread::sleep(Duration::from_secs(1));
+            continue;
+        }
         let due: Vec<(String, PathBuf, Duration, Vec<WidgetSetting>)> = {
             let mut reg = WIDGETS.lock().unwrap();
             let now = Instant::now();

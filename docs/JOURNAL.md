@@ -963,3 +963,13 @@ controlling terminal, so in Ghostty the test asked Mitch and took the answer. Ag
 have no terminal, so it always passed there. The CLI now asks through `sc_confirm`, which
 treats a non-terminal stdin as no. Lesson: run the gate under a pty
 (`python3 -c 'import pty; pty.spawn(["pnpm","verify"])'`) before a release.
+
+### 2026-10-18 · The site's Ignored Build Step diffed `HEAD^`, so a multi-commit push could skip a site change
+
+The step lived only in the Vercel dashboard as `git diff --quiet HEAD^ HEAD -- <site
+inputs>`. Vercel checks only the pushed head, so a push whose site change sat in an earlier
+commit exited 0 and left scuttlarr.com stale. It now lives in `apps/www/vercel.json`
+(`ignoreCommand`, which overrides the dashboard) and diffs against
+`$VERCEL_GIT_PREVIOUS_SHA`, the last successful deploy. Exit 0 skips; an unset SHA (first
+deploy) or one outside the shallow clone (git exits 128) builds. Vercel caps the command at
+256 characters, so the path list stays inline.

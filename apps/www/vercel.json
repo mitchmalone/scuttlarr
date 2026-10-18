@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- . ../../packages/core ../../packages/tui ../../packages/plugins ../../packages/theme ../../install ../../pnpm-lock.yaml",
   "headers": [
     {
       "source": "/install",

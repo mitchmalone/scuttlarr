@@ -109,7 +109,7 @@ sed -i '' "s/^version = \".*\"/version = \"$VERSION\"/" src-tauri/Cargo.toml
 # jq rewrites JSON in its own layout; put it back in the repo's, or the release
 # commit fails CI's format check (the gate above ran before the bump).
 pnpm prettier --write package.json src-tauri/tauri.conf.json >/dev/null
-(cd src-tauri && cargo check -q 2>/dev/null || cargo check)   # refresh Cargo.lock
+(cd src-tauri && { cargo check -q 2>/dev/null || cargo check; })   # refresh Cargo.lock
 for v in $(jq -r .version package.json) $(jq -r .version src-tauri/tauri.conf.json); do
   [[ "$v" == "$VERSION" ]] || die "version bump mismatch"
 done
@@ -123,7 +123,8 @@ else
 fi
 pnpm --filter @scuttlarr/desktop tauri build
 APP_BUNDLE="$DESKTOP/src-tauri/target/release/bundle/macos/scuttlarr.app"
-DMG_SRC=$(ls "$DESKTOP"/src-tauri/target/release/bundle/dmg/*.dmg | head -1)
+DMG_SRC=$(find "$DESKTOP"/src-tauri/target/release/bundle/dmg -maxdepth 1 -name "*.dmg" | head -1)
+[[ -n "$DMG_SRC" ]] || die "no dmg in the bundle output"
 
 step "5/8 verify, notarize, package"
 # The tauri bundler only auto-notarizes via raw APPLE_ID/APPLE_PASSWORD env vars; we

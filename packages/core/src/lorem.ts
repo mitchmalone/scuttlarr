@@ -197,6 +197,7 @@ function paragraph(rng: Rng, classic: boolean): string {
  */
 export function generateLorem(
   volume: LoremVolume,
+  // eslint-disable-next-line no-restricted-properties -- last Math.random default; drop once apps/desktop App.tsx passes rng
   rng: Rng = Math.random,
 ): string {
   switch (volume) {

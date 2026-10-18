@@ -9,6 +9,7 @@ import { listen } from '@tauri-apps/api/event'
 import { useEffect, useRef } from 'react'
 
 import type { Config } from './config'
+import { updateConfig } from './config-write'
 import { appearanceOf, policyConfigured } from './theme'
 
 /** Mirrors `AppearanceInputs` in appearance.rs. */
@@ -68,8 +69,8 @@ export function useAppearancePolicy(config: Config, loaded: boolean): void {
         console.warn(
           `[scuttlarr appearance] ${cfg.theme} → ${res.theme} (${res.via}, ${res.by})`,
         )
-        invoke('write_config', { config: { ...cfg, theme: res.theme } }).catch(
-          (e) => console.error('[scuttlarr appearance] write failed:', e),
+        updateConfig((c) => ({ ...c, theme: res.theme })).catch((e) =>
+          console.error('[scuttlarr appearance] write failed:', e),
         )
       }
       // Re-check at the next schedule boundary (plus a few seconds of slack).
@@ -105,9 +106,12 @@ export function useAppearancePolicy(config: Config, loaded: boolean): void {
         now: clock(),
       })
       if (next.mode === policy.mode) return
-      invoke('write_config', {
-        config: { ...cfg, appearance: { ...cfg.appearance, ...next } },
-      }).catch((e) => console.error('[scuttlarr appearance] toggle failed:', e))
+      updateConfig((c) => ({
+        ...c,
+        appearance: { ...appearanceOf(c), ...next },
+      })).catch((e) =>
+        console.error('[scuttlarr appearance] toggle failed:', e),
+      )
     })
     return () => {
       disposed = true

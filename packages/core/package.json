@@ -8,12 +8,14 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "emojilib": "^4.0.3"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "4.1.10",
     "typescript": "~5.8.3",
     "vitest": "^4"
   }

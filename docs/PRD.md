@@ -120,7 +120,7 @@ The panel is a terminal prompt cosplay, not an Alfred knock-off:
 
 ### 4.5 First run
 
-On first launch: register the default hotkey, build the app index, show the panel once, empty (its placeholder reads "Search for apps and commands…"; there is no separate hint row). No onboarding wizard, no account. The only request a fresh install makes is the update check against GitHub Releases (`updates.checkSelf`, Settings → General; off means no request). scuttlarr runs as an accessory app (no Dock icon) with a small menubar presence — a template icon whose menu covers summon/config/scripts/reindex/quit (added v1.1, 9 Aug 2026) — and, when the Bar rung is on, the bar itself. Everything in the menu stays reachable through the prompt itself (type `scuttlarr` — it self-indexes); the panel is always the primary surface.
+On first launch: register the default hotkey, build the app index, show the panel once, empty (its placeholder reads "Search for apps and commands…"; there is no separate hint row). No onboarding wizard, no account. The only request a fresh install makes is the update check against GitHub Releases (`updates.checkSelf`, Settings → General; off means no request). scuttlarr runs as an accessory app (no Dock icon) with a small menubar presence — a template icon whose menu covers summon/config/scripts/reindex/quit (added v1.1, 9 Aug 2026) — and the bar itself (on by default since 2026-10-19; `bar.enabled`). Everything in the menu stays reachable through the prompt itself (type `scuttlarr` — it self-indexes); the panel is always the primary surface.
 
 ## 5. Core behaviors (functional requirements)
 

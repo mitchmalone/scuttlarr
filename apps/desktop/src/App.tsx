@@ -147,7 +147,7 @@ const DEFAULT_CONFIG: Config = {
   indexBookmarks: false,
   theme: 'scuttlarr',
   themes: {},
-  bar: { enabled: false, layout: DEFAULT_BAR_LAYOUT },
+  bar: { enabled: true, layout: DEFAULT_BAR_LAYOUT },
   agents: DEFAULT_AGENTS_CONFIG,
   desktop: undefined,
   machine: undefined,

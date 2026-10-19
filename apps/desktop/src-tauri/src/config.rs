@@ -32,8 +32,8 @@ pub struct Link {
     pub browser: Option<String>,
 }
 
-/// v0.5 bar: off by default so the launcher-only install is untouched.
-/// `enabled` hot-applies via the config watcher (no restart).
+/// The bar: on by default since 2026-10-19 (install gets the bar and the launcher;
+/// DECISIONS 2026-10-19). `enabled` hot-applies via the config watcher (no restart).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct BarConfig {
@@ -122,7 +122,7 @@ impl Default for BarConfig {
             enabled: true,
         };
         Self {
-            enabled: false,
+            enabled: true,
             layout: BarZones {
                 left: ["workspaces", "agents", "frontApp"].map(module).to_vec(),
                 center: vec![module("clock")],
@@ -215,6 +215,10 @@ impl Default for AgentsConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct Config {
+    /// Which generation of defaults this file was written against (`migrate_defaults`).
+    /// A file without the key predates 2026-10-19; a missing key on any other path
+    /// (a Settings write) takes the current value.
+    pub defaults_version: u32,
     /// Global summon hotkey, e.g. "Alt+Space".
     pub hotkey: String,
     /// Bang-mode target terminal.
@@ -330,6 +334,7 @@ impl Default for AppearanceConfig {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            defaults_version: DEFAULTS_VERSION,
             hotkey: "Alt+Space".into(),
             terminal: Terminal::Ghostty,
             bang_new_window: true,
@@ -355,6 +360,51 @@ impl Default for Config {
             plugins: PluginsConfig::default(),
         }
     }
+}
+
+/// The current defaults generation. 2 (2026-10-19): the bar defaults on, Desktop tiling
+/// off. Generation 1 is every file written before the key existed.
+pub const DEFAULTS_VERSION: u32 = 2;
+
+/// One-time, on load: a file from an older defaults generation gets the old effective
+/// value written in for every key whose default flipped and that the user never set, so
+/// an upgrade changes nothing (DECISIONS 2026-10-19). Returns whether `raw` changed.
+/// Anything that isn't the expected shape is left alone.
+pub fn migrate_defaults(raw: &mut serde_json::Value) -> bool {
+    use serde_json::{json, Map, Value};
+    let Some(root) = raw.as_object_mut() else {
+        return false;
+    };
+    let version = root
+        .get("defaultsVersion")
+        .and_then(Value::as_u64)
+        .unwrap_or(1);
+    if version >= u64::from(DEFAULTS_VERSION) {
+        return false;
+    }
+    // 1 → 2: bar was off, tiling was on.
+    if let Some(bar) = root
+        .entry("bar")
+        .or_insert_with(|| Value::Object(Map::new()))
+        .as_object_mut()
+    {
+        bar.entry("enabled").or_insert(json!(false));
+    }
+    if let Some(desktop) = root
+        .entry("desktop")
+        .or_insert_with(|| Value::Object(Map::new()))
+        .as_object_mut()
+    {
+        if let Some(tiling) = desktop
+            .entry("tiling")
+            .or_insert_with(|| Value::Object(Map::new()))
+            .as_object_mut()
+        {
+            tiling.entry("enabled").or_insert(json!(true));
+        }
+    }
+    root.insert("defaultsVersion".into(), json!(DEFAULTS_VERSION));
+    true
 }
 
 pub fn config_dir() -> PathBuf {
@@ -412,6 +462,10 @@ pub fn save(config: &Config) -> CmdResult<()> {
 fn save_at(path: &std::path::Path, config: &Config) -> CmdResult<()> {
     let json = serde_json::to_string_pretty(config)
         .map_err(|e| CmdError::Internal(format!("config serialise failed: {e}")))?;
+    write_json_at(path, json)
+}
+
+fn write_json_at(path: &std::path::Path, json: String) -> CmdResult<()> {
     let dir = path
         .parent()
         .ok_or_else(|| CmdError::Internal(format!("{} has no parent dir", path.display())))?;
@@ -440,19 +494,42 @@ pub fn load_or_create() -> CmdResult<(Config, bool)> {
         // fresh default is created at the new one.
         eprintln!("scuttlarr: home migration failed: {e}");
     }
-    let path = config_path();
+    load_or_create_at(&config_path())
+}
+
+fn load_or_create_at(path: &std::path::Path) -> CmdResult<(Config, bool)> {
     if !path.exists() {
         let default = Config::default();
-        save(&default)?;
+        save_at(path, &default)?;
         return Ok((default, true));
     }
-    let raw = fs::read_to_string(&path)?;
+    let raw = fs::read_to_string(path)?;
     // A broken hand-edit must not brick the launcher: fall back to defaults —
     // but say so, or a typo silently reverts every setting (found 2026-08-15).
-    let mut parsed: Config = serde_json::from_str(&raw).unwrap_or_else(|e| {
-        eprintln!("[scuttlarr] config.json unreadable, using defaults: {e}");
-        Config::default()
+    // Nothing is written back on that path.
+    let parsed = serde_json::from_str::<serde_json::Value>(&raw).and_then(|mut value| {
+        let migrated = migrate_defaults(&mut value);
+        let cfg = Config::deserialize(&value)?;
+        Ok((cfg, migrated.then_some(value)))
     });
+    let mut parsed = match parsed {
+        Ok((cfg, migrated)) => {
+            if let Some(value) = migrated {
+                // Write the user's own file back with the pinned keys added, not the
+                // full serialised Config: an upgrade shouldn't reformat a hand-edit.
+                if let Ok(json) = serde_json::to_string_pretty(&value) {
+                    if let Err(e) = write_json_at(path, json) {
+                        eprintln!("[scuttlarr] defaults migration not saved: {e}");
+                    }
+                }
+            }
+            cfg
+        }
+        Err(e) => {
+            eprintln!("[scuttlarr] config.json unreadable, using defaults: {e}");
+            Config::default()
+        }
+    };
     parsed.bar.migrate_legacy();
     Ok((parsed, false))
 }
@@ -617,6 +694,97 @@ mod tests {
         assert!(notched.left.is_empty() && notched.center.is_empty());
         assert_eq!(notched.right[0].id, "clock");
         assert_eq!(notched.right[1].id, "battery");
+    }
+
+    fn temp_config(tag: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("scuttlarr-{tag}-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        dir.join("config.json")
+    }
+
+    fn file_json(path: &std::path::Path) -> serde_json::Value {
+        serde_json::from_str(&fs::read_to_string(path).unwrap()).unwrap()
+    }
+
+    #[test]
+    fn fresh_install_gets_the_bar_and_no_tiling() {
+        let path = temp_config("fresh");
+        let (cfg, first_run) = load_or_create_at(&path).unwrap();
+        assert!(first_run);
+        assert!(cfg.bar.enabled);
+        let file = file_json(&path);
+        assert_eq!(file["defaultsVersion"], DEFAULTS_VERSION);
+        assert_eq!(file["bar"]["enabled"], true);
+        // Tiling isn't pinned: the TS default (off) applies, so no aerospace.toml.
+        assert!(file["desktop"].get("tiling").is_none());
+        // A second launch is not an upgrade: nothing gets pinned.
+        let (again, first_run) = load_or_create_at(&path).unwrap();
+        assert!(!first_run && again.bar.enabled);
+        assert!(file_json(&path)["desktop"].get("tiling").is_none());
+        fs::remove_dir_all(path.parent().unwrap()).unwrap();
+    }
+
+    #[test]
+    fn upgrade_pins_the_old_effective_defaults_once() {
+        let path = temp_config("upgrade");
+        // A pre-2026-10-19 file that never set either key.
+        fs::write(
+            &path,
+            r#"{"hotkey":"Cmd+Space","desktop":{"borders":{"enabled":true}}}"#,
+        )
+        .unwrap();
+        let (cfg, first_run) = load_or_create_at(&path).unwrap();
+        assert!(!first_run);
+        assert!(!cfg.bar.enabled, "bar stays off for an upgrader");
+        assert_eq!(cfg.hotkey, "Cmd+Space");
+        let file = file_json(&path);
+        assert_eq!(file["bar"]["enabled"], false);
+        assert_eq!(file["desktop"]["tiling"]["enabled"], true);
+        assert_eq!(file["desktop"]["borders"]["enabled"], true);
+        assert_eq!(file["defaultsVersion"], DEFAULTS_VERSION);
+        // Only the pinned keys are added; the hand-edit isn't expanded to every field.
+        assert!(file.get("sigil").is_none());
+        // One-time: an upgrader who then turns the bar on keeps it on.
+        let mut on = file.clone();
+        on["bar"]["enabled"] = true.into();
+        fs::write(&path, serde_json::to_string(&on).unwrap()).unwrap();
+        let (cfg, _) = load_or_create_at(&path).unwrap();
+        assert!(cfg.bar.enabled);
+        fs::remove_dir_all(path.parent().unwrap()).unwrap();
+    }
+
+    #[test]
+    fn upgrade_keeps_explicit_values() {
+        let mut raw = serde_json::json!({
+            "bar": {"enabled": true},
+            "desktop": {"tiling": {"enabled": false, "managed": false}}
+        });
+        assert!(migrate_defaults(&mut raw));
+        assert_eq!(raw["bar"]["enabled"], true);
+        assert_eq!(raw["desktop"]["tiling"]["enabled"], false);
+        assert!(!migrate_defaults(&mut raw), "second pass is a no-op");
+    }
+
+    #[test]
+    fn unreadable_config_is_not_migrated_or_written() {
+        let path = temp_config("broken");
+        fs::write(&path, r#"{"hotkey": "Cmd+Space",,}"#).unwrap();
+        let (cfg, _) = load_or_create_at(&path).unwrap();
+        assert_eq!(cfg.hotkey, "Alt+Space");
+        assert_eq!(
+            fs::read_to_string(&path).unwrap(),
+            r#"{"hotkey": "Cmd+Space",,}"#
+        );
+        fs::remove_dir_all(path.parent().unwrap()).unwrap();
+    }
+
+    #[test]
+    fn a_settings_write_without_the_key_is_current() {
+        // write_config deserialises whatever the webview sends; a missing key must not
+        // look like an old file and re-pin tiling on the next load.
+        let cfg: Config = serde_json::from_str(r#"{"bar":{"enabled":true}}"#).unwrap();
+        assert_eq!(cfg.defaults_version, DEFAULTS_VERSION);
     }
 
     #[test]

@@ -98,6 +98,12 @@ export function planDesktop(
 /** Reads the menu-bar state first: the top gap depends on whether the native bar
  * is showing (visibleFrame already excludes it) — see gapPlan in core. */
 export async function applyDesktop(config: Config): Promise<ApplyResult> {
+  // Tiling off: nothing to render, so don't probe (`aerospace --version` is a process;
+  // invariant 12). The apply still runs, to stop borders if they were on.
+  const d = desktopOf(config)
+  if (!(d.tiling.enabled && d.tiling.managed)) {
+    return invoke<ApplyResult>('desktop_apply', { req: planDesktop(config) })
+  }
   const status = await desktopStatus().catch(() => null)
   const env: DesktopEnv = { menuBarHidden: status?.menuBarHidden ?? true }
   return invoke<ApplyResult>('desktop_apply', { req: planDesktop(config, env) })

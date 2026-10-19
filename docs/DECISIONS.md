@@ -1619,3 +1619,27 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
 - **Alternatives.** knip, fast-check, cargo-deny/machete, gitleaks in CI (deferred to a
   later pass, not rejected). Type-only cycles count as cycles (rejected for now: two exist
   and are erased at build; a runtime cycle still fails).
+
+### 2026-10-19 · Install gets the bar and the launcher: the bar defaults on, Desktop tiling off; upgraders keep theirs
+
+- **Decision.** `bar.enabled` defaults to `true` (config.rs) and
+  `desktop.tiling.enabled` to `false` (`DEFAULT_DESKTOP`, core). Desktop, Theme and
+  Machine are all opt-in. A fresh install writes no `aerospace.toml` and never probes for
+  AeroSpace (`applyDesktop` skips `desktop_status` while tiling is off, invariant 12).
+  `config.json` gains `defaultsVersion` (now 2). On load, a file without it is from
+  before this change: `migrate_defaults` writes the old effective values into it for
+  any key the user never set (`bar.enabled: false`, `desktop.tiling.enabled: true`),
+  stamps 2 and saves the file once, adding only those keys. Every other defaults-filled
+  key is unchanged. A Settings write that omits the key takes the current version, so it
+  can't re-trigger the pin.
+- **Why.** AGENTS.md, the PRD and the README all state the product as "install gets the
+  bar and the launcher; everything else is a rung", and the code said the opposite on
+  both counts (found by the docs-truth pass, same day). Defaults only fill missing keys,
+  so without the pin an upgrader with no explicit key would have silently gained a bar
+  and lost tiling.
+- **Cost.** The bar now runs on every install, so its webview counts against the 120 MB
+  idle ceiling everywhere (measurement in `plans/done/2026-10-19-defaults-flip.md`).
+- **Alternatives.** Flip without a migration (rejected: silent change on upgrade). Pin
+  by detecting "old defaults" without a version marker (rejected: a fresh file and an
+  old file both lack `desktop.tiling`, so a fresh install would be pinned to tiling on at
+  its second launch).

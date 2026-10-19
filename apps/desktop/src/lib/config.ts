@@ -14,6 +14,9 @@ import type { ThemeTokens } from './themes'
  * terminal hand-off), so it lives beside the app rather than in @scuttlarr/core.
  */
 export type Config = {
+  /** Defaults generation (config.rs `DEFAULTS_VERSION`); Rust owns it, a write without
+   * it takes the current one. */
+  defaultsVersion?: number
   hotkey: string
   terminal: 'Ghostty' | 'iTerm2' | 'Terminal'
   bangNewWindow: boolean

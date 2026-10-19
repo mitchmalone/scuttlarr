@@ -3,7 +3,7 @@
 > The cursor: where we are, what needs hands, what's next. A snapshot, not a history —
 > history lives in git, `plans/done/`, `releases/` and `JOURNAL.md`.
 >
-> Last updated: 2026-10-19 (docs-truth pass: docs match the code, workbench stories)
+> Last updated: 2026-10-19 (defaults flip: bar on, tiling off; invariant 3 reworded)
 
 ## Where we are
 
@@ -15,7 +15,11 @@
   config writer, plugin panels keep identity, verify gate gains fmt, coverage floors,
   layering, purity lint, shellcheck); the docs-truth pass
   (`plans/done/2026-10-19-docs-truth-and-stories.md`: README/PRD/ROADMAP match the code,
-  defaults table in README, awake copy, v0.2.0 notes reconstructed, workbench stories).
+  defaults table in README, awake copy, v0.2.0 notes reconstructed, workbench stories);
+  the defaults flip (`plans/done/2026-10-19-defaults-flip.md`: the bar defaults on,
+  Desktop tiling off, upgraders pinned to what they had via `defaultsVersion`).
+- **Workbench story titles are stable** (an external screenshot script keys on them):
+  rename a story only with Mitch.
 - **Active plans:** `lights-plugin.md` (waiting on Mitch's Home.app shortcuts),
   `opensource-readiness-review.md` (not started).
 - **Daily use on the primary Mac:** bar, launcher, panels, agents, usage, updates, awake,
@@ -25,17 +29,12 @@
 
 ## Needs Mitch (decisions)
 
-- **Defaults vs product intent** (README "Defaults"): the bar defaults **off** although
-  "install gets the bar and launcher"; Desktop tiling defaults **on and managed** although
-  Desktop is an opt-in rung. Not flipped. The README now says what the code does.
-- **Theme policy gate never holds** (JOURNAL 2026-10-19): `config.appearance` always
-  exists, so a fresh install in light mode probably switches to `solarized-light`. Needs
-  a fix (Rust `Option`), which is a behaviour change.
-- **Invariant 3 wording**: 82 commands are registered; proposed rewording in
-  `plans/done/2026-10-19-docs-truth-and-stories.md`.
-- **Custom shortcuts**: `config.shortcuts` works for apps, panes, links and bookmarks;
-  binding a `scuttlarr — …` row (Theme switcher) does nothing (empty `path`). Fix or
-  drop the claim? Link `browser` is ignored on that path.
+- **Next tickets (decided, not started):** the theme policy gate never holds
+  (JOURNAL 2026-10-19; confirmed by the `it.fails` test in `lib/theme.test.ts`: a file
+  with no `appearance` key reaches the webview with one, so a fresh install in light mode
+  switches to `solarized-light`); hotkeys bound to built-in `scuttlarr — …` rows do
+  nothing (empty `path`; link `browser` also ignored on that path); the `tauri build`
+  DMG step.
 - **apps/www demo retypes the launcher prompt** (invariant 10): the launcher view is now
   in `packages/tui`; switch the demo to import it.
 - **Cleanup review steps 3–5**: memory target, shared helpers + god-file splits, where
@@ -60,7 +59,9 @@ Releases and update path:
 
 - Self-update live proof at the next signed release (`updates ⏎` offers it, `↵` installs).
 - `tauri build`'s DMG step failed locally ("create-dmg: Not enough arguments"); dev
-  installs use `--bundles app`. Check before the next release.
+  installs use `--bundles app`. Next ticket; must be fixed before the next release.
+- `apps/www` install copy says the bar is off by default (and mentions a hint line):
+  update it with the release that ships the defaults flip.
 
 Theme:
 
@@ -96,6 +97,9 @@ Agents, usage, plugins:
 - Custom widgets sub-tab and install from URL; trmnl hidden until its key resolves.
 
 Bar and displays:
+
+- The new workbench stories (launcher, bar, hover cards, Updates, Plugins) have not been
+  looked at in a browser: render check and clipping.
 
 - Battery/wifi glyphs at 17 px (or 16/18); a charging battery under 90 % readable; wifi
   arcs at 14 px against the theme; bar icons legible in all themes.

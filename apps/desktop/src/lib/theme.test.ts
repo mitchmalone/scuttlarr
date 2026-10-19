@@ -5,6 +5,7 @@ import {
   appearanceOf,
   flipsMacos,
   policyConfigured,
+  policyResolution,
   renderBuiltin,
   themeApplyRequest,
 } from './theme'
@@ -28,6 +29,42 @@ describe('appearanceOf', () => {
     expect(a.pair).toEqual({ light: 'solarized-light', dark: 'scuttlarr' })
     expect(a.schedule).toEqual({ light: '07:00', dark: '19:00' })
     expect(a.everywhere).toBe(true)
+  })
+})
+
+describe('a config with no appearance key', () => {
+  // Light mode, no Focus, midday: the case that restyled a fresh machine on 2026-09-11.
+  const light = {
+    focusMode: null,
+    systemDark: false,
+    now: { hour: 12, minute: 0 },
+  }
+  const switches = (c: Config) => {
+    const res = policyResolution(c, light)
+    return res !== null && res.theme !== c.theme
+  }
+
+  it('never switches the theme when the key is absent in the webview', () => {
+    expect(switches(cfg({ theme: 'scuttlarr', appearance: undefined }))).toBe(
+      false,
+    )
+  })
+
+  // Known bug, out of scope for 2026-10-19 (STATUS "Theme policy gate never holds"):
+  // config.rs always serialises `appearance` with its rung defaults, so a file with no
+  // `appearance` key reaches the webview as this object and the gate opens. Turn
+  // `it.fails` into `it` with the fix.
+  it.fails('never switches the theme for the shape Rust delivers', () => {
+    const fromRust = cfg({
+      theme: 'scuttlarr',
+      appearance: {
+        everywhere: false,
+        macos: true,
+        editors: false,
+        ghostty: false,
+      } as never,
+    })
+    expect(switches(fromRust)).toBe(false)
   })
 })
 

@@ -1,7 +1,6 @@
 import {
   type PolicyInputs,
   minutesToNextBoundary,
-  resolveAppearance,
   toggleMode,
 } from '@scuttlarr/core/appearance'
 import { invoke } from '@tauri-apps/api/core'
@@ -10,7 +9,7 @@ import { useEffect, useRef } from 'react'
 
 import type { Config } from './config'
 import { updateConfig } from './config-write'
-import { appearanceOf, policyConfigured } from './theme'
+import { appearanceOf, policyConfigured, policyResolution } from './theme'
 
 /** Mirrors `AppearanceInputs` in appearance.rs. */
 export type AppearanceInputs = {
@@ -55,8 +54,6 @@ export function useAppearancePolicy(config: Config, loaded: boolean): void {
 
     const settle = () => {
       const cfg = latest.current
-      if (!policyConfigured(cfg)) return
-      const policy = appearanceOf(cfg)
       const seen = inputs.current
       if (!seen) return
       const pin: PolicyInputs = {
@@ -64,7 +61,9 @@ export function useAppearancePolicy(config: Config, loaded: boolean): void {
         systemDark: seen.systemDark,
         now: clock(),
       }
-      const res = resolveAppearance(policy, pin)
+      const res = policyResolution(cfg, pin)
+      if (!res) return
+      const policy = appearanceOf(cfg)
       if (res.theme !== cfg.theme) {
         console.warn(
           `[scuttlarr appearance] ${cfg.theme} → ${res.theme} (${res.via}, ${res.by})`,

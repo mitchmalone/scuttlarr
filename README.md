@@ -8,8 +8,8 @@ theme rendered into everything, and a keyboard-first way of working — with the
 the machine (tiling, de-shined defaults, a fast shell) a toggle away. It is for people who
 look at [Omarchy](https://omarchy.org) and want that without taking on Linux to get it.
 
-Install gets you the launcher; the bar and everything above it is a toggle. Want more?
-Enable it.
+Install gets you the bar and the launcher; everything else is a rung you turn on —
+Desktop, Theme, Machine. Want more? Enable it.
 
 Two values govern every decision:
 
@@ -54,8 +54,8 @@ What `Config::default()` (`apps/desktop/src-tauri/src/config.rs`) and `DEFAULT_D
 | Rung or opt-in                                         | Key                                   | Default            |
 | ------------------------------------------------------ | ------------------------------------- | ------------------ |
 | Launcher                                               | `hotkey`                              | on, `Alt+Space`    |
-| Bar                                                    | `bar.enabled`                         | off                |
-| Desktop: AeroSpace tiling (managed `aerospace.toml`)   | `desktop.tiling.enabled` / `.managed` | on / on            |
+| Bar                                                    | `bar.enabled`                         | on                 |
+| Desktop: AeroSpace tiling (managed `aerospace.toml`)   | `desktop.tiling.enabled` / `.managed` | off / on           |
 | Desktop: JankyBorders                                  | `desktop.borders.enabled`             | off                |
 | Theme rung (Ghostty, tmux, prompt, delta, Claude Code) | `appearance.everywhere`               | off                |
 | Theme: flip macOS light/dark with the theme            | `appearance.macos`                    | on                 |
@@ -72,8 +72,11 @@ What `Config::default()` (`apps/desktop/src-tauri/src/config.rs`) and `DEFAULT_D
 | Launch at login                                        | `launchAtLogin`                       | on                 |
 | Bang-mode terminal                                     | `terminal`                            | `Ghostty`          |
 
-Tiling only writes `aerospace.toml` when AeroSpace is installed and no file of your own
-is there.
+With tiling off nothing touches `aerospace.toml`; turned on, it writes one only when
+AeroSpace is installed and no file of your own is there. Upgrading from a release before
+these defaults (bar off, tiling on) changes nothing: the first launch writes the values you
+were running into `config.json` (`defaultsVersion: 2`), then the new defaults apply only to
+keys you never had.
 
 ### Custom shortcuts
 

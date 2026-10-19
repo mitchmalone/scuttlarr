@@ -1,4 +1,9 @@
 import {
+  type PolicyInputs,
+  type Resolution,
+  resolveAppearance,
+} from '@scuttlarr/core/appearance'
+import {
   BUILTIN_THEME_SOURCES,
   type RenderedTheme,
   TEMPLATES,
@@ -54,6 +59,15 @@ export function appearanceOf(config: Config): AppearanceConfig {
  * (JOURNAL 2026-09-11). */
 export function policyConfigured(config: Config): boolean {
   return config.appearance !== undefined
+}
+
+/** What the policy engine would set the theme to right now, or null while it's inert. */
+export function policyResolution(
+  config: Config,
+  inputs: PolicyInputs,
+): Resolution | null {
+  if (!policyConfigured(config)) return null
+  return resolveAppearance(appearanceOf(config), inputs)
 }
 
 /** Flip macOS with the theme only when *we* decide light/dark. In `system` mode the

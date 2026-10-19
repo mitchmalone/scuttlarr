@@ -52,9 +52,11 @@ export interface DesktopConfig {
   cornerRadius: number | null
 }
 
+/** Tiling is opt-in (DECISIONS 2026-10-19): a fresh install writes no aerospace.toml.
+ * Configs from before then had it on; Rust pins that for them (`migrate_defaults`). */
 export const DEFAULT_DESKTOP: DesktopConfig = {
   tiling: {
-    enabled: true,
+    enabled: false,
     managed: true,
     modifier: 'alt',
     gaps: 8,

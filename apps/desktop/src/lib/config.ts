@@ -17,6 +17,8 @@ export type Config = {
   /** Defaults generation (config.rs `DEFAULTS_VERSION`); Rust owns it, a write without
    * it takes the current one. */
   defaultsVersion?: number
+  /** First-launch setup still owed (config.rs: only a freshly created file says true). */
+  setupPending?: boolean
   hotkey: string
   terminal: 'Ghostty' | 'iTerm2' | 'Terminal'
   bangNewWindow: boolean

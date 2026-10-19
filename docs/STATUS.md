@@ -22,6 +22,9 @@
   pixel field in the demo's picked theme; hands-check pending). The site theme picker
   (`plans/done/2026-10-20-site-theme-picker.md`: the whole site in any of the 14 app
   themes, light/dark switch and next-themes gone; hands-checked).
+- **First-launch setup** (`plans/done/2026-10-19-first-launch-setup.md`, DECISIONS
+  2026-10-19): a fresh install opens the panel on a one-question-per-screen setup over
+  the pixel field; `setup ⏎` runs it again. Hands-check pending (below).
 - **Workbench story titles are stable** (an external screenshot script keys on them):
   rename a story only with Mitch.
 - **Active plans:** `lights-plugin.md` (waiting on Mitch's Home.app shortcuts),
@@ -58,6 +61,14 @@ Back from travel:
 - Turn Rapid Security Responses back on (`CriticalUpdateInstall`) and Tailscale
   auto-update (JOURNAL 2026-10-19).
 - Dev-install main, then cleanup pass 1's unchecked acceptance items.
+
+First-launch setup:
+
+- Fresh-install path on a clean user account (setup opens on first launch, applies in
+  under a minute, the bar and launcher work without Settings); `setup ⏎` on this Mac
+  starts from the current config; the hotkey try (press it to hide, again to return);
+  Esc on the theme screen puts the old theme back; the field stops while the panel is
+  hidden (Activity Monitor CPU at idle).
 
 Releases and update path:
 

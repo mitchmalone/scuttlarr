@@ -129,8 +129,9 @@ cp -R apps/desktop/src-tauri/target/release/bundle/macos/scuttlarr.app /Applicat
 open /Applications/scuttlarr.app
 ```
 
-First run: the panel appears once with an empty prompt, a default config is written to
-`~/.config/scuttlarr/config.json`, and scuttlarr registers as a login item (toggle in
+First run: the panel opens on a short setup (hotkey, bar, agents, theme, tiling; one
+Enter applies it, Esc puts it off, `setup ⏎` runs it again), a default config is written
+to `~/.config/scuttlarr/config.json`, and scuttlarr registers as a login item (toggle in
 settings). Upgrading from launcharr: paths, caches, hooks and the login item migrate on
 first launch; nothing to do. Signed releases: [docs/RELEASING.md](docs/RELEASING.md).
 

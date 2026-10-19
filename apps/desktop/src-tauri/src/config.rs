@@ -219,6 +219,11 @@ pub struct Config {
     /// A file without the key predates 2026-10-19; a missing key on any other path
     /// (a Settings write) takes the current value.
     pub defaults_version: u32,
+    /// The first-launch setup is still owed. Only a freshly created file says true
+    /// (`load_or_create_at`); a missing key — every upgrader, a broken hand-edit's
+    /// fallback — is false, so only a new install is walked through it. The webview
+    /// clears it when setup applies or is put off; `setup ⏎` runs it again regardless.
+    pub setup_pending: bool,
     /// Global summon hotkey, e.g. "Alt+Space".
     pub hotkey: String,
     /// Bang-mode target terminal.
@@ -335,6 +340,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             defaults_version: DEFAULTS_VERSION,
+            setup_pending: false,
             hotkey: "Alt+Space".into(),
             terminal: Terminal::Ghostty,
             bang_new_window: true,
@@ -499,7 +505,10 @@ pub fn load_or_create() -> CmdResult<(Config, bool)> {
 
 fn load_or_create_at(path: &std::path::Path) -> CmdResult<(Config, bool)> {
     if !path.exists() {
-        let default = Config::default();
+        let default = Config {
+            setup_pending: true,
+            ..Config::default()
+        };
         save_at(path, &default)?;
         return Ok((default, true));
     }
@@ -776,6 +785,27 @@ mod tests {
             fs::read_to_string(&path).unwrap(),
             r#"{"hotkey": "Cmd+Space",,}"#
         );
+        fs::remove_dir_all(path.parent().unwrap()).unwrap();
+    }
+
+    #[test]
+    fn only_a_fresh_install_is_offered_setup() {
+        let path = temp_config("setup-fresh");
+        let (cfg, _) = load_or_create_at(&path).unwrap();
+        assert!(cfg.setup_pending);
+        assert_eq!(file_json(&path)["setupPending"], true);
+        fs::remove_dir_all(path.parent().unwrap()).unwrap();
+
+        let path = temp_config("setup-upgrade");
+        fs::write(&path, r#"{"hotkey":"Cmd+Space"}"#).unwrap();
+        let (cfg, _) = load_or_create_at(&path).unwrap();
+        assert!(!cfg.setup_pending, "an upgrader never sees setup");
+        fs::remove_dir_all(path.parent().unwrap()).unwrap();
+
+        let path = temp_config("setup-broken");
+        fs::write(&path, "{,}").unwrap();
+        let (cfg, _) = load_or_create_at(&path).unwrap();
+        assert!(!cfg.setup_pending, "a broken hand-edit is not a first run");
         fs::remove_dir_all(path.parent().unwrap()).unwrap();
     }
 

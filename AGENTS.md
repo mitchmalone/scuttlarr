@@ -106,13 +106,15 @@ it in `docs/DECISIONS.md`.
    exactly. Proven in M0 before anything was built on top.
 7. **The site is fully static.** `output: 'export'` in `apps/www` — no API routes, no
    middleware, no server runtime.
-8. **Design tokens only** in `apps/www`: page colors come from the CSS vars in
-   `src/app/globals.css`, and shadcn/ui's semantic tokens are _mapped onto_ those vars,
-   never imported (DECISIONS 2026-08-16). Exception: the demo renders a dark macOS desktop
-   in both site themes, like a screenshot — but its panel and bar chrome are driven by the
-   app's own theme tokens (`@scuttlarr/tui/themes`), not hand-typed hex, so the theme
-   picker retints them exactly as the app does. Page-level design source of truth is the
-   Claude Design project "Launcharr landing page design"
+8. **Design tokens only** in `apps/www`: page colors are the CSS vars on `<html>`, every
+   one derived from the picked app theme (`@scuttlarr/tui/themes`) by
+   `src/lib/page-theme.ts` — never hand-typed — and shadcn/ui's semantic tokens are
+   _mapped onto_ those vars in `globals.css`, never imported (DECISIONS 2026-08-16,
+   2026-10-20). The site picker, the demo's dropdown and the hero field share one store,
+   so the whole page wears one app theme. Exception: the demo renders a dark macOS
+   desktop whatever the theme, like a screenshot, with its panel and bar chrome in the
+   app's own tokens so it retints exactly as the app does. Page-level design
+   source of truth is the Claude Design project "Launcharr landing page design"
    (`02b1ac80-4556-43d7-810b-b5938cc2573e`) — visual changes round-trip through it, but it
    never overrides invariant 10 for anything depicting the app.
 9. **Release facts are generated, not authored.** `apps/www/src/lib/release.json` is written

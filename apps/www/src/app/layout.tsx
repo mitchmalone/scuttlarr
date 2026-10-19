@@ -1,6 +1,12 @@
 import type { Metadata } from 'next'
-import { ThemeProvider } from 'next-themes'
 import { IBM_Plex_Sans, JetBrains_Mono } from 'next/font/google'
+
+import {
+  DEFAULT_THEME,
+  pageVars,
+  themeBootScript,
+  themeTokens,
+} from '@/lib/page-theme'
 
 import './globals.css'
 
@@ -32,21 +38,30 @@ export const metadata: Metadata = {
   },
 }
 
+const { 'color-scheme': colorScheme, ...defaultVars } = pageVars(
+  themeTokens(DEFAULT_THEME),
+)
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    // The default theme is rendered in; the boot script swaps a stored one in before
+    // paint, which is why <html>'s attributes may legitimately differ at hydration.
+    <html
+      lang="en"
+      data-app-theme={DEFAULT_THEME}
+      style={{ ...defaultVars, colorScheme } as React.CSSProperties}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* a raw tag, not next/script: beforeInteractive defers to Next's runtime, after paint */}
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript() }} />
+      </head>
       <body
         className={`${jetbrainsMono.variable} ${ibmPlexSans.variable} font-mono`}
       >
-        <ThemeProvider
-          attribute="data-theme"
-          defaultTheme="system"
-          enableSystem
-        >
-          {children}
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   )

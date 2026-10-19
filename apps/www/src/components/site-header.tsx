@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 import { GITHUB_URL, VERSION } from '@/lib/site'
 
-import { ThemeSwitch } from './theme-switch'
+import { ThemePicker } from './theme-picker'
 
 export function SiteHeader() {
   return (
@@ -45,7 +45,7 @@ export function SiteHeader() {
         >
           docs
         </Link>
-        <ThemeSwitch />
+        <ThemePicker />
         <a
           href={GITHUB_URL}
           className="inline-flex items-center gap-2 rounded-md border border-(--border) px-3 py-1.5 text-(--fg) hover:border-(--accent) hover:text-(--fg) hover:no-underline"

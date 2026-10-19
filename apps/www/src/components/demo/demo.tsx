@@ -11,6 +11,7 @@ import {
 } from '@scuttlarr/tui'
 import { useEffect, useRef, useState } from 'react'
 
+import { useAppTheme } from '@/lib/app-theme'
 import { type PanelId, askAnswer } from '@/lib/demo-data'
 import { type DemoRow, computeDemoRows } from '@/lib/demo-rows'
 import { SEED_FRECENCY, TRIGGERS } from '@/lib/launch-index'
@@ -54,7 +55,8 @@ export function Demo() {
   const [frecency, setFrecency] =
     useState<Record<string, number>>(SEED_FRECENCY)
   const [toast, setToast] = useState('')
-  const [themeName, setThemeName] = useState('scuttlarr')
+  // shared with the hero field, so the picker below retints the band above
+  const [themeName, setThemeName] = useAppTheme()
   const [panel, setPanel] = useState<PanelId | null>(null)
   // `?` conversation as turns — the same AskSurface the app renders (invariant 10);
   // only the answers are canned.

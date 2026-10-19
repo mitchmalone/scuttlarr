@@ -3,7 +3,7 @@
 > The cursor: where we are, what needs hands, what's next. A snapshot, not a history —
 > history lives in git, `plans/done/`, `releases/` and `JOURNAL.md`.
 >
-> Last updated: 2026-10-19 (defaults flip: bar on, tiling off; invariant 3 reworded)
+> Last updated: 2026-10-20 (site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded)
 
 ## Where we are
 
@@ -18,6 +18,10 @@
   defaults table in README, awake copy, v0.2.0 notes reconstructed, workbench stories);
   the defaults flip (`plans/done/2026-10-19-defaults-flip.md`: the bar defaults on,
   Desktop tiling off, upgraders pinned to what they had via `defaultsVersion`).
+  The site pixel hero (`plans/done/2026-10-19-site-pixel-hero.md`: a typing-reactive
+  pixel field in the demo's picked theme; hands-check pending). The site theme picker
+  (`plans/done/2026-10-20-site-theme-picker.md`: the whole site in any of the 14 app
+  themes, light/dark switch and next-themes gone; hands-checked).
 - **Workbench story titles are stable** (an external screenshot script keys on them):
   rename a story only with Mitch.
 - **Active plans:** `lights-plugin.md` (waiting on Mitch's Home.app shortcuts),

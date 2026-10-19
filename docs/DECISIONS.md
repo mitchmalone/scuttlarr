@@ -1657,3 +1657,43 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
   are panel actions with no event-shaped equivalent; worth an audit pass, not a rule
   change). Drop the invariant (rejected: the pressure toward events and snapshots is the
   point).
+
+### 2026-10-19 · The site hero is a pixel field in the picked app theme
+
+- **Decision.** The landing hero is a full-height band: a dithered pixel field on a
+  canvas behind the headline, calm in the centre and busy at the edges, that answers the
+  keyboard. With the pointer over it, each key pulses along the prompt row and Enter
+  fires a ring; when nobody types, it types its own brand lines. Chosen as option 2c in
+  the Claude Design project ("Pixel Hero"), after a round where a centred pixel wordmark
+  read as too close to its reference. The long hero paragraph and the video slot move
+  below the band.
+- **Colour.** The band takes the active app theme, not the page palette: the field's six
+  steps are mixed from `bg`, `accent` and `fg`, and the band scopes `--bg`, `--fg`,
+  `--border`, `--accent` and `--dim2` to that theme so the copy and outline button follow
+  it. The demo's theme picker drives it through one shared store (`lib/app-theme.ts`).
+  Invariant 8 gains this as a second named exception, alongside the demo.
+- **Shape.** All drawing is pure (`lib/hero-field.ts`: time and randomness arrive as
+  parameters, tested); `components/hero-field.tsx` owns the canvas, clock and listeners.
+  About 33 fps, paused off-screen, one still frame under reduced motion. Keys are only
+  taken while the pointer is on the band and focus isn't in a field; no page shortcuts.
+- **Alternatives.** The centred pixel wordmark (1a, rejected as derivative); contours,
+  glyph and wave-sim fields (2a, 2b, 2d); a jolly roger cursor (3a, 3b, not taken).
+
+### 2026-10-20 · The site wears the picked app theme, whole
+
+- **Decision.** scuttlarr.com drops its light/system/dark switch (and `next-themes`). One
+  picker in the header lists all 14 app themes; the page, the hero field and the demo
+  all wear the chosen one. scuttlarr is the default; the choice is kept per browser in
+  `localStorage` and applied by an inline `<head>` script before first paint. The demo's
+  own dropdown stays and is the same store, so either retints both. Chosen as option 1a
+  in the Claude Design file "Theme Selector", with Mitch's changes: the closed chip shows
+  the palette and no name; the menu gives every theme its full name (title-cased slug, scuttlarr lowercase); with a mouse it opens on hover
+  and stays open while picking, by touch a tap opens and a pick or outside tap closes.
+- **Mapping.** `lib/page-theme.ts` derives every page token from the theme's tokens
+  (`--cta` is the theme accent, `--chip` its surface, `--panel` its glass, light or dark
+  from the ground; light themes' fg is darkened 30% for headline contrast). The boot
+  script carries the precomputed result, so the mapping exists once. `globals.css` no
+  longer holds a palette. Supersedes the hero's band-scoped tokens (2026-10-19).
+- **Alternatives.** A two-tone chip strip in the nav (1b, too wide for mobile); a
+  typeahead field (1c); keeping a light/dark switch beside the theme (rejected: the
+  theme already decides it, and two controls for one look is confusing).

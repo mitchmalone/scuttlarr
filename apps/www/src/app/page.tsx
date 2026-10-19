@@ -28,6 +28,7 @@ import { AgentSpotlight } from '@/components/agent-spotlight'
 import { BarStrip } from '@/components/bar-strip'
 import { BarThemeScope } from '@/components/bar-theme-scope'
 import { Demo } from '@/components/demo/demo'
+import { HeroField, HeroPrompt } from '@/components/hero-field'
 import { InstallTabs } from '@/components/install-tabs'
 import { SiteHeader } from '@/components/site-header'
 import { Badge } from '@/components/ui/badge'
@@ -366,17 +367,48 @@ export default function Home() {
     <div className="min-h-screen bg-(--bg) text-(--fg)">
       <SiteHeader />
 
-      {/* ---- hero ---- */}
+      {/* ---- hero: the pixel field band (design 2c), then the long copy ---- */}
+      <HeroField>
+        <div className="mx-auto flex min-h-[calc(100svh-69px)] max-w-[1080px] flex-col items-center justify-center gap-[22px] px-8 py-24 text-center">
+          <h1 className="m-0 max-w-[18ch] text-[clamp(2.25rem,6vw,3.375rem)] font-bold leading-[1.05] tracking-[-0.035em] text-balance">
+            The terminal developer&rsquo;s desktop for macOS.
+          </h1>
+          <HeroPrompt />
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {RELEASE.artifacts ? (
+              <ButtonLink
+                variant="cta"
+                size="lg"
+                href={RELEASE.artifacts.dmg.url}
+              >
+                <Terminal size={16} strokeWidth={2} />
+                Download for Mac
+              </ButtonLink>
+            ) : null}
+            <ButtonLink
+              variant="outline"
+              size="lg"
+              href={GITHUB_URL}
+              className="bg-(--bg)"
+            >
+              <Star size={16} strokeWidth={1.75} />
+              Star on GitHub
+            </ButtonLink>
+          </div>
+          <span className="rounded bg-(--bg) px-1.5 py-0.5 text-[12.5px] text-(--dim2)">
+            {VERSION} · Apple Silicon
+            {RELEASE.signed ? ' · signed & notarized' : null}
+          </span>
+        </div>
+      </HeroField>
+
       <section
-        className={`${SECTION} grid justify-items-start gap-[26px] pb-10 pt-[72px]`}
+        className={`${SECTION} grid justify-items-start gap-[26px] pb-10 pt-16`}
       >
         <Badge variant="eyebrow">
           <span className="size-1.5 rounded-full bg-(--green)" />
           macOS · Apple Silicon · free &amp; open source
         </Badge>
-        <h1 className="m-0 max-w-[17ch] text-[clamp(2.25rem,7vw,3.625rem)] font-bold leading-[1.05] tracking-[-0.035em] text-balance">
-          The terminal developer&rsquo;s desktop for macOS.
-        </h1>
         <p
           className={`m-0 max-w-[64ch] font-sans text-[19px] leading-[1.6] text-(--body) text-pretty`}
         >
@@ -390,26 +422,6 @@ export default function Home() {
           </kbd>{' '}
           and run your Mac without touching the mouse.
         </p>
-        <div className="mt-1 flex flex-wrap items-center gap-3">
-          {RELEASE.artifacts ? (
-            <ButtonLink
-              variant="cta"
-              size="lg"
-              href={RELEASE.artifacts.dmg.url}
-            >
-              <Terminal size={16} strokeWidth={2} />
-              Download for Mac
-            </ButtonLink>
-          ) : null}
-          <ButtonLink variant="outline" size="lg" href={GITHUB_URL}>
-            <Star size={16} strokeWidth={1.75} />
-            Star on GitHub
-          </ButtonLink>
-          <span className="text-[12.5px] text-(--dim2)">
-            {VERSION} · Apple Silicon
-            {RELEASE.signed ? ' · signed & notarized' : null}
-          </span>
-        </div>
 
         {/* welcome video drops in here — placeholder frame until footage exists */}
         <div className="mt-6 w-full">
@@ -421,7 +433,7 @@ export default function Home() {
                 'repeating-linear-gradient(-45deg, #11131d 0, #11131d 14px, #14161f 14px, #14161f 28px)',
             }}
           >
-            <span className="inline-flex size-[68px] items-center justify-center rounded-full border border-[#393b54] bg-[rgba(28,29,42,0.8)] text-(--cta)">
+            <span className="inline-flex size-[68px] items-center justify-center rounded-full border border-(--border) bg-(--panel) text-(--cta)">
               <Play size={26} strokeWidth={2} />
             </span>
             <span className="text-[12.5px] text-[#7d8590]">

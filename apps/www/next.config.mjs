@@ -1,3 +1,5 @@
+import process from 'node:process'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
@@ -5,6 +7,13 @@ const nextConfig = {
   // docs system is single-source-per-fact (AGENTS.md at the root), and a
   // generated nested pair silently competes with it.
   agentRules: false,
+  // `next dev` refuses its own JS/CSS to any host but localhost; the dev server is
+  // opened over the Tailnet, so let this machine's Tailnet name through. Dev only —
+  // the static export ignores it.
+  allowedDevOrigins: [
+    process.env.DOTFILES_HOST_TAILSCALE_NAME,
+    process.env.DOTFILES_HOST_HOSTNAME,
+  ].filter(Boolean),
   transpilePackages: [
     '@scuttlarr/core',
     '@scuttlarr/tui',

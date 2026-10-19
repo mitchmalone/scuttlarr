@@ -7,7 +7,7 @@
 //! addressed directly: it's reached through whichever multiplexer its window
 //! is already showing — herdr's socket, or tmux — and only opened fresh
 //! (`open -na`) when no Ghostty process exists yet at all. `plan_ghostty` is
-//! that decision as a pure function (docs/plans/active/ghostty-handoff.md);
+//! that decision as a pure function (docs/plans/done/ghostty-handoff.md);
 //! `run_ghostty` is the thin, I/O-doing executor.
 //!
 //! iTerm2 and Terminal.app are unaffected: both keep the AppleScript hand-off
@@ -272,7 +272,7 @@ fn open_new_ghostty_instance(command: Option<&str>) -> CmdResult<()> {
 /// Fire-and-forget Ghostty hand-off: probe the machine, plan the route, run it.
 /// `new_window` (the bang "reuse current session" preference) doesn't apply here — every
 /// route opens a new tmux window / herdr tab / Ghostty window; there is no in-place
-/// "current session" for Ghostty to reuse (plan: docs/plans/active/ghostty-handoff.md).
+/// "current session" for Ghostty to reuse (plan: docs/plans/done/ghostty-handoff.md).
 fn run_ghostty(command: &str) -> CmdResult<()> {
     let probe = probe_ghostty();
     match plan_ghostty(&probe, command) {

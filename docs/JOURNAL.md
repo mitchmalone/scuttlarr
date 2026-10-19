@@ -991,3 +991,25 @@ subagents were cut from that ref (8909b80), two commits behind local main: they 
 see a plan committed minutes earlier, and their test counts came out lower. Merging was
 clean, but pass plans in the prompt (or refresh the ref first:
 `git -c credential.helper='!gh auth git-credential' fetch https://github.com/mitchmalone/scuttlarr.git main:refs/remotes/origin/main`).
+
+### 2026-10-19 · Travel setup for two weeks unattended (moved out of STATUS)
+
+From 2026-10-02 the MacBook Pro sat lid-closed on AC at the desk, held by `awake` with
+away mode (BetterDisplay `iPad` screen at 1600x1200 HiDPI, sleep off via
+`sleep_override.rs`), on ethernet with Wi-Fi off, reached over Tailscale (`mitch`) by
+mosh/SSH/Screens. Proven overnight first. To stop an unattended restart: Software Update
+Rapid Security Responses off (`CriticalUpdateInstall=0`) and Tailscale auto-update off
+(`tailscale set --auto-update=false` plus the app's Sparkle keys). Both need turning back
+on once home. Residual risk accepted: a reboot stops at the FileVault pre-boot screen,
+which nothing remote gets past.
+
+### 2026-10-19 · `config.appearance` is never absent, so the theme policy gate can't hold
+
+The 2026-09-11 fix made the policy engine inert "until `config.appearance` exists on
+disk". But `Config.appearance` in config.rs is a plain struct with `serde(default)`, and
+`read_config` returns the Rust struct, so the frontend always sees the key and
+`policyConfigured()` is always true; the seeding in `appearanceOf` never runs. A fresh
+install in macOS light mode should resolve to the default pair's `solarized-light`.
+Found by reading the code during the docs-truth pass, not reproduced. Lesson: a "key is
+absent" gate across IPC needs the Rust side to model absence (`Option` +
+`skip_serializing_if`), or it is a gate in name only.

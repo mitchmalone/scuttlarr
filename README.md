@@ -1,4 +1,4 @@
-# scuttlarr 🏴‍☠️
+# scuttlarr
 
 > _Scuttle the ship. Sail the wreck._
 
@@ -8,7 +8,8 @@ theme rendered into everything, and a keyboard-first way of working — with the
 the machine (tiling, de-shined defaults, a fast shell) a toggle away. It is for people who
 look at [Omarchy](https://omarchy.org) and want that without taking on Linux to get it.
 
-Install gets you the bar and the launcher. Want more? Enable it.
+Install gets you the launcher; the bar and everything above it is a toggle. Want more?
+Enable it.
 
 Two values govern every decision:
 
@@ -19,8 +20,8 @@ Two values govern every decision:
 
 ## The rungs
 
-Each is a toggle in Settings and a key in `~/.config/scuttlarr/config.json`. Nothing above
-the first is on by default.
+Each is a toggle in Settings and a key in `~/.config/scuttlarr/config.json`. What a fresh
+install actually has on is in [Defaults](#defaults) below.
 
 1. **Launcher** — ⌥Space summons a non-activating panel; Esc returns focus exactly where
    it was. Fuzzy-launch apps and System Settings panes, frecency-ranked. `!git status ⏎`
@@ -45,11 +46,54 @@ the first is on by default.
    never overwrite, migrations, and `scuttlarr remove` to put it all back. It shows you a
    plan and asks once. Details in [docs/SETUP.md](docs/SETUP.md).
 
+### Defaults
+
+What `Config::default()` (`apps/desktop/src-tauri/src/config.rs`) and `DEFAULT_DESKTOP`
+(`packages/core/src/desktop.ts`) give a fresh install:
+
+| Rung or opt-in                                         | Key                                   | Default            |
+| ------------------------------------------------------ | ------------------------------------- | ------------------ |
+| Launcher                                               | `hotkey`                              | on, `Alt+Space`    |
+| Bar                                                    | `bar.enabled`                         | off                |
+| Desktop: AeroSpace tiling (managed `aerospace.toml`)   | `desktop.tiling.enabled` / `.managed` | on / on            |
+| Desktop: JankyBorders                                  | `desktop.borders.enabled`             | off                |
+| Theme rung (Ghostty, tmux, prompt, delta, Claude Code) | `appearance.everywhere`               | off                |
+| Theme: flip macOS light/dark with the theme            | `appearance.macos`                    | on                 |
+| Theme: hot editors                                     | `appearance.editors`                  | off                |
+| Theme: reload Ghostty's config                         | `appearance.ghostty`                  | off                |
+| App theme                                              | `theme`                               | `scuttlarr`        |
+| Machine                                                | `machine.enabled`                     | off                |
+| `?` ask mode                                           | `agents.askMode`                      | off                |
+| Agent monitoring / usage monitor                       | `agents.monitor` / `agents.usage`     | off / off          |
+| Browser bookmarks in results                           | `indexBookmarks`                      | off                |
+| Colour picker loupe (Screen Recording)                 | `colorLoupe`                          | off                |
+| Bundled plugins (usage, calendar, updates)             | `plugins.disabled`                    | on (none disabled) |
+| scuttlarr update check                                 | `updates.checkSelf`                   | on                 |
+| Launch at login                                        | `launchAtLogin`                       | on                 |
+| Bang-mode terminal                                     | `terminal`                            | `Ghostty`          |
+
+Tiling only writes `aerospace.toml` when AeroSpace is installed and no file of your own
+is there.
+
+### Custom shortcuts
+
+`shortcuts` in `config.json` maps extra global hotkeys to an item by name, hot-applied on
+save (there is no Settings tab for it since v0.5.0):
+
+```json
+"shortcuts": { "Cmd+Shift+S": "Safari", "Alt+Ctrl+B": "Bluetooth" }
+```
+
+The name matches an indexed app, System Settings pane, link or bookmark (exact name
+first, then prefix). The built-in `scuttlarr — …` rows (Theme switcher, Settings, Next
+wallpaper) can't be bound yet.
+
 ## Principles
 
-- **Zero granted permissions.** No Accessibility, no Full Disk Access. The only prompts
-  you'll ever see are macOS's standard Automation consents, and only when a feature you
-  turned on needs one. Focus detection and appearance tracking read files macOS already
+- **Zero granted permissions.** No Accessibility, no Full Disk Access. A prompt only
+  ever follows a toggle you flipped, and Settings names it: Automation for the iTerm2
+  fallback or the Ghostty reload, Screen Recording for the colour loupe, a privacy class
+  a plugin declares. Focus detection and appearance tracking read files macOS already
   lets you read.
 - **No telemetry.** scuttlarr talks to the network only to do what you asked — fetch a
   favicon, read your usage limits, check for app updates — its own included: `updates ⏎`
@@ -82,7 +126,7 @@ cp -R apps/desktop/src-tauri/target/release/bundle/macos/scuttlarr.app /Applicat
 open /Applications/scuttlarr.app
 ```
 
-First run: the panel appears once with the hint line, a default config is written to
+First run: the panel appears once with an empty prompt, a default config is written to
 `~/.config/scuttlarr/config.json`, and scuttlarr registers as a login item (toggle in
 settings). Upgrading from launcharr: paths, caches, hooks and the login item migrate on
 first launch; nothing to do. Signed releases: [docs/RELEASING.md](docs/RELEASING.md).
@@ -93,9 +137,11 @@ A theme is `colors.toml` — Omarchy's keys, unchanged. Fourteen ship (dracula, 
 gruvbox, nord, tokyo-night, rose-pine, solarized light and dark, …). Rendered files land
 in `~/.local/state/scuttlarr/current/theme/` and your configs import from there — see
 [docs/THEMES.md](docs/THEMES.md) for the include lines and the surfaces. Your own themes
-(and paid ones like Dracula Pro) will live in `~/.config/scuttlarr/themes/<name>/`,
-overlaying a same-named built-in file by file; that loader and `theme install <git-url>`
-are next on the plan.
+(and paid ones like Dracula Pro) live in `~/.config/scuttlarr/themes/<name>/`, overlaying
+a same-named built-in file by file and watched for edits; `theme install <git-url>` clones
+one in (Omarchy's naming rules, symlinks and executables filtered out), with update and
+remove beside it. A theme's `backgrounds/` folder is its wallpapers: each apply advances
+to the next, and the "Next wallpaper" row cycles them. Shipped in v0.7.0.
 
 ## Hacking
 

@@ -4,7 +4,7 @@
  * that decides when a session lets go. No I/O — Rust holds the assertions and
  * supplies readings; this module only decides and describes.
  *
- * Copy rules (plans/active/awake.md): say what the user observes, never what
+ * Copy rules (plans/done/awake.md): say what the user observes, never what
  * we hold; every option states how it ends; limitations sit inline at the
  * option they limit.
  */
@@ -459,7 +459,7 @@ export function endsLabel(until: AwakeUntil, deadline: number | null): string {
     case 'power':
       return 'until unplugged'
     case 'wifi':
-      return `until off ${until.ssid}`
+      return `until you leave ${until.ssid}`
     case 'display':
       return 'until the display detaches'
     case 'busy':

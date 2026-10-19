@@ -12,9 +12,10 @@ import { createRoot } from 'react-dom/client'
 
 import './workbench.css'
 
-/* Auto-discover story files from the kit and (later) app panels. */
+/* Auto-discover story files from the kit, the first-party plugins and the app. */
 const modules = {
   ...import.meta.glob('../src/**/*.stories.tsx', { eager: true }),
+  ...import.meta.glob('../../plugins/*/*.stories.tsx', { eager: true }),
   ...import.meta.glob('../../../apps/desktop/src/**/*.stories.tsx', {
     eager: true,
   }),

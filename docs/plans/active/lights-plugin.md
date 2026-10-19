@@ -1,8 +1,8 @@
 ---
-title: lights plugin — amaran + Home.app lights under one 💡
+title: lights plugin — amaran + Home.app lights under one
 status: active
 created: 2026-09-14
-updated: 2026-09-14 (built, dev-installed; waiting on the shortcuts)
+updated: 2026-10-19 (still waiting on the Home.app shortcuts)
 links:
   - ../done/amaran-plugin-bluetooth.md
   - ../../PLUGINS.md
@@ -12,7 +12,7 @@ links:
 
 ## Goal
 
-One bar cell (💡) for every light Mitch owns: the amaran studio light (Bluetooth Mesh,
+One bar cell (lightbulb) for every light Mitch owns: the amaran studio light (Bluetooth Mesh,
 already working) and the two Nanoleaf lights that live in Home.app. Hover shows the
 controls — per-light power, brightness, colour temperature — and a row of scenes.
 `light ⏎` keeps the keyboard panel.
@@ -43,7 +43,7 @@ controls — per-light power, brightness, colour temperature — and a row of sc
   and ~1 s after every set) by running `…/state`, whose output is `key=value` lines.
 - **Scenes**: `scenes.json` beside the plugin (name → per-light patch) plus any Home.app
   scene exposed as `lights/scene/<name>`. Both appear in the same row.
-- Cell: 💡, dimmed when everything is off, muted while nothing is reachable. Card: a row
+- Cell:, dimmed when everything is off, muted while nothing is reachable. Card: a row
   per light (name, toggle, status), sliders under it, scenes as a segmented row.
 - State shape: `LightsState { lights: Light[], scenes: string[] }`; commands carry a
   `light` id. Pure model + tests, as before.
@@ -55,14 +55,14 @@ controls — per-light power, brightness, colour temperature — and a row of sc
 - [x] amaran driver extracted from service.ts, unchanged behaviour
 - [x] home driver: discovery, state parse (+tests), set verbs, polling
 - [x] scenes.json + Home scenes
-- [x] cell (💡 + interactive card), panel (multi-light keyboard)
+- [x] cell (lightbulb + interactive card), panel (multi-light keyboard)
 - [x] live check: amaran still connects; home driver shows the recipe until shortcuts exist
 - [ ] Mitch creates the shortcuts; measure `shortcuts run` latency; note any TCC prompt
 - [ ] STATUS, JOURNAL, memory pointer; plan → done
 
 ## Acceptance criteria
 
-- [ ] 💡 in the bar; hover card toggles/dims each light; amaran works as before
+- [ ] in the bar; hover card toggles/dims each light; amaran works as before
 - [ ] Nanoleaf lights follow the card once the shortcuts exist; state read back
 - [ ] `bun test` green in the plugin dir; no app changes needed (or recorded if so)
 
@@ -76,3 +76,9 @@ Matter controller.
 - `shortcuts run` from the LaunchAgent-launched app: may prompt once (Automation) or work
   headless — unknown until run. Latency expected ~1 s.
 - Slider drag inside a hover card (see Context).
+
+## Status (2026-10-19)
+
+Unchanged since 2026-09-14: built and dev-installed, amaran works; open items are Mitch
+creating the `lights/<light>/…` shortcuts, then measuring `shortcuts run` latency and
+slider drag in a card. The plugin lives outside the repo.

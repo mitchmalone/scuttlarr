@@ -1,9 +1,11 @@
-//! The menubar-replacement bar (v0.5 spike): one status-level, non-activating
-//! panel per display, pinned to the top edge, visible on every space. Gated by
-//! `bar.enabled` in config (default off) so the launcher is unaffected.
+//! The bar, scuttlarr's menubar replacement: one status-level, non-activating
+//! panel per display (`screens.rs` reconciles them), pinned to the top edge,
+//! visible on every space, with hover cards that grow the window downward.
+//! Gated by `bar.enabled` in config (default off; off spawns and polls nothing,
+//! invariant 12). The strip itself renders from `packages/tui/src/bar`.
 //!
-//! Data gathering stays here as plain testable functions; the `bar_snapshot`
-//! command is the only IPC surface (DECISIONS 2026-08-15).
+//! Data gathering stays here as plain testable functions behind `bar_snapshot`
+//! (DECISIONS 2026-08-15); plugins, agents and awake ride the same snapshot.
 
 use std::process::Command;
 

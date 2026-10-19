@@ -12,6 +12,7 @@
     "./icons": "./src/components/brand-icons.tsx",
     "./bar.css": "./src/bar/bar.css",
     "./styles.css": "./src/styles.css",
+    "./launcher.css": "./src/launcher.css",
     "./plugins": "./src/plugins.ts"
   },
   "scripts": {

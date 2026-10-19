@@ -1,4 +1,6 @@
-/* scuttlarr — terminal prompt cosplay. Dark, monospace, no chrome. */
+/* scuttlarr — terminal prompt cosplay. Dark, monospace, no chrome.
+ * The launcher window's own chrome; the prompt itself is styled by
+ * @scuttlarr/tui/launcher.css. */
 
 * {
   margin: 0;
@@ -15,8 +17,6 @@
   --sigil: #ff6b8c;
   --bang: #d29922;
   --selected: rgba(56, 139, 253, 0.15);
-  --row-h: 40px;
-  --input-h: 54px;
 }
 
 html,
@@ -35,149 +35,6 @@ body {
     ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco, 'Courier New',
     monospace;
   color: var(--fg);
-}
-
-.panel {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.input-row {
-  display: flex;
-  align-items: center;
-  height: var(--input-h);
-  padding: 0 14px;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.sigil {
-  color: var(--sigil);
-  font-size: 17px;
-  font-weight: 600;
-}
-
-.bang .sigil {
-  color: var(--bang);
-}
-
-.prompt {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--fg);
-  font: inherit;
-  font-size: 16px;
-  caret-color: var(--sigil);
-}
-
-.bang .prompt {
-  caret-color: var(--bang);
-}
-
-.prompt::placeholder {
-  color: var(--dim);
-  opacity: 0.55;
-}
-
-.results {
-  list-style: none;
-}
-
-.row {
-  display: flex;
-  align-items: center;
-  height: var(--row-h);
-  padding: 0 14px;
-  gap: 10px;
-  font-size: 14px;
-}
-
-.result.selected {
-  background: var(--selected);
-}
-
-.icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-.icon.glyph {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--dim);
-  font-size: 14px;
-}
-
-.name {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.name .hit {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.hint {
-  color: var(--dim);
-  font-size: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.hint kbd {
-  font: inherit;
-  opacity: 0;
-}
-
-.result.selected .hint kbd {
-  opacity: 0.7;
-}
-
-.bang-row .bang-action {
-  color: var(--bang);
-  white-space: nowrap;
-}
-
-.bang-row .bang-command {
-  color: var(--fg);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.empty {
-  color: var(--dim);
-  font-style: italic;
-}
-
-/* Copy confirmation: one row, auto-hides (App TOAST_MS). */
-
-.toast-row {
-  color: var(--fg);
-}
-
-.toast-check {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.toast-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* ---- Panel mode (wifi etc.): a full TUI panel inside the launcher window. */
@@ -199,40 +56,4 @@ body {
   flex: 1;
   min-height: 0;
   outline: none;
-}
-/* --- ? mode: conversation layout. The transcript + follow-up input come from
- * @scuttlarr/tui (AskPinned/AskSurface); this file only arranges them. Once a
- * conversation starts the pinned question takes the header slot and the prompt
- * row moves to the bottom via flex `order` — the <input> never re-mounts, so it
- * keeps keyboard focus between turns. --- */
-
-.panel.ask-active .ask-header {
-  order: 0;
-  height: var(--input-h);
-  padding: 0 14px;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.panel.ask-active .ask-header .tui-ask-pinned {
-  flex: 1;
-  min-width: 0;
-}
-
-.panel.ask-active .tui-ask {
-  order: 1;
-  /* 9 rows (App ASK_ROWS) minus the follow-up row below. */
-  height: calc(9 * var(--row-h) - var(--input-h));
-  flex-shrink: 0;
-}
-
-.panel.ask-active .input-row {
-  order: 2;
-  border-top: 1px solid var(--border);
-}
-
-.panel.ask-active .input-row .sigil {
-  color: var(--dim);
 }

@@ -3,7 +3,7 @@
 One palette, rendered into every surface. Decided 2026-09-11 (DECISIONS: theme format;
 theme policy); built in `packages/theme`, `packages/core/src/appearance.ts`, and
 `apps/desktop/src-tauri/src/{theme,appearance}.rs`. This is what shipped; the plan that got
-here is `plans/active/2026-09-11-unify-into-scuttlarr.md`.
+here is `plans/done/2026-09-11-unify-into-scuttlarr.md`.
 
 ## A theme is one file
 

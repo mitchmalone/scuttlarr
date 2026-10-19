@@ -1,4 +1,4 @@
-//! App-updates monitor (docs/plans/active/app-updates-plugin.md): a cached
+//! App-updates monitor (docs/plans/done/app-updates-plugin.md): a cached
 //! report of what's outdated across every package manager installed on this
 //! Mac — Homebrew, the App Store, pnpm, mise. (npm is deliberately absent:
 //! its only globals are node's own bundled `npm`/`corepack`, which mise

@@ -8,63 +8,63 @@
 
 All v1 milestones below are **code-complete as of 2026-08-08**.
 
-- **M0 — Spike (the scary parts first).** ✅ Tauri 2 + tauri-nspanel: hotkey summons a
+- **M0 — Spike (the scary parts first).** done Tauri 2 + tauri-nspanel: hotkey summons a
   non-activating panel with a text field; Esc restores focus correctly over a full-screen app.
   _Exit: the focus dance works or the stack decision gets revisited._
   → `plans/done/m0-nspanel-spike.md` (verified by Mitch, incl. full-screen + second display)
-- **M1 — Launcher.** ✅ Index + fuzzy match + launch + System Settings panes. No frecency, ugly UI.
+- **M1 — Launcher.** done Index + fuzzy match + launch + System Settings panes. No frecency, ugly UI.
   _Exit: Mitch can launch any app._
-- **M2 — Feel.** ✅ (instrumented: cold start 163ms, summon 3.7ms) Frecency, keyboard bindings, terminal-prompt visual identity, performance
+- **M2 — Feel.** done (instrumented: cold start 163ms, summon 3.7ms) Frecency, keyboard bindings, terminal-prompt visual identity, performance
   instrumentation against the budgets. _Exit: launcharr replaces the incumbent daily launcher._
-- **M3 — Bang mode.** ✅ `!` grammar dispatch, iTerm2 hand-off, Terminal.app fallback, config file.
+- **M3 — Bang mode.** done `!` grammar dispatch, iTerm2 hand-off, Terminal.app fallback, config file.
   _Exit: `!git status ⏎` feels better than switching to iTerm2 by hand._
 - **M4 — Polish & daily use.** 🔄 Launch-at-login + first-run hint shipped; features and
   fixes ship continuously. _Exit: launcharr is the incumbent and nothing broken survives
   a week._
 
-## v1.1 — Sol parity, scripts-first ✅ (2026-08-08, overnight)
+## v1.1 — Sol parity, scripts-first done (2026-08-08, overnight)
 
 Script protocol (v2's flagship, pulled forward) + bundled lorem/json/ip scripts, clipboard
 history (copy-on-Enter, concealed-safe), inline math, custom links, custom shortcuts. Scope
 negotiation in DECISIONS (zero-network + zero-permissions held; Translate/Calendar/public-IP
 deferred). Record: `plans/done/v1.1-scripts-and-sol-parity.md`.
 
-## v1.2 — release core ✅ (2026-08-09) — v0.2.0
+## v1.2 — release core done (2026-08-09) — v0.2.0
 
 System commands, ⌥⏎ secondary actions, opt-in bookmarks, emoji picker, settings window,
 README/RELEASING. Ship blocked only on signing (Mitch's Apple Developer ID).
 Record: `plans/done/v1.2-release-core.md`. Deferred by choice: file search (mdfind route
 documented), dx pack (tmux/projects/ssh/ports — see 2026-08-09 brainstorm in git history).
 
-## v0.4 — the control surface ✅ (released 2026-08-17)
+## v0.4 — the control surface done (released 2026-08-17)
 
 Decided 2026-08-15 as "v0.5 — the bar" (DECISIONS entry); renumbered at release because
 0.4 shipped it all: launcharr grows a menubar replacement, TUI panels, agent monitoring
 and a wrapped AeroSpace desktop layer; launcher, bar, and tiling are independently
 toggleable. Not a distro — bar + launcher + config only. Record: docs/releases/v0.4.0.md.
 
-- **B0 — TUI kit.** ✅ (2026-08-15) `packages/tui`: Omarchy-inspired component library
+- **B0 — TUI kit.** done (2026-08-15) `packages/tui`: Omarchy-inspired component library
   with keyboard-nav logic TDD'd. _Exit met: bar + panels compose from the kit._
-- **B1 — Bar spike (gate).** ✅ (2026-08-15) _Exit met: ~19 MB marginal (shared WebKit
+- **B1 — Bar spike (gate).** done (2026-08-15) _Exit met: ~19 MB marginal (shared WebKit
   pool) — gate PASSED; numbers in plans/done/v0.5-tui-kit-and-bar-spike.md._
-- **B2 — Bar core.** ✅ Mitch's daily menubar (Sketchybar retired 2026-08-16); zones +
+- **B2 — Bar core.** done Mitch's daily menubar (Sketchybar retired 2026-08-16); zones +
   drag arranger, notch profiles, battery hover card, wifi SSID, awake cell; a bar per
   display + launcher on the mouse's screen (2026-08-19). Left for v0.5: per-monitor
   workspaces, app hints, event-driven front-app, bluetooth glyph.
-- **B3 — Desktop layer.** ✅ (2026-08-17, was "Aerospace wrap") AeroSpace as a cask
+- **B3 — Desktop layer.** done (2026-08-17, was "Aerospace wrap") AeroSpace as a cask
   dependency (never vendored), generated opinionated config with adopt-or-leave and a
   managed/unmanaged switch (edit / use my own / save a copy), opt-in JankyBorders,
   corner radius. _Exit met: fresh Mac gets working tiling without seeing a toml._
-- **B4 — Agents.** ✅ Agent bar cells + `agents ⏎` + `usage ⏎` + `?` mode
+- **B4 — Agents.** done Agent bar cells + `agents ⏎` + `usage ⏎` + `?` mode
   (plans/done/agent-monitoring.md). Module API deferred to v0.5.
-- **P0 — Panel framework + wifi.** ✅ (2026-08-16) `wifi ⏎`, `dns ⏎`; PANELS registry
+- **P0 — Panel framework + wifi.** done (2026-08-16) `wifi ⏎`, `dns ⏎`; PANELS registry
   makes tenants one-entry cheap.
-- **P1 — Panel tenants.** ✅ audio, clipboard, awake, aerospace, help, **screenshots**
+- **P1 — Panel tenants.** done audio, clipboard, awake, aerospace, help, **screenshots**
   (`ss ⏎`, plans/done/screenshots-panel.md — first grid + scrolling panel). Settings
   migration deferred to v0.5.
-- **W0 — tui workbench.** ✅ (2026-08-16) Story-driven state coverage, no Storybook dep.
+- **W0 — tui workbench.** done (2026-08-16) Story-driven state coverage, no Storybook dep.
 
-## v0.5 — plugins (next; scope talk pending)
+## v0.5–v0.7 — plugins, scuttlarr (shipped; v0.7.0 on 2026-10-01)
 
 **Plugins landed 2026-08-27** (DECISIONS ×3, `plans/done/plugins-react-cells-and-panels.md`,
 `docs/PLUGINS.md`): plugins are code — `cell.tsx` / `panel.tsx` on `@scuttlarr/tui`,
@@ -76,9 +76,9 @@ plugins on macOS studied and rejected. **Rolling (slice G):** the remaining firs
 panels (awake, agents, wifi, audio, battery) move to plugins as they are touched. The
 widget items below are absorbed.
 
-Candidates carried over from v0.4, to be cut down in the 0.5 scope session:
+Carried over from v0.4; what is still open is marked "Left":
 
-- **Module API** — ✅ **widgets** (2026-08-19, plans/done/widgets.md; DECISIONS
+- **Module API** — done **widgets** (2026-08-19, plans/done/widgets.md; DECISIONS
   2026-08-19 ×2): TypeScript files in `~/.config/scuttlarr/widgets/` run under Bun
   (`runtime.rs`; any executable works too), `manifest`/`tick` JSON, generic cell + card,
   live dir watch, `triggers/widget.<id>`, Settings → Menubar → Custom widgets (install
@@ -86,7 +86,7 @@ Candidates carried over from v0.4, to be cut down in the 0.5 scope session:
   trmnl in `apps/desktop/widgets/`; bundled scripts are TS too. Left: a curated widget
   index for install-from-URL, `widgets ⏎` panel, custom SVG icons, event-driven
   (`watch`) widgets, a left-zone card anchor, wifi glyph footprint fix.
-- **Multi-display** — ✅ bar per display, launcher on the mouse's screen (2026-08-19,
+- **Multi-display** — done bar per display, launcher on the mouse's screen (2026-08-19,
   plans/done/multi-display.md). Left: per-monitor workspace lists (aerospace
   `--monitor`), a screen-parameters observer instead of the 5 s heartbeat.
 - **Bar polish** — glyph-only strip landed 2026-08-19 (DECISIONS: wifi arcs, battery
@@ -95,26 +95,28 @@ Candidates carried over from v0.4, to be cut down in the 0.5 scope session:
   uptime landed as widgets, 2026-08-19.)
 - **Settings into panels** — the native window retires (re-decide: 0.4 invested in it).
   Drill-down panel menu.
-- **awake loose ends** — timed agents-idle release observed end-to-end, lid-closed-on-AC,
-  slice E. (Relaunch persistence shipped 2026-08-19, DECISIONS.)
+- **awake loose ends** — done 2026-10-01 (`plans/done/awake.md`): slice F's `pmset
+disablesleep` hold replaced slice E's helper, lid-closed on AC and on battery both
+  proven. Left: hands-checks only (STATUS).
 - **Site/app single-source gaps** — `PANEL_INFO` is hand-mirrored in `apps/www`
   (invariant 10 smell); extract to a package.
-- **PRD revision pass** — ✅ 2026-09-11 for §1–§3 and §10 (vision, target user, non-goals,
-  horizon: the rungs). §4–§9 still describe v1 behaviour; DECISIONS 2026-08-15 remains the
-  scope source for bar/panel questions.
+- **PRD revision pass** — done: §1–§3 and §10 on 2026-09-11, §4–§9 swept to the code on
+  2026-10-19 (Ghostty bang target, light themes, Settings window, the bar, the IPC count).
+  DECISIONS 2026-08-15 remains the scope source for bar/panel questions.
 
 ## Unification into scuttlarr (DECISIONS 2026-09-11)
 
-One repo, one product, renamed scuttlarr; the launcher is a feature. Plan and phases:
-`plans/active/2026-09-11-unify-into-scuttlarr.md` — record → rename → port setup →
+Done — released as v0.7.0 (2026-10-01). One repo, one product, renamed scuttlarr; the
+launcher is a feature. Plan and phases: `plans/done/2026-09-11-unify-into-scuttlarr.md` — record → rename → port setup →
 theme package (Omarchy model) → theme policy + switcher (macOS Focus, light/dark by
-system or schedule) → docs. Retires the "scuttlarr contract" below; its open items map to
-plan steps.
+system or schedule) → docs. Retires the "scuttlarr contract" below. Left: **light mode
+first-class** (plan step 3.7 — Solarized Light and Catppuccin Latte checked on every
+surface; nothing assumes dark), and the live proofs listed in STATUS.
 
 <details><summary>Retired: scuttlarr contract (DECISIONS 2026-08-25)</summary>
 
 - **Light mode** — now plan step 3.7 (Solarized Light + Catppuccin Latte render every surface).
-- **Ghostty hand-off** — ✅ 2026-09-04 (DECISIONS, `plans/active/ghostty-handoff.md`). Left:
+- **Ghostty hand-off** — done 2026-09-04 (DECISIONS, `plans/done/ghostty-handoff.md`). Left:
   live-prove `!echo hi ⏎` and the updates `a` upgrade path against a running herdr server (Mitch).
 - **Typed `desktop` schema** — now plan step 3.3 (borders/aerospace rendered from the palette).
 - **Dark-mode delegation** — now plan step 4.4 ("Toggle Dark Mode" flips `appearance.mode`).
@@ -123,13 +125,13 @@ plan steps.
 
 ## v2 horizon (recorded now, built later — PRD §10)
 
-| Item                                                      | Trigger                                                      |
-| --------------------------------------------------------- | ------------------------------------------------------------ |
-| Per-query learned bindings (schema already records query) | Frecency data shows repeated query→pick                      |
-| Richer bangs (`!!` repeat, project-scoped commands)       | Bang mode proves itself daily                                |
-| Theming beyond the built-in look                          | ✅ 2026-09-11 — the Theme rung (`THEMES.md`)                 |
-| Signing, notarization, public README                      | Releasing to the wild (auto-update ✅ 2026-09-16, DECISIONS) |
-| Move matching to Rust                                     | R2 fires: WKWebView can't hold the 16 ms keystroke budget    |
+| Item                                                      | Trigger                                                        |
+| --------------------------------------------------------- | -------------------------------------------------------------- |
+| Per-query learned bindings (schema already records query) | Frecency data shows repeated query→pick                        |
+| Richer bangs (`!!` repeat, project-scoped commands)       | Bang mode proves itself daily                                  |
+| Theming beyond the built-in look                          | done 2026-09-11 — the Theme rung (`THEMES.md`)                 |
+| Signing, notarization, public README                      | Releasing to the wild (auto-update done 2026-09-16, DECISIONS) |
+| Move matching to Rust                                     | R2 fires: WKWebView can't hold the 16 ms keystroke budget      |
 
 ## Explicitly not doing (non-goals — load-bearing, PRD §3, amended by v0.4)
 

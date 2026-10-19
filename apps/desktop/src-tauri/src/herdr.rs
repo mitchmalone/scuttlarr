@@ -1,4 +1,4 @@
-//! herdr as a second agent source (plans/active/herdr-multiplexer.md).
+//! herdr as a second agent source (plans/done/herdr-multiplexer.md).
 //!
 //! herdr (<https://herdr.dev>) is a terminal workspace server that owns panes
 //! and — unlike tmux — classifies the agents inside them itself: every pane is

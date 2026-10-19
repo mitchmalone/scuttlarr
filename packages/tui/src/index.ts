@@ -38,6 +38,7 @@ export {
   AskThinking,
 } from './components/ask'
 export type { AskTurn } from './components/ask'
+export { Launcher, launcherPrompt } from './components/launcher'
 export {
   BUILTIN_THEMES,
   applyTheme,

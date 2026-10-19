@@ -19,7 +19,7 @@ sc_default NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled bool false
 sc_default NSGlobalDomain NSAutomaticSpellingCorrectionEnabled bool false
 sc_default NSGlobalDomain NSAutomaticInlinePredictionEnabled bool false
 
-# ⌥Space types a plain space, not a non-breaking one — launcharr's hotkey is
+# ⌥Space types a plain space, not a non-breaking one — scuttlarr's hotkey is
 # ⌥Space and a stray U+00A0 in a terminal is a classic. A generated file: the
 # first entry in the manifest on most machines.
 sc_file_generated "$HOME/Library/KeyBindings/DefaultKeyBinding.dict" keyboard <<'DICT'

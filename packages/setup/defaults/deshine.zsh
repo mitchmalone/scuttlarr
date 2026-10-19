@@ -1,6 +1,6 @@
 # De-shine. If macOS added it to look nice, it's off (README principle 2).
 # Liquid Glass, Stage Manager, Apple's own tiling, desktop icons, Siri in the
-# menu bar, window animations — the desktop layer is launcharr + AeroSpace.
+# menu bar, window animations — the desktop layer is scuttlarr + AeroSpace.
 
 # Reduce transparency (kills the glass) and motion. These two are the one
 # known exception to invariant 5: com.apple.universalaccess writes need the

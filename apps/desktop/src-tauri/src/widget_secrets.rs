@@ -5,7 +5,7 @@
 //! set. Plain settings live in `config.widgets`; both reach a widget as env
 //! (widgets.rs). Keychain access goes through Security.framework rather than
 //! `/usr/bin/security`, whose argv would put the secret in `ps` (plan:
-//! docs/plans/active/widget-settings.md).
+//! docs/plans/done/widget-settings.md).
 
 use security_framework::passwords::{
     delete_generic_password, get_generic_password, set_generic_password,

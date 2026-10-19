@@ -87,7 +87,7 @@ sc_doctor() {
 
   # Desktop layer.
   sc_head "desktop layer"
-  if [[ -d /Applications/launcharr.app ]]; then sc_ok "launcharr installed"; else sc_log "launcharr not installed (the install step will add it)"; fi
+  if [[ -d /Applications/scuttlarr.app ]]; then sc_ok "scuttlarr installed"; else sc_log "scuttlarr not installed (the install step will add it)"; fi
   if command -v aerospace >/dev/null 2>&1; then sc_ok "aerospace on PATH"; else sc_log "aerospace not found"; fi
 
   print >&2

@@ -7,7 +7,7 @@
 
 1. **Colors** — launcharr theme: bg `#1C1D2A`, accent `#FF176C`, fg/icon `#B5B9D9`,
    dim/unhighlighted `#73747C`. Touches `packages/tui/themes.ts`, desktop CSS fallbacks,
-   www demo mirror. ✅
+   www demo mirror. done
 2. **Lucide icons** — battery + wifi cells in the bar switch from text glyphs (`↯▮◠`) to
    `lucide-react` icons (already a dependency). Structure leaves room for custom
    Lucide-style brand SVGs later.

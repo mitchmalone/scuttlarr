@@ -1,8 +1,8 @@
 ---
 title: awake — keep-alive sessions
-status: active # planned | active | done — only the slice actually in flight is `active`
+status: done
 created: 2026-08-16
-updated: 2026-10-01
+updated: 2026-10-19 (closed: slice E superseded by F, hands-checks carried to STATUS)
 links:
   - ../done/battery-hover-card.md # battery readings + hover card this reuses
   - ../done/agent-monitoring.md # agent state that drives the "while agents work" trigger
@@ -292,3 +292,12 @@ disablesleep`), rule installed by `scuttlarr sudoers on` (DECISIONS 2026-10-01).
 - The "also keeping this Mac awake" list is the one genuinely novel read here — worth
   checking whether `pmset -g assertions` output is stable enough across macOS versions to
   parse fail-soft (it should degrade to an empty list, never an error).
+
+## Closing note (2026-10-19)
+
+Slices A–D and F shipped. Slice E (a privileged helper for lid closed on battery) is
+superseded by slice F's `sleep_override.rs` (`sudo -n pmset -a disablesleep` via
+`scuttlarr sudoers on`), proven live 2026-10-01 and through two unattended weeks; the
+"lid-on-battery row explains itself" criterion goes with it. Carried to STATUS as
+hands-checks: tray Quit stays quit, a hold survives `fdesetup authrestart`, and an
+agents hold releasing within a minute of the last agent going idle.

@@ -25,11 +25,12 @@ import type {
 } from '@scuttlarr/core/types'
 import { expandPlaceholders, placeholdersIn } from '@scuttlarr/core/url'
 import {
-  AskPinned,
-  AskSurface,
   type AskTurn,
+  Launcher,
   WidgetGlyph,
+  launcherPrompt,
 } from '@scuttlarr/tui'
+import '@scuttlarr/tui/launcher.css'
 import { pluginPanelInfo } from '@scuttlarr/tui/plugins'
 import '@scuttlarr/tui/styles.css'
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
@@ -877,28 +878,15 @@ export default function App() {
     setTimeout(() => inputRef.current?.focus(), 0)
   }, [])
 
-  const sigil = draft
-    ? '+'
-    : loremMenu
-      ? '¶'
-      : parsed.mode === 'ask'
-        ? '?'
-        : parsed.mode === 'emoji'
-          ? ':'
-          : parsed.mode === 'bang'
-            ? config.bangSigil
-            : config.sigil
-  const placeholder = draft
-    ? draft.step === 'name'
-      ? 'name this quicklink…'
-      : 'choose a browser (↑↓ then ⏎)'
-    : loremMenu
-      ? 'how much lorem? (↑↓ then ⏎)'
-      : askActive
-        ? askBusy
-          ? 'waiting for the answer…'
-          : 'ask a follow-up… (Esc ends)'
-        : 'Search for apps and commands…'
+  const { sigil, placeholder } = launcherPrompt({
+    mode: parsed.mode,
+    draftStep: draft?.step ?? null,
+    loremMenu,
+    askActive,
+    askBusy,
+    sigil: config.sigil,
+    bangSigil: config.bangSigil,
+  })
 
   if (panelMode) {
     return (
@@ -919,93 +907,43 @@ export default function App() {
   }
 
   return (
-    <div className={`panel ${parsed.mode}${askActive ? ' ask-active' : ''}`}>
-      {askActive && (
-        <div className="ask-header">
-          <AskPinned prompt={askTurns[0]?.prompt ?? ''} busy={askBusy} />
-        </div>
-      )}
-      <div className="input-row">
-        <span className="sigil">{askActive ? '❯' : sigil}</span>
-        <input
-          ref={inputRef}
-          className="prompt"
-          type="text"
-          value={raw}
-          spellCheck={false}
-          autoCorrect="off"
-          autoCapitalize="off"
-          autoComplete="off"
-          autoFocus
-          placeholder={placeholder}
-          onChange={(e) => {
-            markInput()
-            setRaw(e.target.value)
-            setSelected(0)
-          }}
-          onKeyDown={onKeyDown}
-          onKeyUp={(e) => {
-            if (e.key === 'Alt') setAltHeld(false)
-          }}
-          onBlur={() => setAltHeld(false)}
-        />
-      </div>
-
-      {toast ? (
-        <div className="row toast-row">
-          <span className="toast-check">✓</span>
-          <span className="toast-text">{toast}</span>
-        </div>
-      ) : askActive ? (
-        <AskSurface turns={askTurns} scrollRef={askSurfaceRef} />
-      ) : parsed.mode === 'ask' ? (
-        <div className="row bang-row">
-          <span className="bang-action">ask claude ▸</span>
-          <span className="bang-command">
-            {parsed.prompt || 'type a question, Enter to send'}
-          </span>
-        </div>
-      ) : parsed.mode === 'bang' ? (
-        <div className="row bang-row">
-          <span className="bang-action">run in {config.terminal} ▸</span>
-          <span className="bang-command">{parsed.command || 'new window'}</span>
-        </div>
-      ) : rows.length > 0 ? (
-        <ul className="results">
-          {rows.map((row, i) => (
-            <li
-              key={row.key}
-              className={`row result ${i === clampedSelection ? 'selected' : ''}`}
-              onMouseDown={(e) => {
-                e.preventDefault()
-                enterRow(e.altKey && row.alt ? row.alt.enter : row.enter)
-              }}
-            >
-              {row.icon ? (
-                <img className="icon" src={convertFileSrc(row.icon)} alt="" />
-              ) : (
-                <span className="icon glyph">{rowGlyph(row, PANELS)}</span>
-              )}
-              <span className="name">
-                {row.title.split('').map((ch, j) => (
-                  <span
-                    key={j}
-                    className={row.positions.includes(j) ? 'hit' : ''}
-                  >
-                    {ch}
-                  </span>
-                ))}
-              </span>
-              <span className="hint">
-                {i < 8 ? <kbd>⌘{i + 1}</kbd> : null}
-                {altHeld && row.alt ? `⌥⏎ ${row.alt.label}` : row.hint}
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : raw ? (
-        <div className="row empty">nothing on the horizon</div>
-      ) : null}
-    </div>
+    <Launcher
+      mode={parsed.mode}
+      sigil={sigil}
+      placeholder={placeholder}
+      value={raw}
+      inputRef={inputRef}
+      onChange={(e) => {
+        markInput()
+        setRaw(e.target.value)
+        setSelected(0)
+      }}
+      onKeyDown={onKeyDown}
+      onKeyUp={(e) => {
+        if (e.key === 'Alt') setAltHeld(false)
+      }}
+      onBlur={() => setAltHeld(false)}
+      toast={toast}
+      askTurns={askTurns}
+      askBusy={askBusy}
+      askScrollRef={askSurfaceRef}
+      askPrompt={parsed.mode === 'ask' ? parsed.prompt : ''}
+      bangCommand={parsed.mode === 'bang' ? parsed.command : ''}
+      terminal={config.terminal}
+      rows={rows}
+      selected={clampedSelection}
+      altHeld={altHeld}
+      renderIcon={(row) =>
+        row.icon ? (
+          <img className="icon" src={convertFileSrc(row.icon)} alt="" />
+        ) : (
+          <span className="icon glyph">{rowGlyph(row, PANELS)}</span>
+        )
+      }
+      onRowMouseDown={(row, e) => {
+        e.preventDefault()
+        enterRow(e.altKey && row.alt ? row.alt.enter : row.enter)
+      }}
+    />
   )
 }

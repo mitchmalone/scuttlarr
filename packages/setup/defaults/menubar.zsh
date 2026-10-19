@@ -1,4 +1,4 @@
-# Menu bar and clock. launcharr's bar replaces most of it; what remains reads
+# Menu bar and clock. scuttlarr's bar replaces most of it; what remains reads
 # like a terminal: 24-hour, date shown, separators still.
 
 sc_default com.apple.menuextra.battery ShowPercent string YES

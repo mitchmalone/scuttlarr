@@ -12,5 +12,5 @@ packages/setup/bin/scuttlarr defaults      # plan every macOS default that would
 pnpm --filter @scuttlarr/setup test        # syntax floor + tests, also part of pnpm verify
 ```
 
-The plan (`docs/plans/active/2026-09-11-unify-into-scuttlarr.md`, phase 2) ships this
+The plan (`docs/plans/done/2026-09-11-unify-into-scuttlarr.md`, phase 2) ships this
 inside the app bundle and puts `scuttlarr` on PATH from Settings → Machine.

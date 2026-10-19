@@ -1,8 +1,8 @@
 ---
 title: Unify launcharr + scuttlarr into one product, scuttlarr
-status: active
+status: done
 created: 2026-09-11
-updated: 2026-09-14 (everything built; open: tap cask 1.5, release 1.7, archive 2.5, live proofs)
+updated: 2026-10-19 (closed: v0.7.0 shipped the cask and the release)
 links:
   - ../../DECISIONS.md 2026-09-11
   - ../../THEMES.md (design for packages/theme, moved 2026-09-11)
@@ -229,3 +229,16 @@ depends on launcharr. Rejected 2026-09-11 — it is the boundary that stalled pr
 - **Scope of "one action".** Phase 3.5 fans out to a dozen processes; failures must be
   fail-visible per surface (a toast listing what didn't reload), never a half-applied
   theme with no message.
+
+## Closing note (2026-10-19)
+
+The fold is done: rename, setup, theme package, policy and switcher all shipped, and
+1.5 (tap cask) plus 1.7 (release) landed as v0.7.0 on 2026-10-01; 2.5 was a deletion.
+Carried forward, not done here: **3.7 light mode first-class** is a ROADMAP item now; the
+unchecked acceptance criteria (one-action `theme set dracula` across every surface,
+Solarized Light, a Focus flip, perf numbers for theme work) are hands-checks in STATUS.
+
+Correction found 2026-10-19: 4.4's "a custom shortcut binds the Theme switcher row
+(Settings → General ▸ Shortcuts)" is not true. There is no Shortcuts UI (removed in
+v0.5.0), and `launch_by_name` opens the item's `path`, which is empty for every
+`scuttlarr — …` row, so the binding does nothing. Open question in STATUS.

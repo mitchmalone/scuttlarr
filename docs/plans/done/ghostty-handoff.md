@@ -1,8 +1,8 @@
 ---
 title: Ghostty hand-off (bang mode, upgrades, agent jump)
-status: active
+status: done
 created: 2026-09-04
-updated: 2026-09-04
+updated: 2026-10-19 (closed: code shipped, live proof carried to STATUS)
 links:
   - ROADMAP "Ghostty hand-off" (v0.5 list)
   - DECISIONS 2026-08-25 (Ghostty named as a scuttlarr contract item)
@@ -94,3 +94,10 @@ the consent prompt is now "iTerm2/Terminal.app only").
 - A Ghostty-native new-window API (revisit when Ghostty ships `+new-window` on macOS or
   a control socket — then route 1/2 become optional).
 - Per-hand-off choice of tmux window vs split.
+
+## Closing note (2026-10-19)
+
+Shipped (v0.5.x, Ghostty the default terminal since 2026-09-04) and in daily use; the
+tmux route was proven from a bare environment by the updates `t` hand-off
+(`updates-upgrade-in-panel.md`). The one unchecked step — `!echo hi ⏎` landing as a new
+tmux window, and updates `a` — is a hands-check in STATUS.

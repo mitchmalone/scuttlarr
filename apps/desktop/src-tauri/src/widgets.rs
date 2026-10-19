@@ -12,7 +12,7 @@
 //! values from `config.widgets[id]`, secrets from the Keychain
 //! (widget_secrets.rs). A widget with an unset `required` setting isn't run —
 //! it shows as "needs setup" instead of failing (plan:
-//! docs/plans/active/widget-settings.md).
+//! docs/plans/done/widget-settings.md).
 //!
 //! Widgets are data, never code: Rust runs them on their own cadence (never on
 //! the 1 Hz push path), keeps the last view per id, and ships the lot in

@@ -1,597 +1,140 @@
 # STATUS
 
-> The cursor: where we are right now. Keep this **terse** — a snapshot, not a history.
-> History lives in git, `plans/done/`, and `JOURNAL.md`.
+> The cursor: where we are, what needs hands, what's next. A snapshot, not a history —
+> history lives in git, `plans/done/`, `releases/` and `JOURNAL.md`.
 >
-> Last updated: 2026-10-19 (cleanup pass 1: three bugs fixed, verify gate guards drift)
+> Last updated: 2026-10-19 (docs-truth pass: docs match the code, workbench stories)
 
 ## Where we are
 
-**Cleanup pass 1, 2026-10-19 (on main, not dev-installed):** a code-health review led
-to plan `plans/done/2026-10-19-cleanup-bugs-and-guardrails.md`. Fixed: the bar turned off
-no longer snapshots, polls wifi or ticks widgets (invariant 12); one atomic config writer,
-and `add_quicklink` refuses a malformed config.json instead of writing defaults over it;
-plugin panels no longer remount on the 5 s poll; panel config writes re-read and patch.
-`pnpm verify` now also runs `cargo fmt --check`, coverage floors (core, theme),
-dependency-cruiser layering, a clock/random purity lint (core, theme) and shellcheck; CI
-builds the site (DECISIONS 2026-10-19). **Hands-check pending (Mitch, back at the
-desk):** dev-install, then the plan's unchecked acceptance items. **Next, needs Mitch:**
-the review's steps 3-5 (memory target, shared helpers + god-file splits, invariant 1/3
-and docs honesty pass, where away mode lives).
+- **Released: v0.7.0** (2026-10-01), the first release as scuttlarr
+  (`releases/v0.7.0.md`). Tap has `Casks/scuttlarr.rb`; `launcharr.rb` is the deprecated
+  alias.
+- **On main, unreleased:** per-source update-check intervals (2026-10-18); cleanup pass 1
+  (`plans/done/2026-10-19-cleanup-bugs-and-guardrails.md`: bar off means off, one atomic
+  config writer, plugin panels keep identity, verify gate gains fmt, coverage floors,
+  layering, purity lint, shellcheck); the docs-truth pass
+  (`plans/done/2026-10-19-docs-truth-and-stories.md`: README/PRD/ROADMAP match the code,
+  defaults table in README, awake copy, v0.2.0 notes reconstructed, workbench stories).
+- **Active plans:** `lights-plugin.md` (waiting on Mitch's Home.app shortcuts),
+  `opensource-readiness-review.md` (not started).
+- **Daily use on the primary Mac:** bar, launcher, panels, agents, usage, updates, awake,
+  desktop layer and the theme rung (`appearance.everywhere`, `editors`, `ghostty` on).
+- **Memory is over budget:** first `scripts/mem.sh` reading 157–177 MB app idle against
+  the 120 MB ceiling; borders 370–460 MB (JOURNAL 2026-09-16). The shrink is its own task.
 
-**Update checks re-paced, 2026-10-18 (on main, unreleased):** `updates.rs` drops the
-single 6 h TTL for per-source intervals: mas, pnpm and mise (~0.2 s each) every 5 min;
-brew (~3 s of Ruby) and the GitHub self-check every 30 min, the ceiling. A source whose
-check errored retries in 5 min. Only due rows re-run; `r`, launch and upgrades still check
-everything. The logbook gets a line only when a result changes (JOURNAL 2026-10-18).
+## Needs Mitch (decisions)
 
-**Away for two weeks, from 2026-10-02:** the MacBook Pro is lid-closed on AC at Mitch's
-desk, held by `awake` with away mode (iPad screen 1600x1200 HiDPI, sleep off), on
-ethernet with Wi-Fi off, reached over Tailscale (`mitch`) by mosh/SSH/Screens. Proven
-overnight. Software Update: Rapid Security Responses off (`CriticalUpdateInstall=0`, turn
-back on when home); Tailscale auto-update off (`tailscale set --auto-update=false` + app
-Sparkle keys). Known residual risk: a reboot stops at FileVault pre-boot.
+- **Defaults vs product intent** (README "Defaults"): the bar defaults **off** although
+  "install gets the bar and launcher"; Desktop tiling defaults **on and managed** although
+  Desktop is an opt-in rung. Not flipped. The README now says what the code does.
+- **Theme policy gate never holds** (JOURNAL 2026-10-19): `config.appearance` always
+  exists, so a fresh install in light mode probably switches to `solarized-light`. Needs
+  a fix (Rust `Option`), which is a behaviour change.
+- **Invariant 3 wording**: 82 commands are registered; proposed rewording in
+  `plans/done/2026-10-19-docs-truth-and-stories.md`.
+- **Custom shortcuts**: `config.shortcuts` works for apps, panes, links and bookmarks;
+  binding a `scuttlarr — …` row (Theme switcher) does nothing (empty `path`). Fix or
+  drop the claim? Link `browser` is ignored on that path.
+- **apps/www demo retypes the launcher prompt** (invariant 10): the launcher view is now
+  in `packages/tui`; switch the demo to import it.
+- **Cleanup review steps 3–5**: memory target, shared helpers + god-file splits, where
+  away mode lives.
+- **Rust and TS bar default layouts differ** (`config.rs` right = wifi, battery;
+  `DEFAULT_BAR_LAYOUT` right = wifi, awake, usage, battery).
+- Usage pace thresholds (±15/25 pts) and worst-across-accounts for the cell.
+- Whether "hidden when clean" is right for the updates cell.
+- p10k dir colour: follow the theme or the host?
+- Widget OAuth stays dormant until a scuttlarr OAuth App client id exists.
+- `opensource-readiness-review`: run before the next feature phase or not.
 
-**v0.7.0 released 2026-10-01** — the first release as scuttlarr (notes
-`docs/releases/v0.7.0.md`). Signed, notarized, Gatekeeper-accepted; smoke-tested
-fresh-profile (throwaway HOME: 157 ms cold start, first-run panel) and upgrade-path (0.6.0
-→ 0.7.0, config/themes/frecency/clips identical). CI fan-out green: tap now has
-`Casks/scuttlarr.rb` 0.7.0 and `launcharr.rb` deprecated → scuttlarr; Notion and the
-mitchmalone.com deploy hook ran. The in-app self-update path can be live-proven from the
-next release on.
+## Needs Mitch (hands-checks)
 
-**awake for an unattended Mac, 2026-10-01 (dev-installed):** DECISIONS 2026-10-01, plan
-`plans/active/awake.md` slice F. `manual` holds no longer expire (was 12 h) and every hold
-survives a reboot; `awake until oct 16` (dates, optional year/time); the login item
-relaunches a crash (`KeepAlive`, `login_item.rs`) — proven `kill -9` → back in 7 s with
-the hold. Every hold also switches macOS sleep off (`sleep_override.rs`, `sudo -n pmset
--a disablesleep`; rule via `scuttlarr sudoers on`, DECISIONS 2026-10-01) — lid closed on
-battery and the crash gap covered, proven live; plist carries `LANG` (launchd gives none,
-which broke tmux parsing — JOURNAL). **Pending:** Mitch runs `scuttlarr sudoers on`
-(Amphetamine's identical rule covers it meanwhile); tray Quit stays quit; release
-restores sleep; hold survives an authrestart.
-**Away mode** (same day): a checkbox on the awake panel holds BetterDisplay's `iPad`
-virtual screen as the display so Screens fits the iPad (`away.rs`, DECISIONS
-2026-10-01); replaces the dotfiles `remote-mode` script, which still needs retiring.
+Back from travel:
 
-**Usage pace, 2026-09-30 (dev-installed, PR open):** the usage cell is the meter glyph
-alone, tinted by pace — green "go go go" / fg "on pace" / red "slow down" (DECISIONS
-2026-09-30). Card redesigned roomier: overall pace tile + tokens today up top, accounts
-grouped under provider marks (official Claude/OpenAI SVGs, currentColor), a "now" tick
-on each track, `4h 42m` countdowns. New `good` theme token; `LimitWindow.windowSecs` in
-usage.rs; the bar's dropdown ceiling is now the display height, not 480px (the card
-clipped). **Open:** thresholds (±15/25 pts); worst-across-accounts for the cell;
-`tauri build`'s DMG step fails ("create-dmg: Not enough arguments") — dev installs use
-`--bundles app` meanwhile, release will need it fixed.
+- Turn Rapid Security Responses back on (`CriticalUpdateInstall`) and Tailscale
+  auto-update (JOURNAL 2026-10-19).
+- Dev-install main, then cleanup pass 1's unchecked acceptance items.
 
-**Live theme switch, 2026-09-16 (committed, dev-installed, proven live):** the Omarchy
-moment on macOS. DECISIONS 2026-09-16, plan `plans/done/2026-09-16-live-theme-terminals.md`.
-At `theme set` the OSC payload goes into every `/dev/ttysNNN` the user owns plus tmux's
-panes (`pick_ttys`, no permission), the theme's `tmux.conf` is re-sourced into the running
-server, and — opt-in `appearance.ghostty`, "Also reload Ghostty's config" — a running
-Ghostty 1.3+ re-reads its config over AppleScript (`perform action "reload_config" on
-first terminal`), run last and bounded to 8 s because the first `tell` blocks on the
-Automation consent dialog (JOURNAL). **Switched on here:** `appearance.everywhere`,
-`editors`, `ghostty`; the four include lines live in the chezmoi sources
-(`~/Developer/mitch/dotfiles`, **uncommitted** — Ghostty `config-file` with Dracula Pro as
-fallback, tmux `source-file` last, p10k `source` after the palette with the per-host dir
-colour still winning, git `[include]` in the delta block), applied; Claude Code
-`"theme": "custom:scuttlarr"` (`.bak-scuttlarr` beside settings.json). **Proven:** two
-switches (scuttlarr → dracula → scuttlarr) wrote the state dir, restyled the running tmux
-status line, installed the VS Code extension and switched `workbench.colorTheme`, wrote
-`~/.claude/themes/scuttlarr.json`, and the Ghostty reload returned once consent was given.
-**Hands-check pending (Mitch):** open Ghostty windows outside tmux take the colours on a
-switch; VS Code retints live; the Claude Code theme reads well; whether the p10k dir
-colour should follow the theme instead of the host. Gate green — 245 Rust, 235 core, 110
-theme, 87 tui, 68 desktop.
+Releases and update path:
 
-**Engineering hardening + self-update, 2026-09-16 (committed, dev-installed):** DECISIONS
-2026-09-16 ×2, plan `plans/done/ranking-corpus-and-self-update.md`. `packages/core/src/corpus.json` —
-202 real entries, 57 pinned queries; its first run caught five wrong rankings and fixed
-the gap penalty (JOURNAL). `IndexItem.keywords` (bundle-id tail / `CFBundleName` /
-executable, word-start only, 0.8) beside `aliases` (0.9); `indexer::keywords_for` derives
-them. ESLint now fails any I/O or framework import in `packages/core` (invariant 5,
-enforced). `scripts/mem.sh` + a memory line in the definition of done — **first reading:
-app 157–177 MB idle, over the 120 MB ceiling; borders 370–460 MB** (JOURNAL; the shrink
-is its own task). Invariants 12 (off means off) and 13 (no native alerts). `{clipboard}`,
-`{date}`, `{time}` in quicklinks, expanded at Enter. **Self-update:** `selfupdate.rs` as
-the `scuttlarr` source of `updates ⏎` — GitHub `releases/latest` every 30 min, `↵` installs
-after sha256 + `codesign` team verification, relaunches; Settings → General "Check for
-scuttlarr updates" (default on, off = no request). **Not live-proven:** the install path
-needs a signed release newer than the installed one — the dev build is ad-hoc signed and
-correctly shows no `scuttlarr` source. **Tap:** the release workflow generates
-`Casks/scuttlarr.rb` (with `auto_updates true`) from `.github/cask/scuttlarr.rb` on the
-first scuttlarr tag, v0.7.0 (notes `docs/releases/v0.7.0.md`).
+- Self-update live proof at the next signed release (`updates ⏎` offers it, `↵` installs).
+- `tauri build`'s DMG step failed locally ("create-dmg: Not enough arguments"); dev
+  installs use `--bundles app`. Check before the next release.
 
-**Unification into scuttlarr, 2026-09-11 — phases 0–4 landed in one day, all local,
-not pushed, dev-installed on the primary Mac.** launcharr and scuttlarr fold into this
-repo, renamed scuttlarr; the launcher is a feature (DECISIONS 2026-09-11 ×3, plan
-`plans/active/2026-09-11-unify-into-scuttlarr.md`).
+Theme:
 
-- **Phase 1, rename (code):** `@scuttlarr/*`, crate `scuttlarr`, `com.mitchmalone.scuttlarr`,
-  every owned home path; `rename.rs` migrates old homes once (proven live: all four dirs,
-  hooks repaired, plugins rebuilt, aerospace.toml re-headered, login item re-registered);
-  `launcharr` theme name aliased. **Mitch's outward steps still pending:** GitHub repo
-  rename (1.1, done 2026-09-11), Vercel + domains (1.6, done 2026-09-14: project
-  `scuttlarr-web`, scuttlarr.com canonical, every other host 308s to it), `Casks/scuttlarr.rb`
-  - deprecate `launcharr.rb` in the tap (1.5, **still pending** — the README's brew line
-    and the installer point at a cask that doesn't exist yet). Then 1.7 release.
-- **Phase 2, setup:** scuttlarr's CLI in `packages/setup` (`verify:shell` first in the
-  gate; 152 assertions), shipped in the bundle under `Contents/Resources/setup/`,
-  `setup.rs` allowlisted runner, Settings → Machine (doctor, plan → apply defaults,
-  link/unlink; `remove` terminal-only), `config.machine.enabled` links the CLI and runs
-  migrations at launch; `install/install.sh` → scuttlarr.com/install via the www prebuild.
-  2.5 archive the scuttlarr repo is Mitch's.
-- **Phase 3, theme:** `packages/theme` — Omarchy's `colors.toml` verbatim, 14 built-ins
-  as palettes (`[launcher]` pins reproduce the old tokens exactly), tui's `BUILTIN_THEMES`
-  generated + stale-checked, templates for Ghostty/tmux/p10k/delta/Claude Code, `theme.rs`
-  (stage → atomic swap into `~/.local/state/scuttlarr/current/theme/`, OSC into tmux
-  panes, macOS appearance, hooks), `config.appearance {everywhere, macos}`, Settings
-  "Everywhere" + "apply now". **Gap:** nothing imports the renders yet — there is no
-  shell base in `packages/setup`; the include lines live in Mitch's dotfiles for now
-  (Ghostty `config-file = ?~/.local/state/scuttlarr/current/theme/ghostty`, tmux
-  `source-file -q …/tmux.conf`, `.p10k.zsh` `source …/p10k-colors.zsh`, git
-  `[include] path = …/delta.gitconfig`, Claude Code `"theme": "custom:scuttlarr"`).
-- **Phase 4, policy:** `@scuttlarr/core/appearance` (mode system|light|dark|schedule,
-  pair, per-Focus mapping, `withPick`), `appearance.rs` watching
-  `~/Library/DoNotDisturb/DB` + `~/Library/Preferences` (permission-free), the engine in
-  the panel window writing `config.theme` only when the answer changes, Settings →
-  General ▸ Theme (mode, schedule, pair, Focus rows), `theme ⏎` panel. **Opt-in**: inert
-  until `config.appearance` exists, pair seeded from the current theme — the first
-  install restyled the machine (JOURNAL 2026-09-11).
-- **Gate:** `pnpm verify` green — 224 Rust, 165 core, 104 theme, 87 tui, 62 desktop, 152
-  shell. **Live-proven:** migration, bundled CLI, the engine resolving on launch.
-  **Not yet:** a Focus flip or appearance toggle changing the theme, the tmux retint,
-  "apply now" — need a hand on the machine.
-- **Later the same day, all green (238 Rust, 110 theme, 168 core, 67 desktop, 227
-  shell):** the **shell base** (`scuttlarr shell [--apply]`: `~/.zshrc`, `~/.p10k.zsh`,
-  Ghostty, tmux, a marker-bounded git include, all importing the current theme; Settings
-  → Machine "plan/apply shell"); **hot editors** (VS Code + Cursor, Zed, Neovim, Helix,
-  btop — each verified hot against source or docs, `appearance.editors` toggle); **user
-  themes** (`~/.config/scuttlarr/themes/<name>/colors.toml` merged into every window,
-  `theme install <git-url>`, update, remove, watched); **switcher polish** ("scuttlarr —
-  Theme switcher" row for a custom hotkey, ⌥⏎ sets the other half, "Toggle Dark Mode"
-  flips the policy under fixed modes); **wallpaper** (`backgrounds/` per user theme,
-  advances per apply, "Next wallpaper" row). Docs: README, THEMES, SETUP rewritten; PRD,
-  API docs, site copy swept.
-- **2026-09-14:** workspace flattened (repo now `~/Developer/mitch/scuttlarr`; a moved
-  checkout needs `cargo clean`, JOURNAL); site done end to end — Vercel project
-  `scuttlarr-web` git-linked to this repo, scuttlarr.com canonical, `www.`, both
-  `launcharr.com` hosts and the `scutlarr.com` typo domains 308 to it, `/install` served
-  as a shell script, ignore step widened; the old scuttlarr repo was deleted (2.5).
-- **Still not live-proven** (needs a hand): the tmux retint, an editor retint, a Focus
-  flip, the shell base applied on a real home (note: the four files it adopts are
-  chezmoi-managed in Mitch's dotfiles — reconcile the dotfiles first or the next
-  `chezmoi apply` fights back). **Open:** the tap cask (1.5) and the release (1.7) —
-  until the cask exists the README's brew line and the curl installer fail at that
-  step; bar theme cell; macOS accent colour; bat beyond `ansi`; plugin clones aren't in
-  the manifest.
+- Ghostty windows outside tmux take the colours on a switch; VS Code retints live; the
+  Claude Code theme reads well; the tmux retint; an editor retint.
+- A Focus flip and a macOS appearance toggle change the theme within a second; "apply
+  now"; Solarized Light on every surface; `theme ⏎` Esc path.
+- The shell base on a real home — reconcile the chezmoi dotfiles first (the include lines
+  there are **uncommitted**), or the next `chezmoi apply` fights it.
 
-**Plugin permissions, 2026-09-10 (working tree, uncommitted — built, not yet
-reinstalled):** the generic answer to the amaran kill below. `manifest.permissions`
-names privacy classes; `src-tauri/Info.plist` ships usage strings for all nine;
-`permissions.rs` reads the bundle + TCC, asks at service start for what macOS has not
-decided, and the supervisor blocks a denied (or un-askable) class via the `needs` path —
-dim cell, Settings → Plugins row "uses: Bluetooth · denied" with ask / open-Privacy
-buttons (`plugin_permission_fix`, the one new command). A service killed by signal reports
-`service killed (SIGABRT) — see DiagnosticReports` and waits the full backoff. DECISIONS
-2026-09-10 (permissions), plan `plans/done/plugin-permissions.md`, PLUGINS.md `permissions`
+awake:
 
-- "Declare what you touch". `pnpm verify` green (5 new Rust tests). **Proved live 2026-09-10:** reinstalled; the log shows `asked macOS for Bluetooth` →
-  service started → connected; the cell toggles the light. Same session: the panel switch
-  double-fired (row + button, fixed in the plugin) and lagged a second behind the bar — the
-  panel polled while the bar was pushed; state lines now emit `plugin-state` and the panel
-  re-pulls (JOURNAL 2026-09-10). Installed via the new `scripts/dev-install.sh` (quiet swap + `open -g`, no Finder
-  flash): panel and bar both instant — "working great" (Mitch, 2026-09-10).
+- Tray Quit stays quit (exit 0 is not relaunched); a hold survives
+  `sudo fdesetup authrestart`; an agents hold releases within ~1 min of the last agent
+  idling; the "awake resumed" toast.
 
-**First hardware plugin, 2026-09-10 (working tree, uncommitted — built, not yet
-reinstalled):** Mitch's amaran 60d S studio light is a user plugin
-(`~/.config/scuttlarr/plugins/amaran/`, not in this repo): a Swift CoreBluetooth bridge
-spawned by the Bun service, a TypeScript Bluetooth Mesh stack (AES-CCM hand-rolled — Bun
-has none — verified against the spec vectors), Telink `0x26` commands, and the light's
-status replies decoded so the cell follows the physical dial. Cell click toggles, `light ⏎`
-has a slider and presets. **Proved live** from a terminal: on/off/on by eye, status
-`on=true intensity=120`. Under launcharr.app the helper was TCC-killed with no prompt —
-the bundle had no `NSBluetoothAlwaysUsageDescription`; added `src-tauri/Info.plist`
-(DECISIONS 2026-09-10, invariant 1 intact: nothing prompts until a plugin opens the radio).
-Built to `target/release/bundle/macos/launcharr.app`; **the reinstall over the running app
-is pending (Mitch)** — then one Bluetooth prompt and the cell should go live. PLUGINS.md
-grew a "Hardware is a helper" rule; JOURNAL ×3; plan
-`plans/done/amaran-plugin-bluetooth.md`. Loose thread: status replies arrived in one run
-and not in three earlier probes — recorded, not chased. **2026-09-14:** the fold broke it
-— the plugin still imported `@launcharr/tui`; the old name is now a shared alias of the kit
-so pre-rename plugins build unchanged (JOURNAL 2026-09-14). **Same day, folded into
-`~/.config/scuttlarr/plugins/lights/`:** one 💡 for every light — amaran demoted to a
-driver, a Home.app driver through the Shortcuts CLI (the Nanoleaf lights are Thread/Matter,
-nothing else gets in — JOURNAL 2026-09-14), scenes from `scenes.json` + Home scenes, and
-the first hover card with controls (kit: `BarCardControls`, bar loads `styles.css`).
-**Waiting on Mitch:** the `lights/<light>/…` shortcuts (README recipe), then measure
-`shortcuts run` latency and whether slider drag works in a card. Plan
-`plans/active/lights-plugin.md`.
+Terminal and updates:
 
-**Updates plugin, second pass, 2026-09-10 (working tree, uncommitted — built + running):**
-npm dropped as a source (its only globals are node's own `npm`/`corepack`, mise's business).
-Two environment bugs fixed, both from the LaunchAgent's bare PATH (JOURNAL 2026-09-10):
-checks now run with an augmented PATH + inferred `PNPM_HOME`; the tmux hand-off runs the
-command in `$SHELL -lic` and targets the _focused_ tmux client (`#{client_focused}`) before
-the most recently active one. `↵`/`a` in `updates ⏎` now upgrade **in the panel** —
-`updates::upgrade` spawns `/bin/sh -c`, stdin closed, tail on the report, `x` cancels; `t`
-is the terminal hand-off (sudo). Plan: `plans/active/updates-upgrade-in-panel.md` (move to
-`done/` with the commit). Not changed: the 6 h TTL — checks cost < 4 s total, 1 h is fine
-when wanted.
+- `!echo hi ⏎` lands as a new tmux window in Ghostty; updates `a` too.
+- `↵` on Homebrew in `updates ⏎` upgrades with live output and the count drops; the cell
+  count against `brew outdated`; the card and keys. Cell click → panel was reported dead
+  (`open_panel` now logs `panel: open_panel <id>`).
 
-**App updates in the menubar, 2026-09-04 (on main, unreleased — built + running):** the
-third bundled plugin, `updates` (`packages/plugins/updates/`, provider `updates.rs`):
-brew / App Store / pnpm -g / npm -g / mise checked in parallel threads every 6 h (60 s
-timeout each, fail-visible per source, sources without a binary omitted), cached like
-usage.rs so the 1 Hz snapshot never blocks. Cell hidden while everything is clean,
-`package` glyph + count otherwise, `warn` on a source error; hover card per source;
-`updates ⏎` lists `installed → available` with `r` refresh (`host.send` grew a Native
-arm — no new commands) `↵` runs a source's upgrade in your terminal (bang-mode hand-off), `a` all of them,
-`c` copies the command. Fixture drives the site demo. Cell click → panel is reported
-dead by Mitch; `open_panel` now logs `panel: open_panel <id>` so the next click tells.
-Kit gap noted: `ListRow` has no danger tone, so error rows are plain text (card + cell
-still warn). **Same day: zero-network retired** (DECISIONS 2026-09-04, invariant 2
-rewritten: network allowed, telemetry banned). Plan: `plans/done/app-updates-plugin.md`.
-**Hands-check pending (Mitch):** the cell's count against `brew outdated`, the card,
-`updates ⏎` keys, and whether "hidden when clean" is the right call for the strip.
+Agents, usage, plugins:
 
-**Claude hooks owned by launcharr, 2026-08-28 (on main, unreleased):** the adapter is
-bundled and installed to `~/.config/launcharr/hooks/claude-status.py`; `hooks.rs`
-registers it per Claude account from Settings → Agents and repairs stale paths at
-launch (DECISIONS 2026-08-28, `plans/done/hooks-owned-by-launcharr.md`). Prompted by
-the repo move to `stackarr/launcharr` breaking every hand-pointed hook. **Proved live
-2026-08-28 11:01:** first launch of the new build installed the script and repaired all
-16 entries across `~/.claude` + `~/.claude-psyke` to the stable path (backups
-`settings.json.bak-launcharr`; diff = paths only). **Hands-check pending (Mitch):**
-Settings → Agents shows both accounts registered; a Claude turn paints a cell.
+- Settings → Agents shows both Claude accounts registered; a Claude turn paints a cell.
+- Usage limits against claude.ai/settings/usage for both accounts; the Codex tile
+  includes beebee's sessions (mirror plugin).
+- Hover a cell while a session runs a subagent (subagent lines).
+- Agent monitoring: attention pulse; cell click / `agents ⏎` Enter lands in the right
+  tmux pane; `⌫` dismisses a row (the 2026-08-18 orphan is still in the store).
+- hello cell + card + `hello ⏎` (`r` resets), `cal ⏎`, Settings → Plugins, `plugins ⏎`.
+- Custom widgets sub-tab and install from URL; trmnl hidden until its key resolves.
 
-**Plugins, 2026-08-27 (on main, unreleased — built + running):** "widgets are data, never
-code" superseded (DECISIONS 2026-08-27 ×3). A plugin is a directory in
-`~/.config/launcharr/plugins/<id>/`: `manifest.json` (+ `kinds`), `service.ts` under Bun
-(stream = JSON lines kept alive with backoff; `interval` = the old tick contract),
-`cell.tsx` / `panel.tsx` in React on `@launcharr/tui`, built by Rust with `bun build` and
-loaded into the webview through blob-URL shims (one React, one kit, lucide shared) with
-hot-swap on edit. `plugins.rs` + 7 commands; `BarSnapshot.plugins`; layout slot
-`plugin:<id>` (old `usage` id migrates). **First-party `usage` and `calendar` are plugins**
-(`packages/plugins/`, state from Rust native providers; the website imports the same
-`cell.tsx`/`panel.tsx` — invariant 10 kept). Settings → Menubar → Plugins (git-URL install,
-on/off, restart, settings/prereqs), `plugins ⏎` gallery, reference `hello` plugin
-(`apps/desktop/plugins/hello/`, installed locally for the proof). Contract: `docs/PLUGINS.md`.
-**Proved live** (`~/Library/Logs/launcharr.log`): `3 plugin(s) → hello: built → service
-started → first state → webview loaded cell.js`; edit → rebuilt + reloaded same second.
-**Memory — watch item:** with all three plugins on, RSS reads 161 MB right after
-relaunch, 132 MB at six minutes, 114 MB after plugins were toggled off/on (forced
-re-render + collection); plugins on↔off delta ≈ 9 MB. Against a 120 MB budget (118 at
-v0.6.0) that is over until WebKit settles — measure again at the next release and, if
-it holds above 120, lazy-load plugin panels (cell resident, panel on demand) per the
-plan's risk note.
-**Hands-check pending (Mitch):** the hello cell + card + `hello ⏎` panel (`r` resets via
-`host.send`), `cal ⏎`, `usage` cell/panel unchanged, Settings → Plugins, `plugins ⏎`.
-Plan: `plans/done/plugins-react-cells-and-panels.md`; slice G (awake/agents/wifi/audio/
-battery → plugins) is rolling. **2026-08-28:** `usage ⏎` counts the Mac Mini too — the
-`mirror` reference plugin (`apps/desktop/plugins/mirror/`, installed with
-`MIRROR_HOST=beebee`) rsyncs its Codex/Claude journals into
-`~/.local/share/launcharr/mirrors/beebee/`, which usage.rs scans by convention
-(DECISIONS 2026-08-28). First pull: 124 journal files, 51 MB, 1.7 s. **Hands-check:** the
-Codex tile's day/model bars should now include beebee's sessions.
+Bar and displays:
 
-**Usage in the menubar, every account, 2026-08-27 (on main, unreleased — built + running):**
-a `usage` bar cell — CodexBar's tiny meter in our style — showing the tightest window across
-every account (amber ≥70, red ≥90), hover card with one tile per account, click summons
-`usage ⏎` (new `open_panel` command). Claude accounts are discovered from `~/.claude` +
-`~/.claude-*` (one per `CLAUDE_CONFIG_DIR`), labelled from each dir's `oauthAccount`,
-credentials per account via the path-derived keychain item — Personal + Psyke both live.
-`UsagePanel` moved into `@launcharr/tui` with an _All_ tiles view; the site demo renders it.
-DECISIONS + JOURNAL 2026-08-27, `plans/done/usage-accounts-and-bar.md`. **Hands-check
-pending:** limits vs claude.ai/settings/usage for both accounts (first open prompts the
-keychain once per account).
+- Battery/wifi glyphs at 17 px (or 16/18); a charging battery under 90 % readable; wifi
+  arcs at 14 px against the theme; bar icons legible in all themes.
+- ⌥Space with the mouse on the built-in; hover cards on the second bar; unplug/replug.
+- Zone board: drag between zones, retire/restore via the tray, notched vs external, bar
+  off/on survives.
 
-**Agent liveness fix, 2026-08-26 (on main, unreleased — built + running):** the process
-outranks the multiplexer. A pane found in the layout is still proof of life; a pane _missing_
-from one now asks the pid before reaping, and a successful-but-empty `list-panes` read is
-treated as broken rather than as an empty world (`trusted_layout`). Chased down from a live
-field bug — the bar had no agent cells at all, because one empty pane read deleted every
-tmux-hosted session on arrival, permanently. JOURNAL + DECISIONS 2026-08-26,
-`plans/done/agent-liveness-pid-first.md`. **Proved live:** cells return, correctly grouped
-(`gogogo` / window `Launcharr`), after rebuild + relaunch. **Loose thread:** the rotted
-instance was carrying 23 zombie children — something spawns without waiting; not chased.
+Launcher and panels:
 
-**v0.6.0 released 2026-08-20** (signed + notarized; docs/releases/v0.6.0.md; fan-out
-green: cask 0.6.0, Notion, mitchmalone.com hook; perf receipts 2.0 ms / 186 ms / 118 MB).
-Headline: widgets + Module API, widget credentials (CLI piggyback, `requires`/`setup`,
-Keychain overrides; OAuth dormant pending a launcharr OAuth App), bar colours as theme
-tokens (new `warn`, fine = fg), optical icon sizing + wifi arc footprint, General
-sub-tabs, settings-to-front, Hackables → Config. Plan: `plans/done/widget-settings.md`.
-Note: idle memory 118 MB of a 120 MB budget — watch it next release.
+- Focus: summon → `wifi ⏎` → connect → Esc → Esc restores focus exactly, also over a
+  full-screen app.
+- `colorpicker ⏎` (Apple sampler by default; loupe after granting Screen Recording;
+  Esc copies nothing); `lorem` toast; `?` keeps the input focused across turns; Settings
+  → Agents sub-tabs and About links.
+- wifi `s` scan + secured join; audio slider steps + device switch; clipboard
+  copy-on-Enter dismisses; help filter.
+- 0.4.0 leftovers: Settings → Desktop "use my own config…" / "save a copy…" dialogs;
+  `ss ⏎` → ⌘V into claude.ai and Claude Code; a one-minute eyeball of the fresh profile.
 
-**v0.5.0 released 2026-08-19** (signed + notarized; docs/releases/v0.5.0.md; fan-out
-green: cask 0.5.0, Notion, mitchmalone.com hook). Headline: multi-display, agent
-liveness + herdr, colorpicker loupe, lorem, `?` turns. **Post-release the same day, on
-main and running (unreleased):** claude's background daemon filtered + subagents in the
-hover; awake holds survive relaunch (proved live); the strip went **glyph-only** — wifi
-strength arcs, no SSID, no awake timer, battery by lucide tier + colour from the adjusted
-charge (see the first three bullets below). launcharr is a keyboard control surface:
-launcher + bar + panels + agents + desktop layer, all in Mitch's daily use.
+Waiting on Mitch elsewhere:
 
-**Widgets landed 2026-08-19 (on main, unreleased — release held by request; running):**
-the Module API is real. `~/.config/launcharr/widgets/*.ts` (TypeScript, run under Bun via
-`runtime.rs`; any executable also works) answer `manifest`/`tick` JSON; one generic cell +
-card renders them; live dir watch; `triggers/widget.<id>`; Settings → Menubar has
-Layout / **Custom widgets** sub-tabs (board placement, health, install from URL/file,
-tick, remove). Reference set uptime / github-actions / vercel (real API) / trmnl in
-`apps/desktop/widgets/`, bundled scripts now `ip.ts` / `json-format.ts` (`.py` retired on
-sight). Widget `ok` wears the agent blue; battery on AC at its limit reads as plugged in.
-Docs: `docs/WIDGETS.md`, DECISIONS 2026-08-19 ×2, plans/done/widgets.md. **Seen live by
-Mitch** (colour feedback applied); still to eyeball: the Custom widgets sub-tab, install
-from URL. trmnl is hidden until its key resolves (JOURNAL 2026-08-19).
+- lights plugin: create the `lights/<light>/…` shortcuts, then measure `shortcuts run`
+  latency and slider drag in a card.
+- Dotfiles: commit the aerospace.toml triggers change; prune the sketchybar config.
 
-**Bar colours → theme tokens, 2026-08-19 (on main, running):** one rule — a fine cell is
-`fg`; accent = busy, warn/danger = needs you. New `warn` theme token; `--warn`/`--danger`
-now in the panel var set. Agents done/idle/unknown fg, working accent, attention danger;
-widget `ok` fg; battery charging/good fg; awake armed fg; wifi poor link warn (`wifiTone`).
-Wifi glyph no longer shrinks with strength: `WifiStrengthIcon` draws all four arcs and ghosts
-the lost ones (lucide's tiers drop arcs); the wifi panel rows use it too. Battery + wifi
-are landscape glyphs, so they get `WIDE_ICON_PROPS` (17 px box) to match the cup's visual
-height — optical sizing. **Hands-check:** does 17 sit right, or nudge to 16/18?
-Settings → General now has sub-tabs General / Color picker / Config (Hackables row renamed
-Config). Settings opened from the panel comes to the front (`activation.rs`; JOURNAL
-2026-08-19). Local rebuilds are `tauri build --bundles app` — no DMG, no Finder flash.
-DECISIONS 2026-08-19. **Hands-check:** eyeball the strip in launcharr + a couple of
-themes; is a charging battery < 90 % readable without its blue?
+## Next
 
-**Widget credentials (2026-08-20, v0.6.0):** CLI piggyback first (`gh auth token`,
-Vercel CLI store), fail-visible: manifest `requires` (prereqs + copyable fix) and tick
-`setup` ({message, fix} → dim cell, fix in card + settings row) replace silent `hidden`;
-Settings shows a widget's fields only while it needs attention. All three states proven
-live (gh token → runs; no gh → setup; stale Vercel CLI → setup). DECISIONS 2026-08-20.
-
-**Widget settings + OAuth (2026-08-19, v0.6.0):**
-manifest `settings[]` → fields in Custom widgets → Keychain (secrets) / `config.widgets`
-(plain) → env on tick; `required` gate ("needs setup"); `auth` protocol (JSON lines,
-`widget-auth` events). `vercel.ts` = stored token; `github-actions.ts` rewritten onto the
-GitHub API with device-flow sign-in (`GITHUB_CLIENT_ID` setting). Both proven by hand
-against the real APIs and through Mitch's hands-on rounds (2026-08-20). OAuth is dormant
-until a launcharr OAuth App client id is baked into `github-actions.ts`.
-DECISIONS 2026-08-19; plan `plans/done/widget-settings.md`.
-
-**Next: the v0.5 scope talk** (ROADMAP "v0.5 — plugins": widget follow-ups, settings-in-panels,
-per-monitor workspaces, bar polish, awake loose ends, PANEL_INFO single-source, PRD
-revision). Open hands-checks: hover a cell while a session has an Agent running (subagent
-lines), the awake "resumed" toast, wifi arcs at 14 px against the theme, unplug/replug a
-display. Consider a v0.5.1 for the post-release batch once those pass.
-
-## Shipped and live (v0.5 era — details in plans/done/ + JOURNAL)
-
-- **Awake survives relaunch + Wi-Fi strength glyph, 2026-08-19** (plans/active/awake.md
-  slice A, JOURNAL 2026-08-19): armed holds are mirrored to `awake.json` and re-armed at
-  launch (deadline ahead / condition / manual ≤ 12 h / same boot), toast + "since
-  relaunch" in the panel. Bar wifi cell is glyph-only, four lucide arcs by RSSI
-  (`corewlan.rs`, no permission); SSID + "−66 dBm · good" moved into the hover card. Awake
-  cell is glyph-only too — elapsed/remaining live in its card. **Battery cell** is
-  glyph-only as well: lucide tier + colour from the _adjusted charge_ (the macOS charge
-  limit read from `com.apple.powerd.charging.plist` counts as full), blue while charging,
-  red tier alone prints the number; card shows the true % and "limit 80%".
-- **Daemon filter + subagents, 2026-08-19** (plans/done/agent-daemon-and-subagents.md,
-  JOURNAL 2026-08-19): Claude's background daemon (`bg-spare`, pty sessions) no longer
-  gets cells — the hook flags `background`, `apply` won't create from it without a prompt.
-  Subagents (`SubagentStart`/`SubagentStop`, now in settings.json) ride the parent:
-  `subagents[]` on the wire, listed in the hover card, count on the cell, `⑂ N` in
-  `agents ⏎`. **Hands-check:** hover a cell while a session has an Agent running.
-- **Multi-display, 2026-08-19** (plans/done/multi-display.md, JOURNAL 2026-08-19): a bar
-  on every screen and the launcher on the screen under the mouse. New `screens.rs`
-  (CoreGraphics reads, CG points; `notch.rs` folded in, keyed by display id) replaces
-  Tauri's monitor API, which was silently collapsing both to the primary. Bar windows
-  reconcile to screens on a 5 s heartbeat (build / re-frame / hide surplus, live notch
-  flag); hover and the dropdown are per-bar. Verified: two bars framed right on Studio
-  Display + built-in. **Hands-check:** ⌥Space with the mouse on the built-in, hover
-  cards on the second bar, unplug/replug.
-- **Ready-column round, 2026-08-17** (plans/done/ready-column-2026-08-17.md, DECISIONS
-  2026-08-17 ×4): **`colorpicker`** (the launcharr **loupe** at 2× — own transparent panel +
-  `CGWindowListCreateImage` below it, **opt-in via Settings → General → "Use the
-  launcharr loupe"**, Screen Recording, invariant 1 reworded — default and fallback is
-  Apple's `NSColorSampler`, no prompt unless the toggle is on; `#RRGGBB` on the pasteboard,
-  Esc copies nothing) and **`lorem`** (built-in, five
-  volumes, semi-random, `lorem.py` retired from the bundle) — both confirm with the new
-  **toast** row (frontend `copy_text keepOpen`, Rust `panel::flash`); **`?` agent mode**
-  redesigned as turns: first question pinned in the header, transcript below, follow-up
-  prompt at the bottom, Claude-style thinking spinner + shimmer verbs — `AskSurface` lives
-  in `@launcharr/tui` and the www demo imports it (images in answers declined: invariant
-  2); **Settings**: Agents → three sub-tabs, Shortcuts tab removed (config key still
-  live), About fleshed out (byline + site/docs/GitHub/releases/X links; brand icons now
-  `@launcharr/tui/icons`). **Round 2 (same day):** wifi cell hovers a card (SSID, IP,
-  router, DNS, interface — what `dns ⏎` shows; `dns ⏎` stays; click → Wi-Fi settings),
-  battery card breathes (padding, 10px clear of the strip, power mode as read-only text
-  instead of button-like segments) — all cards share the new spacing. **AeroSpace
-  `gaps` now means the visible gap** (`gapPlan`: borders + whichever bar is showing are
-  factored in; native menu-bar state read on apply — DECISIONS 2026-08-17).
-- **v1 launcher line (through v0.3.1, signed + released)**: panel/focus dance, index +
-  fuzzy + frecency, bang mode, scripts protocol, clipboard, math, quicklinks, emoji,
-  settings window, themes, menubar icon, release pipeline + shared tap. Monorepo on the
-  jig standard since 2026-08-11.
-- **`packages/tui`** — Omarchy-inspired kit (panels, rows, hotkeys, controls, calendar,
-  nav hooks; theme tokens live here now, desktop shims). **Workbench** replaces the
-  gallery: `pnpm --filter @launcharr/tui workbench` — state stories (incl. "selected,
-  not hovered" and clipped-list scroll), theme + viewport switching, app-panel stories
-  auto-discovered.
-- **The bar** (`bar.enabled` in config, ON for Mitch; Sketchybar retired — revert
-  `brew services start sketchybar`): Omarchy-flat strip — workspaces (clickable +
-  hotkey-tracked), front app, clock, wifi SSID, battery states — the battery cell **hovers open a card**
-  (plans/done/battery-hover-card.md): capacity, time left, cycles, draw, health, and the
-  active power mode read-only, click for System Settings → Battery. Hover machinery is
-  now shared (`src/bar/hover.ts`), cards declare their own dropdown height.
-  Architecture: Rust-pushed snapshots via
-  webview eval at 1 Hz + FSEvents triggers dir (`~/.config/launcharr/triggers/` —
-  aerospace exec-on-workspace-change touches it; **dotfiles change uncommitted**),
-  async commands only, Floating level + constrainFrameRect override (menu bar slides
-  over), 15s reframe heartbeat, ~19 MB marginal memory (gate passed).
-- **herdr as a second multiplexer, 2026-08-18** (plans/done/herdr-multiplexer.md,
-  DECISIONS 2026-08-18): the agent monitor is no longer tmux-shaped. Location fields are
-  `mux`/`muxTarget`/`muxGroup`/`muxIndex`/`muxLabel` (tmux session/window ↔ herdr
-  workspace/tab), and **`herdr.rs`** reads herdr's socket directly — `session.snapshot`
-  on a 1 s cache, `agent.focus` to jump — so every agent herdr detects gets a cell, not
-  just the hook-capable ones. herdr agents are read live and never persisted; presence in
-  the snapshot _is_ liveness. The Claude hook stands down inside a herdr pane and calls
-  `pane.report_metadata` with the prompt instead, so one pane is one cell. Verified live
-  against herdr 0.8.0 (workspace "launcharr", agent L2): mapping, grouping, and
-  `working`/`done` tracking, plus the title landing in herdr's own record.
-- **Agent liveness, 2026-08-18** (plans/done/agent-liveness.md, DECISIONS 2026-08-18):
-  agent cells now disappear when the agent does. `list()` reaps a session whose tmux pane
-  is gone from a _successful_ `list-panes` read, and a pane-less one whose reported `pid`
-  is dead or now runs a different command (`pidComm` fingerprint, stamped at first sight —
-  adapter-agnostic, so herdr drops in without touching the reaper). New wire field `pid`
-  (hook walks the parent chain; `LAUNCHARR_AGENT_PID` overrides), new `agent_forget`
-  command on `⌫`/`x` in `agents ⏎`, agents outside tmux share a dashed box instead of
-  floating loose. Hook also stopped mapping `/clear`'s `SessionEnd` to `ended`.
-  A session with neither pane nor pid can only be judged on silence, so it gets 15 min,
-  not the 12 h `pruneHours` sweep — the fix that finally cleared the field orphan.
-  All reaping paths verified live; `⌫` awaits a hands-check.
-- **Agent monitoring** (B4 slice, plans/done/agent-monitoring.md): launcharr absorbed
-  sketchybar-agent-status — Rust socket monitor (`agents.rs`, old wire protocol
-  unchanged), bar agent cells, `agents ⏎` panel. WIP color semantics (2026-08-16):
-  blocked red breathing, working accent, **done-unread blue** (Stop → `done`, read on
-  jump), idle/unknown green. Cells grouped in bordered boxes by tmux session, ordered by
-  tab (`list-panes` enrichment, 2s cache); hover opens a dropdown card — the bar window
-  grows downward (`bar_set_dropdown`) since the 30px strip can't host a popover. Claude hooks → `~/.config/launcharr/hooks/claude-status.py`, installed by launcharr (2026-08-28);
-  Go daemon booted out (revert: bootstrap
-  `~/Library/LaunchAgents/com.mitchmalone.sketchybar-agent-status.plist` + repoint
-  hooks; settings backups at `~/.claude*/settings.json.bak-agent-status`).
-- **`usage ⏎` token monitor** (plans/done/usage-panel.md + agents-settings-and-limits.md +
-  usage-accounts-and-bar.md — multi-account + bar cell, 2026-08-27):
-  journals parsed in Rust (dedup, per-file cache) for tokens by day/model, **plus opt-in
-  account limits** from the providers' own usage endpoints (invariant 2 amended,
-  DECISIONS 2026-08-16) — Claude 5h/weekly/model-scoped (Fable window live at 59%),
-  Codex account-wide weekly (8% vs 5% stale local = the openclaw delta). No token
-  refresh, ever; credential access is a per-provider **consent toggle** (source order +
-  fallback are code-owned; last-good cache bridges failures with "as of" stamps) in
-  **Settings → Agents**,
-  which also gates local monitoring (prune window, show-idle). **Settings → Menubar**:
-  bar on/off hot-applied + the zone board (see the zone-layouts bullet below).
-- **`?` agent mode** (ported 2026-08-16 from the spike-ask-ai branch): press `?` —
-  the key flips the mode and is consumed (spike's keystroke-switched modes adopted for
-  `!` `?` `:` after all, same day); provider selectable claude|codex (`agents.askProvider`,
-  codex via `exec --json --sandbox read-only`, `resume --last` follow-ups). Type a question → streamed conversation with the
-  user's own `claude` CLI (caged child: empty cwd, no fs/exec tools — JOURNAL
-  2026-08-10), markdown-lite rendering, `--continue` follow-ups, Esc ends. Gated by
-  `agents.askMode` ("Enable agent mode", Settings → Agents, off by default); Esc/Backspace
-  return to search, mode keys hop directly. Branch kept for reference.
-- **Panel framework** (P0): trigger words open keyboard-driven TUI panels in the
-  launcher window — metadata in `panels/registry.ts`, components in App.tsx, breadcrumb
-  prompt, Esc-stack, panels are storied presentational components + thin invoke
-  containers. Tenants: **`wifi ⏎`** (pinned active, known networks Enter-connect, `p`
-  power, **`s` scan** via async `system_profiler` — no Location Services, JOURNAL
-  2026-08-16 — with masked-password join for unknown secured networks), **`dns ⏎`**,
-  **`audio ⏎`** (output/input volume sliders ←→, device lists Enter-switches via
-  hand-rolled CoreAudio FFI in coreaudio.rs, `m` mute), **`clipboard ⏎`** (TwoPane:
-  search + history left, preview right, ⌘⌫ delete; `clip` inline rows remain), and
-  **`help ⏎`** (filterable reference: modes, keys, panels, commands, scripts,
-  quicklinks), and **`ss ⏎` screenshots** (2026-08-17, plans/done/screenshots-panel.md:
-  newest-first thumbnail grid of the capture folder, ↵ copies the file for ⌘V into an
-  agent, ⌘↵ reveal, ⌘⇧↵ open, pages of 24 — the first grid/scrolling panel; DECISIONS
-  2026-08-17). Wifi commands ×5 + audio ×4 + screenshots ×3 in Rust.
-- **2026-08-16 polish wave**: launcharr theme repainted (#1C1D2A ground, #B5B9D9/
-  #73747C fg/dim; accent stayed #FF6B8C after an #FF176C detour); lucide icons in the
-  bar (wifi/battery), launcher panel rows, and panel internals (wifi strength tiers
-  from scan dBm, speaker/headphones/mic device glyphs); panel keywords fuzzy-match
-  like apps (`usag` → Usage, panel-kind index items); frecency = launches in past
-  5 days, multiplier cap 2.0 — `code` learns VS Code (DECISIONS 2026-08-16).
-- **Notch profiles + zone layouts** (DECISIONS 2026-08-16 ×2): per-display notch
-  detection (`NSScreen.safeAreaInsets`, notch.rs); `bar.layout` is explicit zones
-  (left/center/right, clock ordinary) with optional `bar.notchedLayout` (no center
-  zone; absent → derived, center folds into right head); legacy flat lists migrate
-  at load. Settings → Menubar is a full-width drag zone board (columns per zone, both
-  profiles; ✕ retires a widget to a tray, dragging back restores — DECISIONS
-  2026-08-16). Bar disable now hides panels instead of destroying
-  (destroy = SIGABRT, JOURNAL 2026-08-16); tmux layout cache keeps only successes
-  so agent borders survive cold start.
-
-- **launcharr.com redesigned** (plans/done/www-redesign.md, DECISIONS 2026-08-16):
-  repositioned from "an app launcher for pirates" to **the keyboard control surface for
-  macOS** — the v0.5 story now has a site. New `/docs` route (scripts protocol, config,
-  panel triggers, uninstall); the demo grew the bar strip, agent hover cards, `?` ask
-  mode and live `wifi`/`dns`/`usage` panels. Two architecture changes: `apps/www` adopts
-  **shadcn/ui** (tokens mapped onto the launcharr vars, never imported; Radix only for
-  Tabs), and the site now consumes **`@launcharr/tui`** so the demo panels are the
-  shipping components — `src/lib/demo-themes.ts`, a hand-copy that had already drifted to
-  the retired `#ff176c`, is gone. **`packages/tui` is multi-consumer now**: www typecheck
-  catches kit changes. Site copy is fact-checked against the repo; the design guide's
-  `~90MB` (main-process RSS, not the whole app) and `bar.modules`/clock-anchor claims were
-  corrected on the way in. **Review caught the bar strip / agent cells / hover card built
-  from the design export instead of `bar/{main.tsx,bar.css}`** — wrong cell colors
-  (`--dim` where `.bar-cell` is `--fg`), pink instead of theme accent, broken hover, and
-  `blocked` used as a state key when the wire name is `attention`. Fixed, and the lesson is
-  now **AGENTS invariant 10** (the site demos the real thing, never a replica —
-  DECISIONS 2026-08-16). `packages/tui` also gained a `./themes` entry point: server
-  components can't import the barrel (JOURNAL 2026-08-16). **The bar chrome now lives in
-  `packages/tui/src/bar/`** (plans/done/bar-extraction.md): Mitch made "no second copy of any
-  launcharr UI" a hard rule, invariant 10 lost its port-with-a-comment escape hatch, and
-  `bar/main.tsx` became a thin container while `apps/www` imports the same components. The
-  kit owns the strip, cells, cards, `bar.css` and the pure formatters; the app keeps every
-  `invoke`, `window.__notched`, zone resolution and its window chrome.
-
-## In progress / next (ROADMAP B2–B4, P1)
-
-- **Plugins — slice G rolling** (`plans/done/plugins-react-cells-and-panels.md`): awake,
-  agents, wifi, audio, battery move from `src/panels/*Container` to `packages/plugins/`
-  as touched. Also open: merge `widgets.rs` into `plugins.rs` (single-file widgets are
-  tick plugins without UI), a curated static plugin index on launcharr.com, per-plugin
-  `stderr` in `logbook`, and the hello plugin's `import.meta.main` guard under Node.
-- **`awake` keep-alive sessions** (plans/active/awake.md — retire Amphetamine +
-  Caffeinated): **slices A–D shipped** — in-process assertions (`power.rs`, release on
-  drop/quit/crash), `awake ⏎` panel (form: what stays on / until / rails, two-keystroke
-  arm), grammar (`awake 2h`, `awake until 6pm`, `awake while agents`, `awake off`),
-  trigger reducer in `@launcharr/core/awake` (agents/app/power/ssid/display/busy, all
-  hysteresed, exhaustively tested), Rust watchdog rails (deadline + battery floor), bar
-  coffee cell + hover card with the "also keeping this Mac awake" list. Four `awake_*`
-  IPC commands total (DECISIONS 2026-08-16 ×2). **Both Amphetamine and Caffeinated quit
-  in favour of awake, 2026-08-17 — working in real use.** **Outstanding**: the timed
-  agents-idle release observed end-to-end, lid-closed-on-AC measurement (needs a human
-  lid), slice E deferred.
-- Panel tenants: `sysinfo`, then **settings migrated off the native window** (the big
-  one); drill-down panel menu once 3 tenants exist.
-- Bar: per-workspace app hints; bluetooth glyph (audio + battery shipped 2026-08-16);
-  NSWorkspace observer for event-driven front-app; multi-display fix (JOURNAL
-  2026-08-15 — notch detection assumes NSScreen order matches monitors, revisit
-  together); placement config (notched profiles shipped, plans/done/bar-zones-and-arranger.md).
-- **v0.4 desktop layer — shipped in 0.4.0** (plans/done/v0.4-desktop-aerospace-borders.md,
-  DECISIONS 2026-08-17 ×3): `@launcharr/core/desktop` renders `aerospace.toml` + borders
-  flags, Rust `deps.rs`/`desktop.rs`, Settings → Desktop with sub-tabs (AeroSpace +
-  JankyBorders / macOS adjustments), "Let launcharr manage AeroSpace" with the unmanaged
-  hand-offs (edit / use my own via symlink / save a copy — `desktop_toml`), borders ride
-  on tiling, `aerospace ⏎` panel. Module API (B4) → v0.5.
-- **0.4 feedback round (2026-08-17)** all landed: settings tabs clear of the traffic
-  lights, Search+Links → Quicklinks, scrollbar at the window edge, 760px wide, sub-tabs,
-  HTML DnD fixed on the zone board (wry file-drop hook — JOURNAL), `ss ⏎` screenshots
-  panel (first grid + scrolling panel), TRMNL removed pending the plugin API.
-- Saved for last by request: vercel / GitHub Actions / uptime bar modules.
-- Housekeeping (Mitch): commit the aerospace.toml triggers change in dotfiles; prune
-  sketchybar config there when confident.
-- TRMNL battery module **removed 2026-08-17** (personal; returns later as a plugin once
-  the module API exists — DECISIONS 2026-08-16 carve-out stays as history).
-
-## Blocked / waiting on Mitch
-
-- **Ready-column hands-check** (plans/done/ready-column-2026-08-17.md): `colorpicker ⏎`
-  — default = Apple's sampler; flip Settings → General → loupe to compare (first pick
-  prompts for Screen Recording → grant → relaunch → 2× loupe), loupe over a full-screen app, click copies + toast,
-  Esc copies nothing; `lorem` → five
-  rows → Enter copies + toast auto-hides with focus returned; `?` conversation keeps the
-  input focused across turns; Settings → Agents sub-tabs / About links open in the browser.
-- **0.4.0 hands-check leftovers** (released; these are the bits only hands can feel):
-  Settings → Desktop → uncheck manage → "use my own config…" / "save a copy to edit…"
-  dialogs; `ss ⏎` → ⌘V lands in claude.ai _and_ Claude Code; the fresh-profile smoke ran
-  by script (config recreated, hint summoned, cold 152 ms) — a human eyeball on it is
-  still worth one minute.
-
-- Panel focus checklist (only hands): summon → `wifi ⏎` → connect → Esc → Esc → focus
-  restored exactly, incl. over a full-screen app.
-- New-panel hands-check (plans/done/omarchy-panels-and-polish.md checklist): wifi `s`
-  scan + secured join, audio slider steps + device switch audibly lands, clipboard
-  copy-on-Enter dismisses, help filter, bar icons legible in all themes.
-- Zone-board hands-check (plans/done/bar-zones-and-arranger.md checklist): drag
-  between zones + retire/restore via the tray, notched vs external placement,
-  bar off/on toggle survives.
-- Agent monitoring hands-check: attention pulse visual; bar-cell click / `agents ⏎`
-  Enter lands in the right tmux pane (plans/done/agent-monitoring.md field notes);
-  `⌫` dismisses a row (specimen left in the store: the 2026-08-18 field orphan).
-- Anything off in daily use → JOURNAL it, next session fixes.
+- **Light mode first-class** (ROADMAP, unify step 3.7).
+- **Memory**: get the app under 120 MB idle; lazy-load plugin panels if plugins hold it
+  over; borders' footprint.
+- **Plugins slice G** (rolling): awake, agents, wifi, audio, battery panels move to
+  `packages/plugins/` as they are touched. Also: fold `widgets.rs` into `plugins.rs`, a
+  curated plugin index on scuttlarr.com, per-plugin stderr in the logbook, the hello
+  plugin's `import.meta.main` guard under Node.
+- **Theme gaps**: bar theme cell, macOS accent colour, bat beyond `ansi`, plugin clones
+  in the manifest.
+- **Kit**: `ListRow` danger tone (updates error rows are plain text).
+- **Panels and bar** (ROADMAP v0.5 list): `sysinfo`; settings into panels + drill-down
+  menu; per-workspace app hints; bluetooth glyph; NSWorkspace front-app observer;
+  per-monitor workspaces; a screen-parameters observer instead of the 5 s heartbeat.
+- **Loose threads, not chased**: the 23 zombie children in a long-lived instance
+  (JOURNAL 2026-08-26); amaran status replies arriving in one run of four.

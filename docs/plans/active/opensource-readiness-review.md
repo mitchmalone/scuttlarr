@@ -2,7 +2,7 @@
 title: Open-source release readiness review
 status: active
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-10-19 (not started; launcharr-era scope still valid)
 links:
   - ../../STANDARDS.md
   - ../../RELEASING.md
@@ -64,3 +64,11 @@ only reproducible findings, each with severity, evidence, impact, and a concrete
   relevant, but stale local output can still reveal release hygiene problems.
 - Tool availability and advisory database access may constrain automated checks; any such gap
   will be recorded rather than treated as a pass.
+
+## Status (2026-10-19)
+
+Not started — no report was written. Read the launcharr name as scuttlarr; the scope
+now also covers `packages/theme`, `packages/setup`, the plugin runtime and the
+self-updater. The 2026-10-19 code-health review (`done/2026-10-19-cleanup-bugs-and-guardrails.md`)
+covers part of the engineering-practice ground but not security, dependencies or
+secrets. Open: whether this runs before the next feature phase (Mitch).

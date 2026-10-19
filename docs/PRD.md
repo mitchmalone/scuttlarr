@@ -5,7 +5,7 @@
 |              |                                                                     |
 | ------------ | ------------------------------------------------------------------- |
 | **Project**  | scuttlarr (always lowercase; launcharr until 11 Sep 2026)           |
-| **Version**  | v1.1 (v1 shipped 8 Aug 2026; v1.1 scope decided same day)           |
+| **Version**  | living document; v0.7.0 shipped 1 Oct 2026 (v1 launcher 8 Aug 2026) |
 | **Owner**    | Mitch Malone                                                        |
 | **Status**   | Revised 11 Sep 2026 — folded with scuttlarr, renamed; see DECISIONS |
 | **Platform** | macOS (Apple Silicon first; Intel if free)                          |
@@ -39,7 +39,7 @@ History: v1 shipped 8 Aug 2026 as launcharr, and its definition of success was s
 3. Opening System Settings panes
 4. Fuzzy matching over the above
 5. Frecency-based ranking that learns from usage
-6. Bang mode: `!command` hands the command to iTerm2
+6. Bang mode: `!command` hands the command to iTerm2 (v1; Ghostty since 4 Sep 2026, §4.4)
 7. Terminal-prompt visual identity
 
 ### In scope — v1.1 (Sol parity, scripts-first; decided 8 Aug 2026)
@@ -100,7 +100,7 @@ The panel is a terminal prompt cosplay, not an Alfred knock-off:
 - A prompt sigil at the left of the input — `❯` by default. Pirate flavor is welcome but subtle: think a `⚓︎`-style glyph option and flavor text in empty/error states ("nothing on the horizon"), not skull-and-crossbones wallpaper. Fun should never cost keystrokes or milliseconds.
 - One input line, then a flat results list below: icon (small), name, and a dimmed hint column (e.g. `app`, `settings`, or the app's path). No cards, no shadows-on-shadows, no preview pane.
 - The panel is compact: input line only when empty; grows to fit up to 8 results; never scrolls the screen — more matches than 8 means the query needs another keystroke, and the fuzzy ranking means the right answer should be near the top well before then.
-- Dark, terminal-like default palette. Light mode can wait.
+- Dark, terminal-like default palette. Light themes ship too (Solarized Light, Catppuccin Latte), and a light/dark pair can follow macOS, a schedule or a Focus (`docs/THEMES.md`).
 
 ### 4.3 Launch mode (default)
 
@@ -111,16 +111,16 @@ The panel is a terminal prompt cosplay, not an Alfred knock-off:
 
 ### 4.4 Bang mode (`!`)
 
-- If the **first character** of the input is `!`, scuttlarr switches to bang mode for the rest of that invocation. The prompt sigil changes (e.g. `❯` → `$`) and the results list is replaced by a single action line: `run in iTerm2 ▸ <command>` — an unambiguous visual signal that Enter will not launch an app.
-- **Enter** hands everything after the `!` to **iTerm2**: scuttlarr opens a new iTerm2 window (default profile) — or reuses the current session if a setting says so — and runs the command there. Output, interactivity, and lifetime all belong to iTerm2; scuttlarr dismisses immediately after hand-off.
-- Implementation: iTerm2's AppleScript API (`create window with default profile` / `write text`). If iTerm2 isn't installed, fall back to Terminal.app; the target is a setting, but Ghostty is the blessed default (reached through herdr or tmux — Ghostty has no AppleScript dictionary — falling back to iTerm2, then Terminal.app, if it isn't installed).
-- The command string is passed through verbatim — no shell parsing, no quoting games, no environment munging by scuttlarr. What you typed is what runs.
-- `!` alone (empty command) opens a new iTerm2 window and nothing else. Free feature, feels right.
-- **Grammar note:** `!` is the first-char entry in the dispatch table; v1.1 added first-token entries — script trigger words and the built-in `clip` — to the same table, as this note always intended.
+- If the **first character** of the input is `!`, scuttlarr switches to bang mode for the rest of that invocation. The prompt sigil changes (`❯` → `$`) and the results list is replaced by a single action line: `run in Ghostty ▸ <command>` — an unambiguous visual signal that Enter will not launch an app.
+- **Enter** hands everything after the `!` to the terminal and dismisses. The default target is **Ghostty**, reached through the multiplexer its window is showing — a new herdr tab, or a new tmux window in the focused client, running the command in a login shell; with Ghostty not running, a fresh instance starts with the command. Ghostty has no way in without Accessibility otherwise, so Ghostty open with neither multiplexer raises it and copies the command (DECISIONS 2026-09-04, `terminal.rs`). The terminal is a setting (`terminal`: Ghostty, iTerm2, Terminal.app); when the chosen one isn't installed the effective target falls back Ghostty → iTerm2 → Terminal.app. iTerm2 and Terminal.app are driven over AppleScript, which asks for Automation consent once.
+- The command string is passed through verbatim — no shell parsing, no quoting games. What you typed is what runs.
+- `!` alone (empty command) opens a new terminal window (a new tmux window, under Ghostty) and nothing else.
+- `bangNewWindow` chooses a new window (default) or the current session; in a multiplexer "same window" means a new tab.
+- **Grammar note:** `!` is the first-char entry in the dispatch table; v1.1 added first-token entries — script trigger words and the built-in `clip` — to the same table, as this note always intended. `?` (ask) and `:` (emoji) joined later.
 
 ### 4.5 First run
 
-On first launch: register the default hotkey, build the app index, show the panel once with a one-line hint ("⌥space to summon · `!` to run in terminal"). No onboarding wizard, no account, no network calls. scuttlarr runs as an accessory app (no Dock icon) with a small menubar presence — a template pirate-flag icon whose menu covers summon/config/scripts/reindex/quit and is the gateway for future settings UI (added v1.1, 9 Aug 2026). Everything in the menu stays reachable through the prompt itself (type `scuttlarr` — it self-indexes); the panel is always the primary surface.
+On first launch: register the default hotkey, build the app index, show the panel once, empty (its placeholder reads "Search for apps and commands…"; there is no separate hint row). No onboarding wizard, no account. The only request a fresh install makes is the update check against GitHub Releases (`updates.checkSelf`, Settings → General; off means no request). scuttlarr runs as an accessory app (no Dock icon) with a small menubar presence — a template icon whose menu covers summon/config/scripts/reindex/quit (added v1.1, 9 Aug 2026) — and, when the Bar rung is on, the bar itself. Everything in the menu stays reachable through the prompt itself (type `scuttlarr` — it self-indexes); the panel is always the primary surface.
 
 ## 5. Core behaviors (functional requirements)
 
@@ -145,7 +145,7 @@ On first launch: register the default hotkey, build the app index, show the pane
 
 ### 5.4 Settings (minimal)
 
-A JSON file in `~/.config/scuttlarr/config.json` — hand-editable, watched for changes, no settings UI beyond what the prompt itself exposes. Contents: hotkey, terminal target (iTerm2/Terminal.app), new-window-vs-current-session for bang mode, prompt sigils, launch-at-login, custom links, custom shortcuts. A config file you edit in your editor _is_ the terminal-nerd settings UI.
+A JSON file in `~/.config/scuttlarr/config.json` — hand-editable, watched for changes, and the source of truth; the Settings window (v1.2) is a form over it. Contents include: hotkey, terminal target (Ghostty/iTerm2/Terminal.app), new-window-vs-current-session for bang mode, prompt sigils, launch-at-login, custom links, custom shortcuts. A config file you edit in your editor _is_ the terminal-nerd settings UI.
 
 ### 5.5 Scripts (v1.1)
 
@@ -163,22 +163,22 @@ A launch-mode query that parses as arithmetic (`2*(14.5+3)`, `+ - * / % ^`, pare
 
 ### 6.1 Stack (decided)
 
-| Layer             | Choice                                     | Notes                                                                                                         |
-| ----------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| Shell             | **Tauri 2** (Rust)                         | Window management, global shortcut (official plugin), tray-less accessory app                                 |
-| Panel behavior    | **tauri-nspanel** (community plugin)       | Non-activating `NSPanel`, the Spotlight-style floating window                                                 |
-| UI                | **TypeScript + React** in system WKWebView | Vite dev server, hot reload; virtualized-enough list (8 rows — trivial)                                       |
-| Matching/ranking  | **TypeScript** (frontend process)          | Pure functions; index is small (a few hundred items), no need for Rust here in v1                             |
-| Indexing & launch | **Rust commands**                          | Filesystem scan, FSEvents watch, icon extraction, `NSWorkspace`/`open` launch, AppleScript hand-off to iTerm2 |
-| Persistence       | **SQLite** (via Rust, e.g. rusqlite)       | Frecency events + icon cache metadata; config is plain JSON                                                   |
+| Layer             | Choice                                     | Notes                                                                                                                                             |
+| ----------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shell             | **Tauri 2** (Rust)                         | Window management, global shortcut (official plugin), tray-less accessory app                                                                     |
+| Panel behavior    | **tauri-nspanel** (community plugin)       | Non-activating `NSPanel`, the Spotlight-style floating window                                                                                     |
+| UI                | **TypeScript + React** in system WKWebView | Vite dev server, hot reload; virtualized-enough list (8 rows — trivial)                                                                           |
+| Matching/ranking  | **TypeScript** (frontend process)          | Pure functions; index is small (a few hundred items), no need for Rust here in v1                                                                 |
+| Indexing & launch | **Rust commands**                          | Filesystem scan, FSEvents watch, icon extraction, `NSWorkspace`/`open` launch, terminal hand-off (Ghostty via herdr/tmux; AppleScript for iTerm2) |
+| Persistence       | **SQLite** (via Rust, e.g. rusqlite)       | Frecency events + icon cache metadata; config is plain JSON                                                                                       |
 
 Guiding split: **Rust owns the OS, TypeScript owns the experience.** Anything touching AppKit, the filesystem, or process launch is a small, boring, well-named Rust command; everything with product opinion in it (grammar, matching, ranking, rendering) is TypeScript, because that's the layer that must stay fun to hack on — for Mitch in v1 and for plugin authors in v2.
 
 ### 6.2 Notable implementation details
 
 - **Focus discipline** is the hardest native problem: non-activating panel that still receives keystrokes, and reliable focus restore on dismiss. Prove this in week one (see §9) before building anything else on top.
-- **`LSUIElement` / accessory activation policy**: no Dock icon. A single `NSStatusItem` (template icon) is the only menubar presence.
-- **IPC**: a handful of typed Tauri commands (`get_index`, `record_launch`, `launch(item)`, `run_in_terminal(cmd)`, `read_config`). Keep the surface tiny; every command is a future plugin-API liability.
+- **`LSUIElement` / accessory activation policy**: no Dock icon. An `NSStatusItem` (template icon) plus, with the Bar rung on, one bar panel per display.
+- **IPC**: v1 started with a handful of typed Tauri commands (`get_index`, `record_launch`, `launch(item)`, `run_in_terminal(cmd)`, `read_config`). The bar, panels, plugins, desktop, theme and setup grew it to 82 registered in `lib.rs` (Oct 2026). Every command is still a future plugin-API liability and is recorded in DECISIONS when added.
 - **No telemetry**: nothing phones home about the user. (v1's zero-network rule retired 2026-09-04.)
 
 ## 7. Performance budgets (requirements, not aspirations)
@@ -200,11 +200,11 @@ If a budget can't be met, the feature causing the miss gets cut or moved behind 
 | --- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | R1  | Non-activating panel / focus restore edge cases (full-screen Spaces, stage manager, multiple displays) | Spike first (§9 M0); tauri-nspanel exists precisely for this; Sol/SuperCmd source as references                                                           |
 | R2  | WKWebView keystroke latency spoils the REPL feel                                                       | 8-row list, no animation on the hot path, measure with instrumentation from day one; worst case, move matching to Rust (architecture already isolates it) |
-| R3  | AppleScript → iTerm2 requires Automation permission; prompt timing is OS-controlled                    | Trigger it deliberately on first `!` use with a hint line in the panel; fall back gracefully if denied                                                    |
+| R3  | AppleScript → iTerm2 requires Automation permission (now only the iTerm2/Terminal.app fallback)        | Trigger it deliberately on first `!` use with a hint line in the panel; fall back gracefully if denied                                                    |
 | R4  | System Settings pane IDs are undocumented and shift between macOS versions                             | Static curated table, versioned; a broken pane link is low-severity                                                                                       |
 | R5  | Scope creep toward Raycast                                                                             | This document. Non-goals list is load-bearing.                                                                                                            |
 
-## 9. Milestones
+## 9. Milestones (v1, all met)
 
 - **M0 — Spike (the scary parts first).** Tauri 2 + tauri-nspanel: hotkey summons a non-activating panel with a text field; Esc restores focus correctly over a full-screen app. _Exit: the focus dance works or the stack decision gets revisited._
 - **M1 — Launcher.** Index + fuzzy match + launch + System Settings panes. No frecency, ugly UI. _Exit: Mitch can launch any app._
@@ -214,12 +214,12 @@ If a budget can't be met, the feature causing the miss gets cut or moved behind 
 
 ## 10. v2 horizon (recorded now, built later)
 
-The differentiating bet — **scripts as first-class citizens** — shipped early in v1.1 (§5.5). Theming left the horizon on 11 Sep 2026 — it is the Theme rung (`docs/THEMES.md`); signing, notarization and the README shipped with v0.2–v0.4 (`docs/RELEASING.md`). Still on the horizon: script-declared richer rendering (beyond result rows), bang mode's inline-output variant, per-query learned bindings, richer bangs (`!!` = repeat last, project-scoped commands), and the open unification items in `docs/STATUS.md` (user theme overlays + `theme install`, the shell base).
+The differentiating bet — **scripts as first-class citizens** — shipped early in v1.1 (§5.5). Theming left the horizon on 11 Sep 2026 — it is the Theme rung (`docs/THEMES.md`); signing, notarization and the README shipped with v0.2–v0.4 (`docs/RELEASING.md`). Still on the horizon: script-declared richer rendering (beyond result rows), bang mode's inline-output variant, per-query learned bindings, and richer bangs (`!!` = repeat last, project-scoped commands). User theme overlays, `theme install` and the shell base shipped in v0.7.0.
 
 ## 11. Open questions
 
 1. ⌥Space collides with some keyboard layouts' non-breaking space and with Raycast's default — fine as default with easy remap, or pick something else out of the gate?
-2. Should bang mode's "reuse current iTerm2 session" variant ship in v1 config or wait for real demand?
+2. ~~Reuse-current-session variant~~ — shipped as `bangNewWindow` (default new window).
 3. Empty-query panel: strictly blank (current spec) or show top-3 frecent apps after the database warms up?
 4. ~~Repo conventions~~ — settled 8 Aug 2026: pnpm, Lefthook, Vitest, ESLint 9, clippy (see `docs/DECISIONS.md`).
 

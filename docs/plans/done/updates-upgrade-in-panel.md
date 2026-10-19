@@ -1,8 +1,8 @@
 ---
 title: Updates: upgrade from the panel, terminal hand-off fixed
-status: active
+status: done
 created: 2026-09-10
-updated: 2026-09-10
+updated: 2026-10-19 (closed: shipped, Homebrew hands-check carried to STATUS)
 links:
   - ../done/app-updates-plugin.md
   - ../../JOURNAL.md (2026-09-10 entries)
@@ -65,3 +65,10 @@ $SHELL -l'` — the shape the fresh-Ghostty-instance path already uses — so PA
 - `client_focused` is only set when the terminal sends focus events; empty means fall back.
 - A cask needing sudo fails fast (`sudo: a terminal is required`) — shown as the run's exit
   line with the `t` hint, not hung: stdin is null.
+
+## Closing note (2026-10-19)
+
+Every step shipped (on main since 2026-09-10, released in v0.7.0). The remaining
+acceptance item — `↵` on Homebrew from the installed app with live output and the count
+dropping — is a hands-check in STATUS. The 6 h TTL note is superseded by the per-source
+intervals of 2026-10-18 (JOURNAL).

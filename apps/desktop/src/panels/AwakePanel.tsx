@@ -1,6 +1,6 @@
 /**
  * Awake panel, presentational half: pure props + @scuttlarr/tui, no tauri
- * imports. The copy is the feature (plans/active/awake.md): every string says
+ * imports. The copy is the feature (plans/done/awake.md): every string says
  * what the user observes, states how it ends, and carries its limitation
  * inline. The words themselves live in @scuttlarr/core/awake where they're
  * shared with the grammar rows and the bar card.
@@ -133,12 +133,16 @@ function ArmedView({ status, onRelease, onClose }: AwakePanelProps) {
       />
       <ListRow
         dim
-        label={`Ends ${ends}${remaining ? ` — ${remaining} left` : ''}`}
+        label={
+          remaining
+            ? `Ends at ${ends.replace(/^until /, '')} (${remaining} left)`
+            : `Runs ${ends}`
+        }
       />
       {s.batteryFloor != null && (
         <ListRow
           dim
-          label={`Lets go if the battery drops below ${s.batteryFloor}% unplugged.`}
+          label={`Releases if the battery drops below ${s.batteryFloor}% on battery power.`}
         />
       )}
       {s.away && <ListRow dim label={`Away mode. ${awayNote(status!.away)}`} />}
@@ -465,7 +469,7 @@ function FormView({
           <ListRow
             icon="◇"
             dim
-            label="The last session let go at the battery floor — the Mac sleeps normally again."
+            label="The last session ended at the battery floor — the Mac sleeps normally again."
           />
         )}
         <SectionHeader label="What stays on" />

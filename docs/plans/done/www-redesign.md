@@ -52,13 +52,13 @@ The design copy is accurate except where the app moved under it. Verified agains
 
 | Claim                                    | Verdict                                                                 |
 | ---------------------------------------- | ----------------------------------------------------------------------- |
-| `+19MB` marginal for the bar             | ✅ JOURNAL 2026-08-15, ROADMAP B1                                       |
-| `<100ms` summon, single-digit ms         | ✅ ROADMAP M2 — instrumented at 3.7 ms                                  |
-| 14 themes                                | ✅ `packages/tui/src/themes.ts`                                         |
-| v0.5 roadmap ✓/◐/○ states                | ✅ maps cleanly onto B0–B4 / P0–P1                                      |
-| `~90MB` resident while idle              | ❌ **wrong** — that's main-process RSS. Whole app idle ≈ 187 MB         |
-| `bar.modules`, clock = center anchor     | ❌ **stale** — DECISIONS 2026-08-16 replaced it with `bar.layout` zones |
-| 4 panel triggers (wifi/dns/usage/agents) | ❌ **stale** — the registry ships 7 (adds audio, clipboard, help)       |
+| `+19MB` marginal for the bar             | done JOURNAL 2026-08-15, ROADMAP B1                                     |
+| `<100ms` summon, single-digit ms         | done ROADMAP M2 — instrumented at 3.7 ms                                |
+| 14 themes                                | done `packages/tui/src/themes.ts`                                       |
+| v0.5 roadmap ✓/◐/○ states                | done maps cleanly onto B0–B4 / P0–P1                                    |
+| `~90MB` resident while idle              | no **wrong** — that's main-process RSS. Whole app idle ≈ 187 MB         |
+| `bar.modules`, clock = center anchor     | no **stale** — DECISIONS 2026-08-16 replaced it with `bar.layout` zones |
+| 4 panel triggers (wifi/dns/usage/agents) | no **stale** — the registry ships 7 (adds audio, clipboard, help)       |
 | "zero network" stated absolutely         | ⚠️ needs the opt-in carve-outs (favicon, usage limits, TRMNL module)    |
 
 `~90MB` becomes `~96MB` labelled _main-process RSS_; the bar section and the docs config

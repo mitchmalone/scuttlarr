@@ -1,30 +1,16 @@
 import {
   type AwakeStatus,
-  endsLabel,
-  formatSeconds,
-  holdLabel,
   needsWatching,
   parseSpec,
 } from '@scuttlarr/core/awake'
 import {
   Bar,
-  BarAgents,
-  BarAwakeCard,
-  BarAwakeCell,
-  BarBatteryCell,
-  BarClock,
-  BarFrontApp,
   type BarSnapshot,
-  BarWidgetCell,
-  BarWifiCell,
-  BarWorkspaces,
   type BatteryDetail,
   type WidgetAction,
   type WifiDetail,
-  formatBarClock,
 } from '@scuttlarr/tui'
 import '@scuttlarr/tui/bar.css'
-import { pluginIdOf } from '@scuttlarr/tui/plugins'
 // Kit controls inside plugin cards (BarCardControls) — every rule is scoped to `.tui`.
 import '@scuttlarr/tui/styles.css'
 import { invoke } from '@tauri-apps/api/core'
@@ -33,20 +19,12 @@ import { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { awakeWatchTick, freshAwakeMemory } from '../lib/awake'
-import {
-  type BarZones,
-  type Config,
-  DEFAULT_BAR_LAYOUT,
-  type WidgetHome,
-  isWidgetModuleId,
-  normalizeBarZones,
-  notchedZones,
-} from '../lib/config'
+import type { Config } from '../lib/config'
 import { applyTheme } from '../lib/themes'
 import { useMergedThemes } from '../lib/user-themes'
-import { PluginCellHost } from '../plugins/components'
 import './bar.css'
 import { useBarHover } from './hover'
+import { barZoneNodes } from './modules'
 
 const EMPTY_THEMES = { themes: {} }
 
@@ -56,8 +34,9 @@ const EMPTY_THEMES = { themes: {} }
  * Everything visual — the strip, cells, cards, CSS — lives in the kit, because
  * scuttlarr.com renders the same bar and the website may never hold a second
  * copy (AGENTS invariant 10). What stays here is everything the kit must not
- * know about: Rust snapshot delivery, `invoke` calls, `window.__notched`, and
- * config-driven zone resolution.
+ * know about: Rust snapshot delivery, `invoke` calls and `window.__notched`.
+ * Config-driven zone resolution and the module → cell mapping are in
+ * `modules.tsx`, which the workbench stories render too.
  */
 
 declare global {
@@ -106,20 +85,6 @@ function useBarConfig(): Config | null {
     }
   }, [])
   return cfg
-}
-
-/** This display's zones: the notched arrangement (explicit or derived) when
- * this bar sits under a notch, else the main layout — normalized, with the
- * live widget set (docs/WIDGETS.md) joining in their manifest zones. */
-function displayZones(
-  cfg: Config | null,
-  notched: boolean,
-  widgets: WidgetHome[],
-): BarZones {
-  const bar = cfg?.bar ?? { enabled: false, layout: DEFAULT_BAR_LAYOUT }
-  return notched
-    ? notchedZones(bar, widgets)
-    : normalizeBarZones(bar.layout, widgets)
 }
 
 /**
@@ -236,168 +201,39 @@ function BarWindow() {
     awakeWatchTick(awakeMem.current).catch(console.error)
   }, [snap])
 
-  // Widget clicks reuse the scripts action runner: open/copy/none.
-  const runWidgetAction = (action: WidgetAction) =>
-    invoke('script_action', { action }).catch(console.error)
-
-  const switchWorkspace = (ws: string) => {
-    // Optimistic: highlight now, aerospace catches up off the main thread.
-    patch((prev) => ({ ...prev, focused: ws }))
-    invoke('bar_switch_workspace', { ws }).catch(console.error)
-  }
-
-  // Each widget as a node; order and toggles come from config (Settings →
-  // Menubar), arranged into left/center/right zones.
-  const moduleNode = (id: string): React.ReactNode => {
-    if (!snap && id !== 'clock') return null
-    switch (id) {
-      case 'workspaces':
-        return (
-          <BarWorkspaces
-            key={id}
-            workspaces={snap!.workspaces}
-            focused={snap!.focused}
-            onSwitch={switchWorkspace}
-          />
-        )
-      case 'agents':
-        return (
-          <BarAgents
-            key={id}
-            agents={
-              cfg?.agents.showIdle === false
-                ? snap!.agents.filter((a) => a.state !== 'idle')
-                : snap!.agents
-            }
-            now={now}
-            hover={hover}
-            onJump={(session) =>
-              invoke('agent_jump', { session }).catch(console.error)
-            }
-          />
-        )
-      case 'frontApp':
-        return snap!.frontApp ? (
-          <BarFrontApp key={id} name={snap!.frontApp} />
-        ) : null
-      case 'wifi':
-        return (
-          <BarWifiCell
-            key={id}
-            online={snap!.wifi.online}
-            ssid={snap!.wifi.ssid}
-            rssi={snap!.wifi.rssi}
-            hover={hover}
-            detail={wifiDetail}
-            onClick={() =>
-              invoke('open_path', { target: 'wifi-settings' }).catch(
-                console.error,
-              )
-            }
-          />
-        )
-      case 'awake': {
-        const a = snap!.awake
-        const spec = a?.spec ? parseSpec(a.spec) : null
-        const remaining =
-          a?.untilEpochMs != null
-            ? `${formatSeconds(
-                Math.max(0, Math.round((a.untilEpochMs - Date.now()) / 1000)),
-              )} left`
-            : null
-        return (
-          <BarAwakeCell
-            key={id}
-            armed={a?.armed ?? false}
-            hover={hover}
-            onRelease={() => invoke('awake_release').catch(console.error)}
-            card={
-              <BarAwakeCard
-                armed={a?.armed ?? false}
-                holdLabel={
-                  spec
-                    ? holdLabel(spec.screen, spec.disks, spec.away ?? false)
-                    : null
-                }
-                endsLabel={
-                  spec ? endsLabel(spec.until, a?.untilEpochMs ?? null) : null
-                }
-                elapsed={a?.armed ? formatSeconds(a.elapsedSeconds) : null}
-                remaining={remaining}
-                others={awakeStatus?.others ?? []}
-                cardRef={hover.cardRef}
-              />
-            }
-          />
-        )
-      }
-      case 'battery':
-        return (
-          <BarBatteryCell
-            key={id}
-            pct={snap!.batteryPct}
-            onAc={snap!.onAc}
-            charging={snap!.charging}
-            chargeLimit={snap!.chargeLimit}
-            detail={batteryDetail}
-            hover={hover}
-            onClick={() =>
-              invoke('open_path', { target: 'battery-settings' }).catch(
-                console.error,
-              )
-            }
-          />
-        )
-      case 'clock':
-        return <BarClock key={id}>{formatBarClock(now)}</BarClock>
-      default: {
-        // A plugin's cell (docs/PLUGINS.md): its own component, or the
-        // generic widget cell over its state.
-        const pid = pluginIdOf(id)
-        if (pid) {
-          const p = snap!.plugins?.find((p) => p.id === pid)
-          return p?.enabled ? (
-            <PluginCellHost
-              key={id}
-              plugin={p}
-              now={now}
-              hover={hover}
-              settings={cfg?.widgets?.[pid] ?? {}}
-              onAction={runWidgetAction}
-            />
-          ) : null
-        }
-        if (!isWidgetModuleId(id)) return null
-        const w = snap!.widgets?.find((w) => `widget:${w.id}` === id)
-        return w ? (
-          <BarWidgetCell
-            key={id}
-            widget={w}
-            now={now}
-            hover={hover}
-            onAction={runWidgetAction}
-          />
-        ) : null
-      }
-    }
-  }
-
-  // Zones are explicit (Settings → Menubar board); a notched display renders
-  // no center zone — the camera housing owns it.
-  const homes: WidgetHome[] = [
-    ...(snap?.widgets ?? []).map((w) => ({ id: w.id, zone: w.zone })),
-    ...(snap?.plugins ?? [])
-      .filter((p) => p.enabled && p.kinds.includes('bar-widget'))
-      .map((p) => ({ id: p.id, zone: p.zone, kind: 'plugin' as const })),
-  ]
-  const zones = displayZones(cfg, notched, homes)
-  const render = (list: { id: string; enabled: boolean }[]) =>
-    list.filter((m) => m.enabled).map((m) => moduleNode(m.id))
   return (
     <Bar
-      left={render(zones.left)}
-      center={notched ? undefined : render(zones.center).filter(Boolean)}
-      right={render(zones.right)}
+      {...barZoneNodes({
+        snap,
+        now,
+        cfg,
+        notched,
+        hover,
+        batteryDetail,
+        wifiDetail,
+        awakeStatus,
+        actions: {
+          switchWorkspace: (ws) => {
+            // Optimistic: highlight now, aerospace catches up off the main thread.
+            patch((prev) => ({ ...prev, focused: ws }))
+            invoke('bar_switch_workspace', { ws }).catch(console.error)
+          },
+          jumpAgent: (session) =>
+            invoke('agent_jump', { session }).catch(console.error),
+          openWifiSettings: () =>
+            invoke('open_path', { target: 'wifi-settings' }).catch(
+              console.error,
+            ),
+          openBatterySettings: () =>
+            invoke('open_path', { target: 'battery-settings' }).catch(
+              console.error,
+            ),
+          releaseAwake: () => invoke('awake_release').catch(console.error),
+          // Widget clicks reuse the scripts action runner: open/copy/none.
+          runWidgetAction: (action: WidgetAction) =>
+            invoke('script_action', { action }).catch(console.error),
+        },
+      })}
     />
   )
 }

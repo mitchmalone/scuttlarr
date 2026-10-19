@@ -1643,3 +1643,17 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
   by detecting "old defaults" without a version marker (rejected: a fresh file and an
   old file both lack `desktop.tiling`, so a fresh install would be pinned to tiling on at
   its second launch).
+
+### 2026-10-19 · Invariant 3 is "a deliberate IPC surface", not "a handful"
+
+- **Decision.** Invariant 3 now reads: every Tauri command is thin, typed and recorded
+  here when added; the count is a liability to justify; a command that could be an
+  event, a snapshot field or a plugin `host.send` message should be that.
+- **Why.** `generate_handler!` registers **82** commands (counted 2026-10-19). "A handful"
+  stopped being true around v0.4, and an invariant the code openly breaks teaches that
+  invariants are optional. The new wording keeps the intent — every command is a future
+  plugin-API liability — and makes it checkable.
+- **Alternatives.** Cut the surface back to a handful (rejected for now: most commands
+  are panel actions with no event-shaped equivalent; worth an audit pass, not a rule
+  change). Drop the invariant (rejected: the pressure toward events and snapshots is the
+  point).

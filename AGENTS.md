@@ -94,8 +94,10 @@ it in `docs/DECISIONS.md`.
    someone about the user rather than to serve them. Credentials the app uses are the
    user's own (the CLIs' stores, the Keychain), read with consent where a provider's
    settings say so, never written or refreshed by scuttlarr.
-3. **Tiny IPC surface.** A handful of typed Tauri commands; every command is a future
-   plugin-API liability.
+3. **A deliberate IPC surface.** Every Tauri command is thin, typed, and recorded in
+   DECISIONS when added; the count is a liability to be justified, not a handful — a
+   command that could be an event, a field on an existing snapshot, or a plugin
+   `host.send` message should be that instead (82 registered, DECISIONS 2026-10-19).
 4. **Prefix dispatch is general.** `!` is mode dispatch via first-char lookup, not a special
    case — scripts join the same grammar.
 5. **The matcher stays pure.** Fuzzy matching/ranking are I/O-free functions in

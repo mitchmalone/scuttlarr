@@ -10,6 +10,7 @@ import {
   type LucideIcon,
   Palette,
   Puzzle,
+  Ship,
   Volume2,
   Wifi,
 } from 'lucide-react'
@@ -70,6 +71,12 @@ export const PANEL_INFO: PanelInfo[] = [
     aliases: ['themes', 'appearance', 'colors', 'colours'],
   },
   { id: 'help', title: 'Help', hint: 'commands & keys ▸' },
+  {
+    id: 'setup',
+    title: 'Setup',
+    hint: 'hotkey, bar, agents, theme, tiling ▸',
+    aliases: ['onboarding', 'welcome', 'first run', 'get started'],
+  },
 ]
 
 /** Lucide icon per panel — launcher rows and panel headers share it. */
@@ -85,6 +92,7 @@ export const PANEL_ICONS: Record<string, LucideIcon> = {
   plugins: Puzzle,
   aerospace: LayoutGrid,
   theme: Palette,
+  setup: Ship,
 }
 
 /** Panels gated by settings; anything unlisted is always on. */

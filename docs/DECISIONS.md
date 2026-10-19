@@ -1697,3 +1697,38 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
 - **Alternatives.** A two-tone chip strip in the nav (1b, too wide for mobile); a
   typeahead field (1c); keeping a light/dark switch beside the theme (rejected: the
   theme already decides it, and two controls for one look is confusing).
+
+### 2026-10-19 · First-launch setup replaces the first-run hint and "no onboarding wizard"
+
+- **Decision.** A fresh install opens the launcher panel on a short setup (`setup` panel
+  tenant, `apps/desktop/src/onboarding/`): welcome, hotkey, bar, agents, theme, tiling,
+  a recap, then one Enter applies. It writes exactly the keys Settings writes
+  (`lib/onboarding.ts` `applySetup`: `hotkey`, `bar.enabled`, `agents.monitor`,
+  `agents.usage` + `agents.claudeCreds` only when usage limits are ticked, `pickTheme`,
+  `appearance.everywhere` + `editors`, `desktop.tiling.enabled`) and nothing before that
+  Enter. Esc skips a step (keeps its starting answer); Esc on the welcome or recap screen
+  puts setup off. It stays in the panel (640 x 500, no window, no dialog: invariant 13)
+  and survives hide/show so the hotkey step can be tried for real. `setup ⏎` runs it
+  again from the current config.
+- **How first run reaches the webview.** `config.json` gains `setupPending`. Only a
+  freshly created file says true (`load_or_create_at`); `Config::default()` says false,
+  so a missing key (every upgrader) and a broken hand-edit's in-memory fallback never
+  open it. The webview clears it on apply or put-off. No new Tauri command (invariant 3):
+  the flag rides the config the webview already reads, and the hotkey try is
+  `panel-hidden` then `panel-shown`.
+- **Consent.** Every rung stays opt-in; setup is the place you opt in. Watching agents
+  registers the Claude hook (`hooks_install`, as Settings → Agents does), because boot
+  only mends it when the monitor was already on. The Keychain read is its own checkbox,
+  off by default, and macOS asks later, on the first usage scan, never during setup.
+  Tiling never installs AeroSpace; setup says so when it's missing.
+- **The real bar.** The bar and agents screens render `barZoneNodes` over the Bar
+  stories' sample data (moved to `bar/fixtures.ts`), not a drawing.
+- **Why.** First run was an empty prompt; every rung, the hotkey and agent tracking were
+  found by reading docs or digging through Settings. The design went through three
+  turns (Claude Design "scuttlarr first-launch setup"): settings-shaped screens read as
+  settings, not onboarding; one question per screen with the result shown above it did.
+- **Alternatives.** A separate onboarding window, as Raycast does (rejected: the ticket
+  keeps it in the panel, and a second window is weight). Detect first run with a new
+  event from `lib.rs` (rejected: the webview may not be listening yet at first show, and
+  a flag survives a quit mid-setup). Derive "fresh" from `defaultsVersion` (rejected:
+  after first launch a fresh install and a migrated upgrader both read 2).

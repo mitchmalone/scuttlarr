@@ -51,6 +51,7 @@ import { appearanceOf, applyThemeEverywhere } from './lib/theme'
 import { applyTheme } from './lib/themes'
 import { useAppearancePolicy } from './lib/use-appearance-policy'
 import { useMergedThemes } from './lib/user-themes'
+import { OnboardingPanelContainer } from './onboarding/OnboardingPanelContainer'
 import { AerospacePanelContainer } from './panels/AerospacePanelContainer'
 import { AgentsPanelContainer } from './panels/AgentsPanelContainer'
 import { AudioPanelContainer } from './panels/AudioPanelContainer'
@@ -78,6 +79,11 @@ const BORDER = 2
 const SCRIPT_DEBOUNCE_MS = 120
 /** Full-panel modes get a fixed tall window. */
 const PANEL_MODE_HEIGHT = 480
+/** First-launch setup: one question per screen, with room for the real bar. */
+const SETUP_HEIGHT = 500
+/** The setup tenant: rendered bare and kept across hide/show (its hotkey step
+ * hides the panel on purpose). */
+const SETUP_PANEL = 'setup'
 /** How long a "Copied …" confirmation row stays before the panel hides itself. */
 const TOAST_MS = 1100
 /** Rows' worth of height a `?` conversation gets: pinned question in the header,
@@ -98,6 +104,7 @@ const PANEL_COMPONENTS: Record<string, React.FC<{ onClose: () => void }>> = {
   help: HelpPanelContainer,
   plugins: PluginsPanelContainer,
   theme: ThemePanelContainer,
+  setup: OnboardingPanelContainer,
 }
 
 type PanelEntry = {
@@ -225,6 +232,12 @@ export default function App() {
     () => applyTheme(config.theme, themes, 'panel'),
     [config.theme, themes],
   )
+  // A fresh install owes the first-launch setup (config.rs `setupPending`): it opens
+  // in place of the empty prompt on the first summon, and stays owed until it's
+  // applied or put off.
+  useEffect(() => {
+    if (configLoaded && config.setupPending) setPanelMode(SETUP_PANEL)
+  }, [configLoaded, config.setupPending])
   // Which theme is active now (Focus, macOS light/dark, schedule) — resolves and
   // writes `config.theme`; the effects around here follow the change.
   useAppearancePolicy(config, configLoaded)
@@ -385,7 +398,7 @@ export default function App() {
         setScriptItems([])
         setDraft(null)
         setLoremMenu(false)
-        setPanelMode(null)
+        setPanelMode((mode) => (mode === SETUP_PANEL ? mode : null))
         setToast(null)
         setInputMode('launch')
         resetAsk()
@@ -586,9 +599,12 @@ export default function App() {
             ? 1
             : 0
   useEffect(() => {
-    const height = panelMode
-      ? PANEL_MODE_HEIGHT
-      : INPUT_HEIGHT + rowCount * ROW_HEIGHT + BORDER
+    const height =
+      panelMode === SETUP_PANEL
+        ? SETUP_HEIGHT
+        : panelMode
+          ? PANEL_MODE_HEIGHT
+          : INPUT_HEIGHT + rowCount * ROW_HEIGHT + BORDER
     invoke('resize_panel', { height }).catch(console.error)
   }, [rowCount, panelMode])
 
@@ -887,6 +903,14 @@ export default function App() {
     sigil: config.sigil,
     bangSigil: config.bangSigil,
   })
+
+  if (panelMode === SETUP_PANEL) {
+    return (
+      <div className="panel panel-mode onboarding-mode">
+        <OnboardingPanelContainer onClose={closePanel} />
+      </div>
+    )
+  }
 
   if (panelMode) {
     return (

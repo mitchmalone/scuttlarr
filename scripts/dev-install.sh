@@ -15,7 +15,10 @@ BUILT="$ROOT/apps/desktop/src-tauri/target/release/bundle/macos/scuttlarr.app"
 DEST="/Applications/scuttlarr.app"
 
 if [[ "${1:-}" == "--build" ]]; then
-  (cd "$ROOT" && pnpm --filter @scuttlarr/desktop tauri build)
+  # The .app only: the dmg step drives Finder (a window pops; without the
+  # Automation grant it hangs 120 s, then fails), and only release.sh wants a
+  # dmg — brew installs the zip (JOURNAL 2026-08-19, 2026-10-20).
+  (cd "$ROOT" && pnpm --filter @scuttlarr/desktop tauri build --bundles app)
 fi
 [[ -d "$BUILT" ]] || { echo "no build at $BUILT — run with --build" >&2; exit 1; }
 

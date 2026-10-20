@@ -3,7 +3,7 @@
 > The cursor: where we are, what needs hands, what's next. A snapshot, not a history —
 > history lives in git, `plans/done/`, `releases/` and `JOURNAL.md`.
 >
-> Last updated: 2026-10-20 (site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded)
+> Last updated: 2026-10-20 (site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded; dmg step cause found)
 
 ## Where we are
 
@@ -40,8 +40,7 @@
   (JOURNAL 2026-10-19; confirmed by the `it.fails` test in `lib/theme.test.ts`: a file
   with no `appearance` key reaches the webview with one, so a fresh install in light mode
   switches to `solarized-light`); hotkeys bound to built-in `scuttlarr — …` rows do
-  nothing (empty `path`; link `browser` also ignored on that path); the `tauri build`
-  DMG step.
+  nothing (empty `path`; link `browser` also ignored on that path).
 - **apps/www demo retypes the launcher prompt** (invariant 10): the launcher view is now
   in `packages/tui`; switch the demo to import it.
 - **Cleanup review steps 3–5**: memory target, shared helpers + god-file splits, where
@@ -73,8 +72,9 @@ First-launch setup:
 Releases and update path:
 
 - Self-update live proof at the next signed release (`updates ⏎` offers it, `↵` installs).
-- `tauri build`'s DMG step failed locally ("create-dmg: Not enough arguments"); dev
-  installs use `--bundles app`. Next ticket; must be fixed before the next release.
+- The dmg step needs the building terminal allowed to control Finder (JOURNAL
+  2026-10-20); `release.sh` now checks it in preflight, and `dev-install.sh --build`
+  builds the .app only.
 - `apps/www` install copy says the bar is off by default (and mentions a hint line):
   update it with the release that ships the defaults flip.
 

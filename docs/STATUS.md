@@ -3,7 +3,7 @@
 > The cursor: where we are, what needs hands, what's next. A snapshot, not a history —
 > history lives in git, `plans/done/`, `releases/` and `JOURNAL.md`.
 >
-> Last updated: 2026-10-20 (site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded)
+> Last updated: 2026-10-20 (setup follows the theme; site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded)
 
 ## Where we are
 
@@ -24,7 +24,10 @@
   themes, light/dark switch and next-themes gone; hands-checked).
 - **First-launch setup** (`plans/done/2026-10-19-first-launch-setup.md`, DECISIONS
   2026-10-19): a fresh install opens the panel on a one-question-per-screen setup over
-  the pixel field; `setup ⏎` runs it again. Hands-check pending (below).
+  the pixel field; `setup ⏎` runs it again. Hands-check pending (below). Setup follows
+  the theme (`plans/done/2026-10-20-setup-theme-sync.md`, DECISIONS 2026-10-20): field
+  and panel stay one theme when it changes mid-setup, and apply never writes back a theme
+  you didn't pick; hands-checked on a branch, not merged.
 - **Workbench story titles are stable** (an external screenshot script keys on them):
   rename a story only with Mitch.
 - **Active plans:** `lights-plugin.md` (waiting on Mitch's Home.app shortcuts),
@@ -36,7 +39,8 @@
 
 ## Needs Mitch (decisions)
 
-- **Next tickets (decided, not started):** the theme policy gate never holds
+- **Next tickets (decided, not started):** a launch toast (resumed awake hold) wipes
+  the owed setup on first summon (JOURNAL 2026-10-20); the theme policy gate never holds
   (JOURNAL 2026-10-19; confirmed by the `it.fails` test in `lib/theme.test.ts`: a file
   with no `appearance` key reaches the webview with one, so a fresh install in light mode
   switches to `solarized-light`); hotkeys bound to built-in `scuttlarr — …` rows do

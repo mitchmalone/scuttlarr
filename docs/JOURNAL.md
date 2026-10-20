@@ -1013,3 +1013,13 @@ install in macOS light mode should resolve to the default pair's `solarized-ligh
 Found by reading the code during the docs-truth pass, not reproduced. Lesson: a "key is
 absent" gate across IPC needs the Rust side to model absence (`Option` +
 `skip_serializing_if`), or it is a gate in name only.
+
+### 2026-10-20 · A launch toast wipes the owed setup
+
+Hands-checking the setup theme fix with a fresh `config.json`: `setupPending` was true
+but the first summon showed the plain prompt. The resumed awake hold flashes a launch
+toast (`lib.rs` `power::resume_toast` → `panel::flash` → `toast`), and App's `toast`
+handler does `setPanelMode(null)`, clearing the setup mode the config had just set. Only
+hits a machine with a hold to resume, so not a true fresh install, but any launch toast
+would do it. Fix: the `toast` handler should keep `SETUP_PANEL`, as `panel-shown` does.
+Not fixed in that branch (out of scope).

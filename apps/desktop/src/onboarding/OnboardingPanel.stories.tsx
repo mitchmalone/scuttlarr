@@ -21,6 +21,7 @@ const CHOICES: SetupChoices = {
   theme: 'scuttlarr',
   match: true,
   tiling: false,
+  themePicked: false,
 }
 
 /** The panel window at setup size, as App renders it. */

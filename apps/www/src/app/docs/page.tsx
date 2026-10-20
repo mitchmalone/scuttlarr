@@ -72,7 +72,7 @@ const CONFIG_JSON = `{
   },
   "agents": { "askMode": false, "askProvider": "claude" },
   "desktop": {
-    "tiling":  { "enabled": true, "managed": true, "modifier": "alt", "gaps": 8,
+    "tiling":  { "enabled": false, "managed": true, "modifier": "alt", "gaps": 8,
                  "workspaces": 6, "float": ["com.raycast.macos"] },
     "borders": { "enabled": false, "width": 5, "style": "round" },
     "cornerRadius": null
@@ -174,8 +174,9 @@ export default function Docs() {
             into the head of the right zone.
           </p>
           <p className={`m-0 mt-5 max-w-[70ch] ${PROSE}`}>
-            <code className={CODE}>desktop</code> is the tiling layer: scuttlarr
-            renders{' '}
+            <code className={CODE}>desktop</code> is the tiling layer, off by
+            default. Turn on <code className={CODE}>tiling.enabled</code> (or
+            pick tiling in setup) and scuttlarr renders{' '}
             <code className={CODE}>~/.config/aerospace/aerospace.toml</code>{' '}
             from these few knobs and reloads AeroSpace live. Set{' '}
             <code className={CODE}>tiling.managed</code> to{' '}

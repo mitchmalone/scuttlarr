@@ -3,7 +3,7 @@
 > The cursor: where we are, what needs hands, what's next. A snapshot, not a history —
 > history lives in git, `plans/done/`, `releases/` and `JOURNAL.md`.
 >
-> Last updated: 2026-10-20 (setup follows the theme; site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded; dmg step cause found)
+> Last updated: 2026-10-20 (site copy matches the v0.8.0 defaults and first-launch setup; setup follows the theme; dmg step cause found; site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded)
 
 ## Where we are
 
@@ -79,8 +79,6 @@ Releases and update path:
 - The dmg step needs the building terminal allowed to control Finder (JOURNAL
   2026-10-20); `release.sh` now checks it in preflight, and `dev-install.sh --build`
   builds the .app only.
-- `apps/www` install copy says the bar is off by default (and mentions a hint line):
-  update it with the release that ships the defaults flip.
 
 Theme:
 

@@ -6,6 +6,27 @@
 
 ---
 
+### 2026-10-20 · The dmg step dies when nobody answers the Finder Automation prompt
+
+`tauri build` failed at `bundle_dmg.sh` (dev-install `--build` from an agent shell on the
+Mac Mini) and left a 45 MB `bundle/macos/rw.<pid>.*.dmg`. Tauri hides the script's output
+unless run with `--verbose`; tccd's log has the cause: "Prompting for access to indirect
+object Finder.app by node". create-dmg lays out the window by driving Finder over
+AppleScript; with nobody at the screen the AppleEvent timed out after 120 s (the rw
+image's mtimes are exactly 2 min apart), the script took its "Failed running AppleScript"
+path, detached and exited 64 without deleting the scratch image. Not a code bug: with the
+grant in place (`osascript -e 'tell application "Finder" to get name'` returns at once)
+a clean build makes both bundles. The "create-dmg: Not enough arguments" first reported
+(2026-09-30) did not reproduce: the script prints it only with fewer than two positional
+arguments, and tauri always passes the dmg name and the .app, so it most likely came from
+running `bundle_dmg.sh` by hand to see the hidden output. Fixes: `release.sh` preflight asks Finder up front (prompt
+while a human watches, or die naming the setting) and clears stale `rw.*.dmg`;
+`dev-install.sh --build` builds `--bundles app`. The responsible process is the parent
+terminal or agent binary, so a new one (a node upgrade under mise changes the path)
+prompts again. Aside, for the Gatekeeper ticket: the same log shows the dev build's own
+AppleEvents refused, "hardened runtime … requires entitlement
+com.apple.security.automation.apple-events but it is missing".
+
 ### 2026-09-16 · A first `tell application` blocks inside tccd until the consent dialog is answered — bound every osascript
 
 The first live theme switch with `appearance.ghostty` on wrote the state dir, retinted

@@ -25,7 +25,8 @@ scripts/release.sh 0.4.0          # or --unsigned while the cert is pending
 
 1. **Preflight** — tools present; repo clean and on `main`; `gh` authed; repo public; tag
    free locally **and** on origin; notes file exists with real perf numbers; Developer ID +
-   notary profile in the keychain (unless `--unsigned`).
+   notary profile in the keychain (unless `--unsigned`); the terminal may control Finder
+   (the dmg layout drives it over AppleScript; JOURNAL 2026-10-20).
 2. **Gates** — `pnpm verify` (typecheck, lint, format, Vitest, `cargo test`, clippy
    `-D warnings`).
 3. **Bump** — version into `apps/desktop/{package.json,src-tauri/tauri.conf.json,src-tauri/Cargo.toml}`

@@ -81,6 +81,12 @@ if [[ "$SIGNED" == 1 ]]; then
   xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" >/dev/null 2>&1 \
     || die "notary profile '$NOTARY_PROFILE' not stored (xcrun notarytool store-credentials $NOTARY_PROFILE)"
 fi
+# The dmg step lays out its window by driving Finder over AppleScript. Without the
+# Automation grant macOS prompts once; unanswered, the AppleEvent times out after
+# 120 s and bundle_dmg.sh dies mid-build (JOURNAL 2026-10-20). Ask here, where a
+# human is watching: this passes, raises the prompt now, or names the fix.
+osascript -e 'tell application "Finder" to get name' >/dev/null 2>&1 \
+  || die "this terminal may not control Finder, which the dmg layout needs: System Settings → Privacy & Security → Automation"
 
 step "2/8 gates"
 cd "$ROOT"
@@ -121,6 +127,8 @@ if [[ "$SIGNED" == 1 ]]; then
 else
   unset APPLE_SIGNING_IDENTITY 2>/dev/null || true
 fi
+# A dmg run that died leaves its scratch image (rw.<pid>.*.dmg) behind.
+rm -f "$DESKTOP"/src-tauri/target/release/bundle/macos/rw.*.dmg
 pnpm --filter @scuttlarr/desktop tauri build
 APP_BUNDLE="$DESKTOP/src-tauri/target/release/bundle/macos/scuttlarr.app"
 DMG_SRC=$(find "$DESKTOP"/src-tauri/target/release/bundle/dmg -maxdepth 1 -name "*.dmg" | head -1)

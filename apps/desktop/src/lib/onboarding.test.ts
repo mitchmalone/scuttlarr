@@ -5,6 +5,8 @@ import {
   type SetupChoices,
   applySetup,
   choicesFrom,
+  chooseSetup,
+  followConfig,
   recapLines,
   recommendedChoices,
   skipStep,
@@ -62,6 +64,7 @@ describe('choicesFrom', () => {
       theme: 'dracula',
       match: true,
       tiling: true,
+      themePicked: false,
     })
   })
 
@@ -110,6 +113,49 @@ describe('steps', () => {
     })
     expect(skipStep('bar', picked, base).bar).toBe(true)
     expect(skipStep('welcome', picked, base)).toEqual(picked)
+  })
+})
+
+describe('theme tracking', () => {
+  it('an unpicked theme follows the config while setup is open', () => {
+    const open = choices({ bar: false })
+    const next = followConfig(open, cfg({ theme: 'solarized-light' }))
+    expect(next).toEqual({ ...open, theme: 'solarized-light' })
+  })
+
+  it('follows back from light to dark too', () => {
+    const light = choices({ theme: 'solarized-light' })
+    expect(followConfig(light, cfg({ theme: 'scuttlarr' })).theme).toBe(
+      'scuttlarr',
+    )
+  })
+
+  it('keeps the same object when the config theme did not move', () => {
+    const open = choices()
+    expect(followConfig(open, cfg())).toBe(open)
+  })
+
+  it('a theme picked on the theme screen wins over a config change', () => {
+    const picked = chooseSetup(choices(), { theme: 'nord' })
+    expect(picked.themePicked).toBe(true)
+    expect(followConfig(picked, cfg({ theme: 'solarized-light' })).theme).toBe(
+      'nord',
+    )
+  })
+
+  it('only a theme pick counts as picking a theme', () => {
+    const c = chooseSetup(choices(), { match: false, bar: false })
+    expect(c).toMatchObject({ match: false, bar: false, themePicked: false })
+  })
+
+  it('esc on the theme screen drops the pick and follows the config again', () => {
+    const base = followConfig(choicesFrom(cfg()), cfg({ theme: 'dracula' }))
+    const picked = chooseSetup(choices(), { theme: 'nord' })
+    const skipped = skipStep('theme', picked, base)
+    expect(skipped).toMatchObject({ theme: 'dracula', themePicked: false })
+    expect(followConfig(skipped, cfg({ theme: 'gruvbox' })).theme).toBe(
+      'gruvbox',
+    )
   })
 })
 
@@ -166,12 +212,33 @@ describe('applySetup', () => {
       theme,
       appearance: { pair: { light: theme, dark: theme } } as never,
     }))
-    const next = applySetup(cfg(), choices({ theme: 'nord' }), pick)
+    const next = applySetup(
+      cfg(),
+      chooseSetup(choices(), { theme: 'nord' }),
+      pick,
+    )
     expect(pick).toHaveBeenCalledWith(expect.anything(), 'nord')
     expect(next.theme).toBe('nord')
     expect(next.appearance).toMatchObject({
       pair: { light: 'nord', dark: 'nord' },
     })
+  })
+
+  it('never writes back a theme setup opened on when the config moved since', () => {
+    const fresh = cfg({ theme: 'solarized-light' })
+    const next = applySetup(fresh, choices({ theme: 'scuttlarr' }), noPick)
+    expect(next.theme).toBe('solarized-light')
+  })
+
+  it('a picked theme wins over a config change made during setup', () => {
+    const pick = vi.fn((_c: Config, theme: string) => ({
+      theme,
+      appearance: {} as never,
+    }))
+    const picked = chooseSetup(choices(), { theme: 'scuttlarr' })
+    const next = applySetup(cfg({ theme: 'solarized-light' }), picked, pick)
+    expect(pick).toHaveBeenCalledWith(expect.anything(), 'scuttlarr')
+    expect(next.theme).toBe('scuttlarr')
   })
 
   it('matching the theme turns the rung and editors on, and off again', () => {

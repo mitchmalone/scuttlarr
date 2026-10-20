@@ -1732,3 +1732,22 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
   event from `lib.rs` (rejected: the webview may not be listening yet at first show, and
   a flag survives a quit mid-setup). Derive "fresh" from `defaultsVersion` (rejected:
   after first launch a fresh install and a migrated upgrader both read 2).
+
+### 2026-10-20 · Setup owns the panel theme while it is open; an unpicked theme follows config
+
+- **Decision.** While the `setup` tenant is open, App does not apply `config.theme` to
+  the panel; setup does, from `choices.theme`, which also colours the pixel field. Until
+  a theme is picked on the theme screen (`SetupChoices.themePicked`, set by
+  `chooseSetup`, cleared by Esc on that screen), `choices.theme` follows every
+  `config-changed` (`followConfig`), so a macOS appearance flip, a Focus, Settings or a
+  hand edit moves the field and the panel together. `applySetup` writes the theme only
+  when it was picked; otherwise the config's current theme stands and `pickTheme` never
+  runs. When setup closes, App takes the panel theme back.
+- **Why.** The field read the theme once on open while App re-applied the config theme
+  on every change, so the two split (cream plates on a navy field), and apply wrote the
+  stale opening theme over the policy's choice. A fresh install on a light-mode Mac hit
+  both unprompted. One owner per surface beats re-applying after App: React runs child
+  effects before the parent's, so "the preview re-applies after App" can't be ordered.
+- **Alternatives.** Pass App's config into the tenant as a prop (rejected: tenants take
+  only `onClose`, and setup already reads config itself); snapshot the theme and ignore
+  changes until apply (rejected: the field and panel would still disagree mid-setup).

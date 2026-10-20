@@ -13,6 +13,8 @@ import {
   type SetupStep,
   applySetup,
   choicesFrom,
+  chooseSetup,
+  followConfig,
   recommendedChoices,
   skipStep,
   stepAfter,
@@ -30,7 +32,8 @@ const EMPTY_THEMES = { themes: {} }
 const message = (e: unknown) => (e instanceof Error ? e.message : String(e))
 
 /**
- * Setup's I/O: one read of config on open, the theme preview while you browse,
+ * Setup's I/O: one read of config on open (then its changes, which an unpicked
+ * theme follows), the theme preview while you browse,
  * the hotkey try (hide, then back), and the single write on the last Enter.
  * Putting setup off (esc on welcome or ready) only clears `setupPending`.
  */
@@ -61,6 +64,21 @@ export function OnboardingPanelContainer({ onClose }: { onClose: () => void }) {
       .catch(console.error)
   }, [])
 
+  // The theme can change under setup (macOS appearance, a Focus, Settings, a hand
+  // edit). Setup owns the panel theme while open (App stands back), so an unpicked
+  // theme follows here, and the field and the panel move together.
+  useEffect(() => {
+    const off = listen<Config>('config-changed', (e) => {
+      const c = e.payload
+      setConfig(c)
+      setBase((b) => b && followConfig(b, c))
+      setChoices((ch) => ch && followConfig(ch, c))
+    })
+    return () => {
+      off.then((un) => un()).catch(console.error)
+    }
+  }, [])
+
   // Keys land on the panel, not the (unmounted) prompt.
   useEffect(() => {
     if (choices) root.current?.focus()
@@ -85,7 +103,8 @@ export function OnboardingPanelContainer({ onClose }: { onClose: () => void }) {
     return () => off.forEach((p) => p.then((un) => un()).catch(console.error))
   }, [])
 
-  // Live preview: the panel wears the theme you're on; leaving puts back what applies.
+  // Live preview: the panel wears the theme you're on (the field's theme too);
+  // leaving puts back what applies.
   const applied = useRef(false)
   const previewing = choices?.theme
   useEffect(() => {
@@ -177,7 +196,7 @@ export function OnboardingPanelContainer({ onClose }: { onClose: () => void }) {
           setStep(stepAfter(step))
         }
       }}
-      onChoose={(patch) => setChoices({ ...choices, ...patch })}
+      onChoose={(patch) => setChoices(chooseSetup(choices, patch))}
       onTryHotkey={() => {
         invoke('hide_panel').catch(console.error)
       }}

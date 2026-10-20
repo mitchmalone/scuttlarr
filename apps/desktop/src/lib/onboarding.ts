@@ -36,6 +36,8 @@ export type SetupChoices = {
   /** The theme rung: Ghostty, tmux and editors follow the theme. */
   match: boolean
   tiling: boolean
+  /** A theme was picked on the theme screen; until then the theme follows config. */
+  themePicked: boolean
 }
 
 /** `pickTheme` from appearance-ui, injected so this module stays pure. */
@@ -53,7 +55,29 @@ export function choicesFrom(config: Config): SetupChoices {
     theme: config.theme,
     match: appearanceOf(config).everywhere,
     tiling: normalizeDesktop(config.desktop).tiling.enabled,
+    themePicked: false,
   }
+}
+
+/** An answer on a screen; choosing a theme name is what makes it a pick. */
+export function chooseSetup(
+  choices: SetupChoices,
+  patch: Partial<SetupChoices>,
+): SetupChoices {
+  const next = { ...choices, ...patch }
+  return patch.theme === undefined ? next : { ...next, themePicked: true }
+}
+
+/**
+ * The theme changed while setup was open (macOS appearance, a Focus, Settings, a
+ * hand edit): an unpicked theme follows it, so the field and the panel stay one.
+ */
+export function followConfig(
+  choices: SetupChoices,
+  config: Config,
+): SetupChoices {
+  if (choices.themePicked || choices.theme === config.theme) return choices
+  return { ...choices, theme: config.theme }
 }
 
 /** A fresh install starts on the suggested answers; a re-run starts where you are. */
@@ -78,7 +102,7 @@ const STEP_FIELDS: Partial<Record<SetupStep, (keyof SetupChoices)[]>> = {
   hotkey: ['hotkey'],
   bar: ['bar'],
   agents: ['agents', 'limits'],
-  theme: ['theme', 'match'],
+  theme: ['theme', 'match', 'themePicked'],
   tiling: ['tiling'],
 }
 
@@ -95,7 +119,11 @@ export function skipStep(
   return next
 }
 
-/** The config the final Enter writes. */
+/**
+ * The config the final Enter writes. The theme is written only when it was picked
+ * here; otherwise whatever the config says now stands (setup never writes back the
+ * theme it opened on over a change it didn't make).
+ */
 export function applySetup(
   config: Config,
   choices: SetupChoices,
@@ -103,7 +131,7 @@ export function applySetup(
 ): Config {
   const limits = choices.agents && choices.limits
   const picked =
-    choices.theme === config.theme
+    !choices.themePicked || choices.theme === config.theme
       ? config
       : { ...config, ...pick(config, choices.theme) }
   const desktop = normalizeDesktop(config.desktop)

@@ -228,10 +228,12 @@ export default function App() {
   }, [toast])
   // User `colors.toml` themes (lib/user-themes.ts) join config's token overrides.
   const themes = useMergedThemes(config)
-  useEffect(
-    () => applyTheme(config.theme, themes, 'panel'),
-    [config.theme, themes],
-  )
+  // While setup is open it owns the panel theme (its preview follows config until
+  // a theme is picked), so a config change here can't stomp the preview.
+  const setupOpen = panelMode === SETUP_PANEL
+  useEffect(() => {
+    if (!setupOpen) applyTheme(config.theme, themes, 'panel')
+  }, [config.theme, themes, setupOpen])
   // A fresh install owes the first-launch setup (config.rs `setupPending`): it opens
   // in place of the empty prompt on the first summon, and stays owed until it's
   // applied or put off.

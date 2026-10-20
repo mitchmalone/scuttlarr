@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { type Config, DEFAULT_AGENTS_CONFIG } from './config'
 import {
+  SETUP_PANEL,
   type SetupChoices,
   applySetup,
   choicesFrom,
@@ -12,6 +13,8 @@ import {
   skipStep,
   stepAfter,
   stepBefore,
+  summonedMode,
+  toastedMode,
 } from './onboarding'
 
 const cfg = (over: Partial<Config> = {}): Config =>
@@ -298,5 +301,34 @@ describe('recapLines', () => {
       'scuttlarr, in scuttlarr only',
       'Tiling with AeroSpace',
     ])
+  })
+})
+
+describe('owed setup survives panel resets', () => {
+  it('a summon keeps setup and clears any other panel', () => {
+    expect(summonedMode(SETUP_PANEL)).toBe(SETUP_PANEL)
+    expect(summonedMode('wifi')).toBeNull()
+    expect(summonedMode(null)).toBeNull()
+  })
+
+  // A hold resumed at launch flashes a toast before the first summon; it
+  // used to clear the mode and lose the owed setup (fresh install opened on
+  // an empty prompt).
+  it('a toast keeps setup and drops the toast row under it', () => {
+    expect(toastedMode(SETUP_PANEL, 'awake resumed')).toEqual({
+      panelMode: SETUP_PANEL,
+      toast: null,
+    })
+  })
+
+  it('a toast replaces any other panel', () => {
+    expect(toastedMode('wifi', 'Copied')).toEqual({
+      panelMode: null,
+      toast: 'Copied',
+    })
+    expect(toastedMode(null, 'Copied')).toEqual({
+      panelMode: null,
+      toast: 'Copied',
+    })
   })
 })

@@ -3,7 +3,7 @@
 > The cursor: where we are, what needs hands, what's next. A snapshot, not a history —
 > history lives in git, `plans/done/`, `releases/` and `JOURNAL.md`.
 >
-> Last updated: 2026-10-20 (site copy matches the v0.8.0 defaults and first-launch setup; setup follows the theme; dmg step cause found; site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded)
+> Last updated: 2026-10-20 (setup survives a launch toast; site copy matches the v0.8.0 defaults and first-launch setup; setup follows the theme; dmg step cause found; site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded)
 
 ## Where we are
 
@@ -27,7 +27,9 @@
   the pixel field; `setup ⏎` runs it again. Hands-check pending (below). Setup follows
   the theme (`plans/done/2026-10-20-setup-theme-sync.md`, DECISIONS 2026-10-20): field
   and panel stay one theme when it changes mid-setup, and apply never writes back a theme
-  you didn't pick; hands-checked on a branch, not merged.
+  you didn't pick; hands-checked. A toast at launch (a resumed awake hold) no longer
+  wipes the owed setup (`plans/done/2026-10-20-setup-launch-toast.md`; hands-check
+  pending).
 - **Workbench story titles are stable** (an external screenshot script keys on them):
   rename a story only with Mitch.
 - **Active plans:** `lights-plugin.md` (waiting on Mitch's Home.app shortcuts),
@@ -72,6 +74,8 @@ First-launch setup:
   starts from the current config; the hotkey try (press it to hide, again to return);
   Esc on the theme screen puts the old theme back; the field stops while the panel is
   hidden (Activity Monitor CPU at idle).
+- With an awake hold armed, five fresh-config launches each open setup on the first
+  summon (`plans/done/2026-10-20-setup-launch-toast.md`).
 
 Releases and update path:
 

@@ -6,6 +6,15 @@
 
 ---
 
+### 2026-10-20 · A launch toast wiped the owed first-launch setup
+
+Fresh install, setup never opened: a kept awake hold resumes at launch and `panel::flash`
+emits `toast` 1.5 s in; App.tsx's `toast` listener reset `panelMode` to `null`, erasing
+the `setup` mode the `setupPending` effect had set. `panel-shown` already spared setup;
+`toast` didn't. Both now go through `summonedMode`/`toastedMode` (`lib/onboarding.ts`),
+and under setup the toast is dropped rather than shown, since its timer hides the panel.
+Any listener that resets `panelMode` has to spare `setup`.
+
 ### 2026-10-20 · The dmg step dies when nobody answers the Finder Automation prompt
 
 `tauri build` failed at `bundle_dmg.sh` (dev-install `--build` from an agent shell on the

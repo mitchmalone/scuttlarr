@@ -46,6 +46,7 @@ import {
   DEFAULT_BAR_LAYOUT,
 } from './lib/config'
 import { applyDesktop } from './lib/desktop'
+import { SETUP_PANEL, summonedMode, toastedMode } from './lib/onboarding'
 import { markInput, reportResultsPainted } from './lib/perf'
 import { appearanceOf, applyThemeEverywhere } from './lib/theme'
 import { applyTheme } from './lib/themes'
@@ -81,9 +82,6 @@ const SCRIPT_DEBOUNCE_MS = 120
 const PANEL_MODE_HEIGHT = 480
 /** First-launch setup: one question per screen, with room for the real bar. */
 const SETUP_HEIGHT = 500
-/** The setup tenant: rendered bare and kept across hide/show (its hotkey step
- * hides the panel on purpose). */
-const SETUP_PANEL = 'setup'
 /** How long a "Copied …" confirmation row stays before the panel hides itself. */
 const TOAST_MS = 1100
 /** Rows' worth of height a `?` conversation gets: pinned question in the header,
@@ -191,6 +189,11 @@ export default function App() {
   // and must never drive the desktop layer (it would write a toml for a bar-less setup).
   const [configLoaded, setConfigLoaded] = useState(false)
   const [panelMode, setPanelMode] = useState<string | null>(null)
+  // The mount-time event listeners read the live mode through this.
+  const panelModeRef = useRef(panelMode)
+  useEffect(() => {
+    panelModeRef.current = panelMode
+  }, [panelMode])
   // Plugin panels (docs/PLUGINS.md) join the static tenants at run time —
   // `usage ⏎` is one. Each renders through PluginPanelHost over live state.
   const plugins = usePlugins()
@@ -400,7 +403,7 @@ export default function App() {
         setScriptItems([])
         setDraft(null)
         setLoremMenu(false)
-        setPanelMode((mode) => (mode === SETUP_PANEL ? mode : null))
+        setPanelMode(summonedMode)
         setToast(null)
         setInputMode('launch')
         resetAsk()
@@ -415,9 +418,10 @@ export default function App() {
         setSelected(0)
         setDraft(null)
         setLoremMenu(false)
-        setPanelMode(null)
+        const next = toastedMode(panelModeRef.current, e.payload)
+        setPanelMode(next.panelMode)
         setInputMode('launch')
-        setToast(e.payload)
+        setToast(next.toast)
       }),
       // The bar's click-through into a panel (open_panel): the prompt was
       // just reset by panel-shown; enter the tenant as its trigger would.

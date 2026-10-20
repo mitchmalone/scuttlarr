@@ -11,6 +11,35 @@ import { appearanceOf } from './theme'
  * tested; SetupPanelContainer owns the I/O.
  */
 
+/**
+ * The panel mode the setup screen runs under (App.tsx `panelMode`): rendered bare
+ * and kept across hide/show (its hotkey step hides the panel on purpose).
+ */
+export const SETUP_PANEL = 'setup'
+
+/**
+ * The mode a summon (`panel-shown`) leaves: owed setup stays, anything else
+ * goes back to the empty prompt.
+ */
+export function summonedMode(mode: string | null): string | null {
+  return mode === SETUP_PANEL ? mode : null
+}
+
+/**
+ * A `toast` (Rust's `panel::flash`) over the current mode. Setup is kept and
+ * the toast dropped: setup's screen has no toast row, and the toast's
+ * auto-hide would pull the panel out from under it. A resumed awake hold at
+ * launch is the case that used to lose a fresh install's setup.
+ */
+export function toastedMode(
+  mode: string | null,
+  text: string,
+): { panelMode: string | null; toast: string | null } {
+  return mode === SETUP_PANEL
+    ? { panelMode: mode, toast: null }
+    : { panelMode: null, toast: text }
+}
+
 export const SETUP_STEPS = [
   'welcome',
   'hotkey',

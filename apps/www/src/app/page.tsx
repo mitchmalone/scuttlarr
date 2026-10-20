@@ -202,9 +202,10 @@ const FEATURES = [
     body: (
       <>
         Tiling via AeroSpace with a config scuttlarr writes for you — a
-        modifier, gaps, workspaces, done. Opt-in JankyBorders in your
-        theme&rsquo;s accent, and the pre-Tahoe window corners back if you want
-        them. Flip <em>manage</em> off and the toml is yours.
+        modifier, gaps, workspaces, done. Off until you turn it on, in setup or
+        Settings → Desktop. Opt-in JankyBorders in your theme&rsquo;s accent,
+        and the pre-Tahoe window corners back if you want them. Flip{' '}
+        <em>manage</em> off and the toml is yours.
       </>
     ),
   },
@@ -607,13 +608,15 @@ export default function Home() {
         </div>
         <InstallTabs />
         <p className="mt-[18px] max-w-[74ch] font-sans text-sm leading-[1.7] text-(--muted) text-pretty">
-          First run: the panel appears once with the hint line, a default config
-          is written to{' '}
+          First run: the panel opens on a short setup, one question per screen
+          (hotkey, bar, agents, theme, tiling). One Enter applies it, Esc puts
+          it off, and <code className={MONO_CODE}>setup ⏎</code> runs it again.
+          A default config is written to{' '}
           <code className={MONO_CODE}>~/.config/scuttlarr/config.json</code>,
           and scuttlarr registers as a login item (toggleable in settings). The
-          bar is off by default — flip{' '}
-          <code className={MONO_CODE}>bar.enabled</code> when you&rsquo;re ready
-          to retire your menubar.
+          bar and the launcher are on by default; tiling and the Theme and
+          Machine rungs stay off until you turn them on. Upgrading keeps the
+          settings you had.
         </p>
       </section>
 

@@ -3,7 +3,7 @@
 > The cursor: where we are, what needs hands, what's next. A snapshot, not a history —
 > history lives in git, `plans/done/`, `releases/` and `JOURNAL.md`.
 >
-> Last updated: 2026-10-20 (site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded)
+> Last updated: 2026-10-20 (site copy matches the v0.8.0 defaults and first-launch setup; site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded)
 
 ## Where we are
 
@@ -75,8 +75,6 @@ Releases and update path:
 - Self-update live proof at the next signed release (`updates ⏎` offers it, `↵` installs).
 - `tauri build`'s DMG step failed locally ("create-dmg: Not enough arguments"); dev
   installs use `--bundles app`. Next ticket; must be fixed before the next release.
-- `apps/www` install copy says the bar is off by default (and mentions a hint line):
-  update it with the release that ships the defaults flip.
 
 Theme:
 

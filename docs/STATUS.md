@@ -3,13 +3,16 @@
 > The cursor: where we are, what needs hands, what's next. A snapshot, not a history —
 > history lives in git, `plans/done/`, `releases/` and `JOURNAL.md`.
 >
-> Last updated: 2026-10-20 (setup survives a launch toast; site copy matches the v0.8.0 defaults and first-launch setup; setup follows the theme; dmg step cause found; site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded)
+> Last updated: 2026-10-21 (v0.8.0 notes written, perf measured, ready to release; setup survives a launch toast; site copy matches the v0.8.0 defaults and first-launch setup; setup follows the theme; dmg step cause found; site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded)
 
 ## Where we are
 
 - **Released: v0.7.0** (2026-10-01), the first release as scuttlarr
   (`releases/v0.7.0.md`). Tap has `Casks/scuttlarr.rb`; `launcharr.rb` is the deprecated
   alias.
+- **v0.8.0 is ready to release** (`releases/v0.8.0.md`, perf measured 2026-10-21 on the
+  Mini; dry run green up to gh auth and signing). Needs Mitch's laptop:
+  `scripts/release.sh 0.8.0`.
 - **On main, unreleased:** per-source update-check intervals (2026-10-18); cleanup pass 1
   (`plans/done/2026-10-19-cleanup-bugs-and-guardrails.md`: bar off means off, one atomic
   config writer, plugin panels keep identity, verify gate gains fmt, coverage floors,

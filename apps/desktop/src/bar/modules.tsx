@@ -110,7 +110,9 @@ export function barZoneNodes({
             key={id}
             agents={
               cfg?.agents.showIdle === false
-                ? snap!.agents.filter((a) => a.state !== 'idle')
+                ? snap!.agents.filter(
+                    (a) => a.state !== 'idle' && a.state !== 'read',
+                  )
                 : snap!.agents
             }
             now={now}

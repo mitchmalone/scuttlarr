@@ -3,8 +3,11 @@ import { describe, expect, it } from 'vitest'
 import {
   adjustedPct,
   agentAge,
-  agentGlyph,
+  agentCrumbs,
+  agentDoing,
+  agentDuration,
   agentLocation,
+  agentMeta,
   agentStateLabel,
   batteryLook,
   batteryState,
@@ -34,7 +37,8 @@ const agent = (over: Partial<AgentSession> = {}): AgentSession => ({
   muxLabel: null,
   pid: null,
   pidComm: null,
-  subagents: [],
+  startedAt: 0,
+  stateSince: 0,
   ...over,
 })
 
@@ -56,17 +60,109 @@ const battery = (over: Partial<BatteryDetail> = {}): BatteryDetail => ({
 })
 
 describe('agent state presentation', () => {
-  it('maps wire states to glyphs, unknown falls back to idle', () => {
-    expect(agentGlyph('working')).toBe('●')
-    expect(agentGlyph('attention')).toBe('◉')
-    expect(agentGlyph('nonsense')).toBe('○')
+  it('relabels the wire states that read wrong, passes others through', () => {
+    // `attention` is the wire name; "needs you" is what a human should read.
+    expect(agentStateLabel('attention')).toBe('needs you')
+    expect(agentStateLabel('done')).toBe('done · unread')
+    expect(agentStateLabel('read')).toBe('done · read')
+    expect(agentStateLabel('working')).toBe('working')
+  })
+})
+
+describe('agentDoing', () => {
+  it('turns a `Tool object` detail into an icon, a verb and the object', () => {
+    expect(agentDoing('working', 'Edit format.ts')).toEqual({
+      icon: 'pencil',
+      verb: 'editing',
+      object: 'format.ts',
+    })
+    expect(agentDoing('working', 'Bash pnpm verify')).toEqual({
+      icon: 'terminal',
+      verb: 'running',
+      object: 'pnpm verify',
+    })
   })
 
-  it('relabels the wire states that read wrong, passes others through', () => {
-    // `attention` is the wire name; "blocked" is what a human should read.
-    expect(agentStateLabel('attention')).toBe('blocked')
-    expect(agentStateLabel('done')).toBe('done · unread')
-    expect(agentStateLabel('working')).toBe('working')
+  it('speaks in the past once the agent is quiet', () => {
+    expect(agentDoing('done', 'Bash pnpm verify')?.verb).toBe('last ran')
+    expect(agentDoing('read', 'Edit a.ts')?.verb).toBe('last edited')
+    expect(agentDoing('idle', 'Read a.ts')?.verb).toBe('last read')
+  })
+
+  it('has shapes for permission and thinking', () => {
+    expect(
+      agentDoing('attention', 'permission Bash scripts/release.sh'),
+    ).toEqual({
+      icon: 'lock',
+      verb: 'permission',
+      object: 'Bash scripts/release.sh',
+    })
+    expect(agentDoing('working', 'thinking')).toEqual({
+      icon: 'brain',
+      verb: 'thinking',
+      object: '',
+    })
+  })
+
+  it('reads the legacy `Event · Tool` detail and drops bare event names', () => {
+    expect(agentDoing('working', 'PostToolUse · Edit')).toEqual({
+      icon: 'pencil',
+      verb: 'editing',
+      object: '',
+    })
+    expect(agentDoing('idle', 'SessionStart')).toBeNull()
+    expect(agentDoing('working', '')).toBeNull()
+  })
+
+  it('shows unknown text as it came, without an icon', () => {
+    expect(agentDoing('working', 'waiting for a task')).toEqual({
+      icon: null,
+      verb: '',
+      object: 'waiting for a task',
+    })
+  })
+})
+
+describe('agentDuration', () => {
+  it('uses the two largest units', () => {
+    expect(agentDuration(42)).toBe('42s')
+    expect(agentDuration(160)).toBe('2m 40s')
+    expect(agentDuration(4320)).toBe('1h 12m')
+    expect(agentDuration(2 * 86_400 + 3 * 3600 + 59)).toBe('2d 3h')
+    expect(agentDuration(-5)).toBe('0s')
+  })
+})
+
+describe('agentMeta', () => {
+  const now = 1_000_000
+  it('names the clock after the state, then the session age and agent', () => {
+    const a = agent({
+      state: 'working',
+      stateSince: now - 160,
+      startedAt: now - 4320,
+    })
+    expect(agentMeta(a, now)).toEqual([
+      'turn 2m 40s',
+      'session 1h 12m',
+      'claude',
+    ])
+    expect(agentMeta({ ...a, state: 'attention' }, now)[0]).toBe(
+      'waiting 2m 40s',
+    )
+    expect(agentMeta({ ...a, state: 'done' }, now)[0]).toBe(
+      'finished 2m 40s ago',
+    )
+    expect(agentMeta({ ...a, state: 'idle' }, now)[0]).toBe('idle 2m 40s')
+  })
+
+  it('falls back to the last event for records without clocks', () => {
+    const a = agent({
+      state: 'idle',
+      updatedAt: now - 60,
+      stateSince: 0,
+      startedAt: 0,
+    })
+    expect(agentMeta(a, now)).toEqual(['idle 1m 0s', 'session 1m 0s', 'claude'])
   })
 })
 
@@ -74,17 +170,32 @@ describe('agentAge', () => {
   const now = new Date(1_000_000 * 1000)
   const at = (secondsAgo: number) => agentAge(1_000_000 - secondsAgo, now)
 
-  it('formats seconds, then rounded minutes, then rounded hours', () => {
+  it('formats seconds, then rounded minutes, hours, days', () => {
     expect(at(0)).toBe('0s')
     expect(at(59)).toBe('59s')
     expect(at(60)).toBe('1m')
     expect(at(3599)).toBe('60m')
     expect(at(3600)).toBe('1h')
     expect(at(7000)).toBe('2h')
+    expect(at(86_400)).toBe('1d')
+    expect(at(3 * 86_400 + 3600)).toBe('3d')
   })
 
   it('clamps a future timestamp to zero rather than printing negatives', () => {
     expect(at(-500)).toBe('0s')
+  })
+})
+
+describe('agentCrumbs', () => {
+  it('splits the location into session, tab, window', () => {
+    expect(
+      agentCrumbs(
+        agent({ muxGroup: 'psyke', muxIndex: 4, muxLabel: 'GeoProviders' }),
+      ),
+    ).toEqual(['psyke', 'tab 4', 'GeoProviders'])
+    expect(agentCrumbs(agent({ muxGroup: null, mux: '' }))).toEqual([
+      'outside a multiplexer',
+    ])
   })
 })
 

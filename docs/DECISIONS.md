@@ -1751,3 +1751,40 @@ DiagnosticReports` and waits the full backoff instead of thrashing. One new comm
 - **Alternatives.** Pass App's config into the tenant as a prop (rejected: tenants take
   only `onClose`, and setup already reads config itself); snapshot the theme and ignore
   changes until apply (rejected: the field and panel would still disagree mid-setup).
+
+### 2026-10-28 · Agent states are read by shape; liveness outranks silence; the subagent indicator is retired
+
+- **Decision.** Each agent state has its own shape, drawn once in `packages/tui`
+  (`AgentStateIcon`, lucide geometry at `ICON_PROPS`) and imported by the bar cell, the
+  hover card, `agents ⏎` and the site's legend: working is a three-quarter ring that
+  spins, attention a ring with a still centre dot whose ring breathes, done · unread a
+  filled disc with a check, done · read a bare check, idle a moon, anything else a dotted
+  ring. The 2026-08-19 colour rule stands — fg is fine, accent is busy — with one change:
+  attention moves from `danger` to `warn`; a question is not a failure, and `danger` is
+  kept for an adapter reporting one. Only those two shapes move, and both stop under
+  Reduce Motion. The hover card is restructured around the same icon: state and age, the
+  title, a verb-plus-object "doing" line built from the hook's new `Tool object` detail
+  (`Edit format.ts` → pencil, "editing", `format.ts`; past tense once quiet), location as
+  crumbs, and a meta line with the two clocks the store now keeps (`started_at`,
+  `state_since`). Visiting a done session marks it `read`, a state only the store writes.
+  Design: Claude Design "scuttlarr agent dots", v2.
+- **Liveness.** `reap()` no longer sweeps by age before looking: a session whose pane the
+  layout lists, or whose pid is alive with the same command, stays however long it has
+  been silent. `pruneHours` is a backstop for sessions nothing can vouch for (no pane and
+  no pid, or a pane in a layout we couldn't read). `apply()` prunes nothing. Field report
+  2026-10-28: nine Claude sessions in tmux panes, five on the bar — the four silent for
+  over 12 h had been swept while tmux still listed every pane. Idle is a state, not a
+  death.
+- **Retired.** The subagent indicator — shoulder count on the cell, lines in the card,
+  `Subagent` on the wire and in the store. It never reported reliably and read as noise
+  on the site. `SubagentStart`/`SubagentStop` are still registered: they keep a session
+  `working` while a fork runs.
+- **Hooks.** `boot()` now completes the event set in a Claude config dir where our hook
+  is already registered (`mend`): it still adds nothing where we were never installed.
+  The psyke dir had sat at 7 of 10 events since `Notification` and the subagent events
+  were added.
+- **Alternatives.** Reconciling the store against tmux panes running an agent command
+  (rejected for now: needs a list of agent names, which 2026-08-18 deliberately avoided;
+  missing agents return on their next hook event). Named group boxes and a group hover
+  card (designed, parked). Spending colour on done · unread again (rejected: shape now
+  carries the distinction colour was failing at).

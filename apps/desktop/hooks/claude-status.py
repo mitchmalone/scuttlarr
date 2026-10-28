@@ -111,6 +111,40 @@ def background_ancestry() -> bool:
     return False
 
 
+def tool_object(tool: str, tool_input) -> str:
+    """What a tool call is about, in a few words: the file for an edit, the
+    head of a shell command, the pattern for a search. Empty when unknown."""
+    if not isinstance(tool_input, dict):
+        return ""
+    for key in ("file_path", "notebook_path", "path"):
+        value = tool_input.get(key)
+        if isinstance(value, str) and value.strip():
+            return os.path.basename(value.strip().rstrip("/")) or value.strip()
+    for key in ("command", "pattern", "query", "url", "description", "skill", "prompt"):
+        value = tool_input.get(key)
+        if isinstance(value, str) and value.strip():
+            return " ".join(value.split())[:60]
+    return ""
+
+
+def describe(event: str, tool: str, tool_input, message: str) -> str:
+    """The card's "doing" line, as `Tool object`: `Edit format.ts`,
+    `Bash pnpm verify`, `permission Bash scripts/release.sh`, or the
+    notification text. The kit turns the leading tool name into a verb and an
+    icon (packages/tui agentDoing). Blank for lifecycle events, which inherit
+    the previous detail (agents.rs), so a done card still says what ran last."""
+    if event in ("PreToolUse", "PostToolUse"):
+        return " ".join(p for p in (tool, tool_object(tool, tool_input)) if p)[:120]
+    if event == "PermissionRequest":
+        parts = ("permission", tool, tool_object(tool, tool_input))
+        return " ".join(p for p in parts if p)[:120]
+    if event == "Notification":
+        return message[:120]
+    if event == "UserPromptSubmit":
+        return "thinking"
+    return ""
+
+
 def socket_path() -> str:
     state_home = os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state")
     return os.path.join(state_home, "scuttlarr", "agents.sock")
@@ -182,7 +216,7 @@ def main() -> None:
         .replace("\n", " ")
         .strip()
     )
-    detail = " · ".join(p for p in (event, tool or message[:100]) if p)
+    detail = describe(event, tool, payload.get("tool_input"), message)
 
     herdr_pane = os.environ.get("HERDR_PANE_ID", "")
     if herdr_pane:

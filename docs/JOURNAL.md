@@ -6,6 +6,20 @@
 
 ---
 
+### 2026-10-28 · A bulk prune that runs before the liveness checks is a liveness check
+
+Nine Claude sessions in tmux panes, five cells on the bar. `reap()` opened with the
+`pruneHours` sweep and only then asked tmux and `ps`; four agents silent for 2–3 days
+in open panes were gone before anything looked at them, and `apply()` ran the same
+sweep on every incoming event. The rule order was the bug: any age check placed ahead
+of the evidence becomes the verdict for every idle agent. Liveness evidence (pane
+listed, pid alive with the same comm) now comes first and age only decides when there is
+no evidence. Related: `boot()`'s hook repair only retargeted paths and never added
+events, so a config dir installed before `Notification` existed never got it — our own
+"partial" state, reported in Settings for weeks, was something we could have fixed.
+
+---
+
 ### 2026-10-20 · A launch toast wiped the owed first-launch setup
 
 Fresh install, setup never opened: a kept awake hold resumes at launch and `panel::flash`

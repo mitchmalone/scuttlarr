@@ -3,7 +3,7 @@
 > The cursor: where we are, what needs hands, what's next. A snapshot, not a history —
 > history lives in git, `plans/done/`, `releases/` and `JOURNAL.md`.
 >
-> Last updated: 2026-10-21 (v0.8.0 notes written, perf measured, ready to release; setup survives a launch toast; site copy matches the v0.8.0 defaults and first-launch setup; setup follows the theme; dmg step cause found; site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded)
+> Last updated: 2026-10-28 (agent dots: states by shape, liveness fix, card redesign; v0.8.0 notes written, perf measured, ready to release; setup survives a launch toast; site copy matches the v0.8.0 defaults and first-launch setup; setup follows the theme; dmg step cause found; site theme picker; site pixel hero; defaults flip: bar on, tiling off; invariant 3 reworded)
 
 ## Where we are
 
@@ -25,6 +25,11 @@
   pixel field in the demo's picked theme; hands-check pending). The site theme picker
   (`plans/done/2026-10-20-site-theme-picker.md`: the whole site in any of the 14 app
   themes, light/dark switch and next-themes gone; hands-checked).
+- **Agent dots** (`plans/done/2026-10-28-agent-dots.md`, DECISIONS 2026-10-28): states
+  read by shape from one kit icon, attention in `warn`, a session stays while its pane or
+  process lives, `read` after a visit, the card rebuilt (doing line, crumbs, clocks),
+  subagent indicator retired, hook `boot` completes partial installs. Hands-check pending
+  (below).
 - **First-launch setup** (`plans/done/2026-10-19-first-launch-setup.md`, DECISIONS
   2026-10-19): a fresh install opens the panel on a one-question-per-screen setup over
   the pixel field; `setup ⏎` runs it again. Hands-check pending (below). Setup follows
@@ -114,9 +119,15 @@ Agents, usage, plugins:
 - Settings → Agents shows both Claude accounts registered; a Claude turn paints a cell.
 - Usage limits against claude.ai/settings/usage for both accounts; the Codex tile
   includes beebee's sessions (mirror plugin).
-- Hover a cell while a session runs a subagent (subagent lines).
-- Agent monitoring: attention pulse; cell click / `agents ⏎` Enter lands in the right
-  tmux pane; `⌫` dismisses a row (the 2026-08-18 orphan is still in the store).
+- Agent dots (2026-10-28): all nine tmux agents on the bar after their next hook event
+  (the four silent psyke/gogogo sessions were pruned before the fix); working ring spins,
+  attention ring breathes in `warn`, done disc, read check after a jump, idle moon; the
+  card's doing line reads `editing format.ts` not `PostToolUse · Edit` (needs the
+  reinstalled hook, which `boot` writes); Reduce Motion stops both animations; the amber
+  and terminal themes keep the shapes legible; the site legend and spotlight render the
+  same icons.
+- Agent monitoring: cell click / `agents ⏎` Enter lands in the right tmux pane; `⌫`
+  dismisses a row (the 2026-08-18 orphan is still in the store).
 - hello cell + card + `hello ⏎` (`r` resets), `cal ⏎`, Settings → Plugins, `plugins ⏎`.
 - Custom widgets sub-tab and install from URL; trmnl hidden until its key resolves.
 

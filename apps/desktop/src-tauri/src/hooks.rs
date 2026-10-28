@@ -148,6 +148,21 @@ pub fn register(settings: &mut Value, target: &str) -> bool {
     changed
 }
 
+/// `repair` where we were never installed; `register` where we were — an
+/// account that consented once gets the events added since. The psyke config
+/// dir sat at 7 of 10 events for weeks because `boot` only ever retargeted
+/// (field report 2026-10-28).
+pub fn mend(settings: &mut Value, target: &str) -> bool {
+    let installed = EVENTS
+        .iter()
+        .any(|event| commands_for(settings, event).iter().any(|c| is_ours(c)));
+    if installed {
+        register(settings, target)
+    } else {
+        repair(settings, target)
+    }
+}
+
 /// All `command` strings registered under one event, in document order.
 fn commands_for(settings: &Value, event: &str) -> Vec<String> {
     let mut out = Vec::new();
@@ -378,8 +393,9 @@ pub fn install() -> CmdResult<HooksStatus> {
 }
 
 /// Every launch with monitoring on: keep the file fresh, mend our own stale
-/// paths, add nothing. Failures are logged, never fatal — a status widget
-/// must never block the app it lives in.
+/// paths, complete the event set where we're installed, add nothing
+/// elsewhere. Failures are logged, never fatal — a status widget must never
+/// block the app it lives in.
 pub fn boot() {
     let script = script_path();
     match install_script_at(&script) {
@@ -400,7 +416,7 @@ pub fn boot() {
                 continue;
             }
         };
-        if repair(&mut settings, &target) {
+        if mend(&mut settings, &target) {
             if let Err(e) = backup_once(&path).and_then(|()| write_settings(&path, &settings)) {
                 eprintln!("[scuttlarr hooks] repair of {} failed: {e}", path.display());
             } else {
@@ -479,6 +495,18 @@ mod tests {
         assert_eq!(s["permissions"]["allow"][0], "Bash(ls)");
         // Second pass: nothing to do.
         assert!(!repair(&mut s, T));
+    }
+
+    #[test]
+    fn mend_completes_a_partial_install_and_adds_nothing_elsewhere() {
+        let mut partial = json!({ "hooks": { "Stop": [entry(T)] } });
+        assert!(mend(&mut partial, T));
+        for event in EVENTS {
+            assert_eq!(commands_for(&partial, event), vec![T.to_owned()], "{event}");
+        }
+        let mut theirs = json!({ "hooks": { "Stop": [entry("/usr/bin/say done")] } });
+        assert!(!mend(&mut theirs, T));
+        assert!(theirs["hooks"].get("SessionStart").is_none());
     }
 
     #[test]

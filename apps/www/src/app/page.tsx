@@ -1,4 +1,4 @@
-import { agentGlyph, agentStateLabel } from '@scuttlarr/tui/bar'
+import { AgentStateIcon, agentStateLabel } from '@scuttlarr/tui'
 import { GithubIcon, XIcon } from '@scuttlarr/tui/icons'
 import {
   AppWindow,
@@ -540,7 +540,7 @@ export default function Home() {
               {AGENT_STATE_BLURBS.map(({ state, blurb }) => (
                 <div key={state} className="flex items-center gap-3">
                   <span className={`bar-agent bar-agent-${state}`}>
-                    {agentGlyph(state)}
+                    <AgentStateIcon state={state} />
                   </span>
                   <span className="min-w-[12ch] text-(--fg)">
                     {agentStateLabel(state)}

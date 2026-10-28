@@ -71,13 +71,14 @@
   font-weight: 700;
 }
 
-/* Agent session cells: same flat glyph language as the rest of the bar.
- * Theme-mapped colours (2026-08-19): working accent, attention/blocked danger
- * breathing, done/idle/unknown plain fg — a quiet cell is a fine cell; only
- * "needs you" and "busy" earn a colour. Cells are boxed by tmux session and
- * ordered by tab; hover opens a dropdown card below the strip (the window
- * grows — see bar_set_dropdown). Bar isn't the launcher hot path; animation
- * is allowed here. */
+/* Agent session cells: one shape per state (agent-icons.tsx), theme-mapped
+ * colours (2026-08-19, revised 2026-10-28): working accent with a spinning
+ * ring, attention warn with a breathing ring, done fg, read / idle / unknown
+ * dim — a quiet cell is a fine cell; only "busy" and "needs you" earn a colour,
+ * and only those two move. Cells are boxed by tmux session and ordered by tab;
+ * hover opens a dropdown card below the strip (the window grows — see
+ * bar_set_dropdown). Bar isn't the launcher hot path; animation is allowed
+ * here, and stops under Reduce Motion. */
 .bar-agents {
   position: relative;
   display: flex;
@@ -103,40 +104,50 @@
 .bar-agent {
   min-width: 16px;
   height: 18px;
-  line-height: 18px;
-  text-align: center;
-  /* idle + unknown + done */
-  color: var(--fg, #dde1f0);
-}
-
-/* Running subagents: a small count riding the cell's shoulder. */
-.bar-agent {
-  position: relative;
-}
-.bar-agent-subs {
-  position: absolute;
-  top: -1px;
-  right: -5px;
-  font-size: 8px;
-  line-height: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* idle + read + unknown */
   color: var(--dim, #7f86a5);
 }
 
-.bar-card-subagents {
-  margin-top: 2px;
+.bar-agent-icon {
+  display: block;
+  flex: none;
 }
 
-.bar .bar-agent-working {
+/* State colours — unscoped on purpose: the same classes paint the cell, the
+ * card's rule and swatch, and the site's legend, none of which share an
+ * ancestor. Declared after .bar-agent so they win at equal specificity. */
+.bar-agent-working {
   color: var(--accent, #9db2ff);
 }
 
-.bar .bar-agent-done {
+.bar-agent-attention {
+  color: var(--warn, #d29922);
+}
+
+.bar-agent-done {
   color: var(--fg, #dde1f0);
 }
 
-.bar .bar-agent-attention {
-  color: var(--danger, #f85149);
+.bar-agent-read,
+.bar-agent-idle {
+  color: var(--dim, #7f86a5);
+}
+
+.bar-agent-icon-working {
+  animation: bar-agent-spin 1.1s linear infinite;
+}
+
+.bar-agent-breathe {
   animation: bar-agent-breathe 1.6s ease-in-out infinite;
+}
+
+@keyframes bar-agent-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes bar-agent-breathe {
@@ -145,12 +156,15 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.3;
+    opacity: 0.35;
   }
 }
 
-.bar .bar-agent-idle {
-  color: var(--fg, #dde1f0);
+@media (prefers-reduced-motion: reduce) {
+  .bar-agent-icon-working,
+  .bar-agent-breathe {
+    animation: none;
+  }
 }
 
 /* Hover cards: hang below the strip, inside the grown window (the window's
@@ -203,7 +217,6 @@
 }
 
 .bar-card-line {
-  /* idle + unknown agent state; state classes above override. */
   color: var(--fg, #dde1f0);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -228,10 +241,154 @@
   margin-top: 10px;
 }
 
+/* The agent card (design: Claude Design "scuttlarr agent dots" v2). A 2px
+ * rule along the top edge and a tinted swatch carry the state colour; the
+ * title steps up to 13px; the "doing" line is a verb and an object; location
+ * is crumbs in tmux order; the meta line is the two clocks. An idle card goes
+ * fully dim and loses its rule — nothing is happening and the card says so. */
 .bar-agent-card {
   left: 0;
-  min-width: 300px;
-  max-width: 52ch;
+  min-width: 340px;
+  max-width: 56ch;
+  gap: 6px;
+}
+
+.bar-agent-rule {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  left: -1px;
+  height: 2px;
+  background: currentColor;
+}
+
+.bar-agent-rule.bar-agent-idle,
+.bar-agent-rule.bar-agent-read {
+  display: none;
+}
+
+.bar-agent-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.bar-agent-swatch {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border: 1px solid color-mix(in srgb, var(--dim, #7f86a5) 45%, transparent);
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.bar-agent-headtext {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.bar-agent-stateline {
+  display: flex;
+  align-items: center;
+}
+
+.bar-agent-state {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.bar-agent-age {
+  margin-left: auto;
+  color: var(--dim, #7f86a5);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.bar-agent-title {
+  color: var(--fg, #dde1f0);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-agent-swatch.bar-agent-idle + .bar-agent-headtext .bar-agent-title {
+  color: var(--dim, #7f86a5);
+}
+
+.bar-agent-doing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--fg, #dde1f0);
+  white-space: nowrap;
+}
+
+.bar-agent-doing > svg {
+  flex: none;
+}
+
+.bar-agent-verb {
+  color: var(--dim, #7f86a5);
+}
+
+.bar-agent-object {
+  padding: 0 5px;
+  background: color-mix(in srgb, var(--fg, #dde1f0) 8%, transparent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-agent-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-top: 2px;
+}
+
+.bar-agent-crumb {
+  position: relative;
+  padding: 1px 6px;
+  border: 1px solid color-mix(in srgb, var(--dim, #7f86a5) 45%, transparent);
+  color: var(--dim, #7f86a5);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.bar-agent-crumb + .bar-agent-crumb {
+  margin-left: 12px;
+}
+
+.bar-agent-crumb + .bar-agent-crumb::before {
+  content: '›';
+  position: absolute;
+  left: -12px;
+  color: var(--dim, #7f86a5);
+}
+
+.bar-agent-crumb:last-child {
+  color: var(--fg, #dde1f0);
+  border-color: var(--dim, #7f86a5);
+}
+
+.bar-agent-meta {
+  display: flex;
+  gap: 14px;
+  margin-top: 4px;
+  color: var(--dim, #7f86a5);
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 /* Battery card: right-anchored — the cell lives in the right zone, so a
@@ -660,11 +817,6 @@
 .bar-awake {
   position: relative;
   display: inline-flex;
-}
-
-/* Card lines inherit the agent-state green by default — awake's are plain. */
-.bar-awake-card .bar-card-line {
-  color: var(--fg, #dde1f0);
 }
 
 .bar-awake-card {

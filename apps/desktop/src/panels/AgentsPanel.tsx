@@ -3,46 +3,18 @@
  * monitor (agents.rs). Pure props + @scuttlarr/tui — the container
  * (AgentsPanelContainer) owns invokes and refresh.
  */
-import { KeyHints, ListRow, Panel, useListNav } from '@scuttlarr/tui'
+import {
+  type AgentSession,
+  AgentStateIcon,
+  KeyHints,
+  ListRow,
+  Panel,
+  useListNav,
+} from '@scuttlarr/tui'
 import type { KeyboardEvent } from 'react'
 
-/** Mirrors AgentSession in agents.rs. */
-export interface AgentSession {
-  session: string
-  agent: string
-  state: string
-  title: string
-  detail: string
-  /** Which multiplexer the agent lives in: 'tmux' | 'herdr' | '' for neither. */
-  mux: string
-  /** Pane id inside it: '%12' (tmux), 'w1:p1' (herdr). */
-  muxTarget: string
-  /** Unix seconds of the last event. */
-  updatedAt: number
-  muxGroup: string | null
-  muxIndex: number | null
-  muxLabel: string | null
-  pid: number | null
-  pidComm: string | null
-  /** Running subagents (id, kind, description, startedAt). */
-  subagents: {
-    id: string
-    kind: string
-    description: string
-    startedAt: number
-  }[]
-}
-
-const GLYPHS: Record<string, string> = {
-  working: '●',
-  attention: '◉',
-  done: '●',
-  idle: '○',
-}
-
-export function agentGlyph(state: string): string {
-  return GLYPHS[state] ?? '◌'
-}
+/** The kit's type, re-exported so the container and stories have one import. */
+export type { AgentSession }
 
 /** Compact relative age: 45s, 12m, 3h. */
 export function formatAge(updatedAt: number, nowSecs: number): string {
@@ -109,7 +81,7 @@ export function AgentsPanel({
       ? 'no live sessions'
       : [
           count('working') > 0 && `${count('working')} working`,
-          count('attention') > 0 && `${count('attention')} blocked`,
+          count('attention') > 0 && `${count('attention')} need you`,
           count('done') > 0 && `${count('done')} unread`,
           `${sessions.length} total`,
         ]
@@ -141,13 +113,12 @@ export function AgentsPanel({
           {ordered.map((s, i) => (
             <ListRow
               key={s.session}
-              icon={agentGlyph(s.state)}
+              icon={<AgentStateIcon state={s.state} />}
               label={s.title || s.session.slice(0, 8)}
               sub={[
                 s.muxGroup && `${s.muxGroup}:${s.muxIndex}`,
                 s.agent,
                 s.state,
-                s.subagents.length > 0 && `⑂ ${s.subagents.length}`,
                 s.detail,
               ]
                 .filter(Boolean)

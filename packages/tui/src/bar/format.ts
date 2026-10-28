@@ -11,38 +11,146 @@ import type {
  * the AeroSpace top gap all agree on this one number. */
 export const BAR_STRIP_HEIGHT = 30
 
-export const AGENT_GLYPHS: Record<string, string> = {
-  working: '●',
-  attention: '◉',
-  done: '●',
-  idle: '○',
-}
-
-/** User-facing state names where the wire name reads wrong. */
+/** User-facing state names where the wire name reads wrong. Shapes live in
+ * agent-icons.tsx; `read` is the store's own post-visit state (agents.rs). */
 export const AGENT_STATE_LABELS: Record<string, string> = {
-  attention: 'blocked',
+  attention: 'needs you',
   done: 'done · unread',
+  read: 'done · read',
 }
 
-export const agentGlyph = (state: string) => AGENT_GLYPHS[state] ?? '○'
 export const agentStateLabel = (state: string) =>
   AGENT_STATE_LABELS[state] ?? state
 
+/** Compact age for a cell's right edge: 45s, 12m, 3h, 2d. */
 export function agentAge(updatedAt: number, now: Date): string {
   const s = Math.max(0, Math.floor(now.getTime() / 1000) - updatedAt)
   if (s < 60) return `${s}s`
   if (s < 3600) return `${Math.round(s / 60)}m`
-  return `${Math.round(s / 3600)}h`
+  if (s < 86_400) return `${Math.round(s / 3600)}h`
+  return `${Math.round(s / 86_400)}d`
+}
+
+/** A duration in its two largest units: 42s, 2m 40s, 1h 12m, 2d 3h. */
+export function agentDuration(secs: number): string {
+  const s = Math.max(0, Math.floor(secs))
+  if (s < 60) return `${s}s`
+  if (s < 3600) return `${Math.floor(s / 60)}m ${s % 60}s`
+  if (s < 86_400)
+    return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`
+  return `${Math.floor(s / 86_400)}d ${Math.floor((s % 86_400) / 3600)}h`
+}
+
+/** The card's "doing" line, assembled from the adapter's `Tool object` detail. */
+export interface AgentDoing {
+  /** A lucide icon name, or null when the detail isn't a tool we know. */
+  icon: string | null
+  verb: string
+  object: string
+}
+
+/** Claude's tool names → lucide icon, present verb, past verb. */
+const TOOL_VERBS: Record<string, [string, string, string]> = {
+  Edit: ['pencil', 'editing', 'edited'],
+  MultiEdit: ['pencil', 'editing', 'edited'],
+  NotebookEdit: ['pencil', 'editing', 'edited'],
+  Write: ['file-plus', 'writing', 'wrote'],
+  Read: ['file-text', 'reading', 'read'],
+  Bash: ['terminal', 'running', 'ran'],
+  Grep: ['search', 'searching', 'searched'],
+  Glob: ['search', 'searching', 'searched'],
+  LS: ['folder', 'listing', 'listed'],
+  WebFetch: ['globe', 'fetching', 'fetched'],
+  WebSearch: ['globe', 'searching', 'searched'],
+  Agent: ['git-fork', 'delegating', 'delegated'],
+  Task: ['git-fork', 'delegating', 'delegated'],
+  Skill: ['book-open', 'using', 'used'],
+  TodoWrite: ['list-checks', 'planning', 'planned'],
+  AskUserQuestion: ['message-circle-question', 'asking', 'asked'],
+}
+
+/** States where the detail describes the last thing done, not the current. */
+const QUIET_STATES = new Set(['done', 'read', 'idle'])
+
+/** Claude Code hook event names — the pre-2026-10-28 hook put these in detail. */
+const CLAUDE_EVENTS = new Set([
+  'SessionStart',
+  'UserPromptSubmit',
+  'PreToolUse',
+  'PostToolUse',
+  'PermissionRequest',
+  'Notification',
+  'Stop',
+  'SessionEnd',
+  'SubagentStart',
+  'SubagentStop',
+])
+
+/**
+ * What the agent is doing, in words: `Edit format.ts` → pencil, "editing",
+ * `format.ts`; in a quiet state the verb turns past ("last edited"). A
+ * `permission …` detail gets the lock, `thinking` the brain. Anything the kit
+ * can't parse — herdr's detail, a notification's text, a legacy
+ * `PostToolUse · Edit` with no object — is shown as it came, without an icon.
+ * Null when there is nothing to say.
+ */
+export function agentDoing(state: string, detail: string): AgentDoing | null {
+  let text = detail.trim()
+  if (!text) return null
+  const legacy = text.split(' · ')
+  if (legacy.length === 2 && CLAUDE_EVENTS.has(legacy[0]!)) {
+    text = legacy[1]!.trim()
+  } else if (legacy.length === 1 && CLAUDE_EVENTS.has(text)) {
+    return null
+  }
+  const past = QUIET_STATES.has(state)
+  const [head = '', ...rest] = text.split(/\s+/)
+  const object = rest.join(' ')
+  if (head === 'permission') {
+    return { icon: 'lock', verb: past ? 'asked for' : 'permission', object }
+  }
+  if (head === 'thinking') {
+    return { icon: 'brain', verb: past ? 'thought' : 'thinking', object: '' }
+  }
+  const tool = TOOL_VERBS[head]
+  if (tool) {
+    return { icon: tool[0], verb: past ? `last ${tool[2]}` : tool[1], object }
+  }
+  return { icon: null, verb: '', object: text }
+}
+
+/**
+ * The card's clock line: how long the state has held (a turn, a wait, a rest)
+ * and how old the session is, then the agent's name. Records from before the
+ * clocks existed fall back to the last event's time.
+ */
+export function agentMeta(a: AgentSession, nowSecs: number): string[] {
+  const held = agentDuration(nowSecs - (a.stateSince || a.updatedAt))
+  const age = agentDuration(nowSecs - (a.startedAt || a.updatedAt))
+  const state =
+    a.state === 'working'
+      ? `turn ${held}`
+      : a.state === 'attention'
+        ? `waiting ${held}`
+        : a.state === 'done' || a.state === 'read'
+          ? `finished ${held} ago`
+          : `${a.state} ${held}`
+  return [state, `session ${age}`, a.agent]
 }
 
 /** The card's location line, or its no-pane fallback. Reads as a place, not a
  * fault: since liveness is checked by process too (agents.rs), an agent with no
  * pane is simply one running outside a multiplexer. */
 export function agentLocation(a: AgentSession): string {
-  if (!a.muxGroup) return a.mux ? `in ${a.mux}` : 'outside a multiplexer'
-  return (
-    `${a.muxGroup} · tab ${a.muxIndex}` + (a.muxLabel ? ` · ${a.muxLabel}` : '')
-  )
+  return agentCrumbs(a).join(' · ')
+}
+
+/** The same location as crumbs — session, tab, window — in tmux's own order. */
+export function agentCrumbs(a: AgentSession): string[] {
+  if (!a.muxGroup) return [a.mux ? `in ${a.mux}` : 'outside a multiplexer']
+  const crumbs = [a.muxGroup, `tab ${a.muxIndex}`]
+  if (a.muxLabel) crumbs.push(a.muxLabel)
+  return crumbs
 }
 
 /**

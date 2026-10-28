@@ -33,7 +33,8 @@ const agent = (
   muxLabel: 'main',
   pid: null,
   pidComm: null,
-  subagents: [],
+  startedAt: nowSecs() - 3600,
+  stateSince: nowSecs() - 30,
   ...over,
 })
 
@@ -44,22 +45,15 @@ export function agents(): AgentSession[] {
       session: 'a1',
       state: 'working',
       title: 'extract the launcher into the kit',
-      detail: 'Edit packages/tui/src/components/launcher.tsx',
+      detail: 'Edit launcher.tsx',
       updatedAt: t - 12,
-      subagents: [
-        {
-          id: 'sub1',
-          kind: 'Explore',
-          description: 'map the story call sites',
-          startedAt: t - 40,
-        },
-      ],
+      stateSince: t - 160,
     }),
     agent({
       session: 'a2',
       state: 'attention',
       title: 'release v0.8.0 — awaiting approval',
-      detail: 'permission needed: scripts/release.sh',
+      detail: 'permission Bash scripts/release.sh',
       muxTarget: '%2',
       muxIndex: 2,
       muxLabel: 'release',

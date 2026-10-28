@@ -27,17 +27,10 @@ export interface AgentSession {
   /** The agent process, when its adapter reports one — liveness, not display. */
   pid: number | null
   pidComm: string | null
-  /** Subagents forked and still running — shown in the parent's card, never as cells. */
-  subagents: Subagent[]
-}
-
-/** Mirrors Subagent in agents.rs. */
-export interface Subagent {
-  id: string
-  /** The agent type: 'Explore', 'general-purpose', a custom name. */
-  kind: string
-  description: string
+  /** Unix seconds of the first event (0 in pre-2026-10-28 records: use updatedAt). */
   startedAt: number
+  /** Unix seconds the current state was entered — the turn's clock. */
+  stateSince: number
 }
 
 /** What the wifi hover card shows — mirrors WifiStatus in wifi.rs (the same

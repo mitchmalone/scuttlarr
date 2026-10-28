@@ -75,7 +75,7 @@ export const AGENT_AGES: {
       agent: 'claude',
       state: 'working',
       title: 'refactor ranking tie-break',
-      detail: 'reading packages/core/src/ranking.ts',
+      detail: 'Read ranking.ts',
       mux: 'tmux',
       muxTarget: '%1',
       muxGroup: 'fable',
@@ -83,15 +83,8 @@ export const AGENT_AGES: {
       muxLabel: 'core',
       pid: null,
       pidComm: null,
-      // A forked subagent rides the parent's card; startedAt is re-stamped below.
-      subagents: [
-        {
-          id: 'sub1',
-          kind: 'Explore',
-          description: 'map the ranking call sites',
-          startedAt: 0,
-        },
-      ],
+      startedAt: 0,
+      stateSince: 0,
     },
   },
   {
@@ -101,7 +94,7 @@ export const AGENT_AGES: {
       agent: 'claude',
       state: 'attention',
       title: 'release v0.5.0 — awaiting approval',
-      detail: 'permission needed: scripts/release.sh',
+      detail: 'permission Bash scripts/release.sh',
       mux: 'tmux',
       muxTarget: '%2',
       muxGroup: 'fable',
@@ -109,7 +102,8 @@ export const AGENT_AGES: {
       muxLabel: 'release',
       pid: null,
       pidComm: null,
-      subagents: [],
+      startedAt: 0,
+      stateSince: 0,
     },
   },
   {
@@ -119,7 +113,7 @@ export const AGENT_AGES: {
       agent: 'codex',
       state: 'done',
       title: 'usage panel — tests green',
-      detail: '14 passed, 0 failed',
+      detail: 'Bash pnpm verify',
       mux: 'tmux',
       muxTarget: '%3',
       muxGroup: 'www',
@@ -127,7 +121,8 @@ export const AGENT_AGES: {
       muxLabel: 'panels',
       pid: null,
       pidComm: null,
-      subagents: [],
+      startedAt: 0,
+      stateSince: 0,
     },
   },
   {
@@ -137,7 +132,7 @@ export const AGENT_AGES: {
       agent: 'claude',
       state: 'idle',
       title: '',
-      detail: 'waiting for a task',
+      detail: '',
       mux: 'tmux',
       muxTarget: '%4',
       muxGroup: 'www',
@@ -145,20 +140,20 @@ export const AGENT_AGES: {
       muxLabel: '',
       pid: null,
       pidComm: null,
-      subagents: [],
+      startedAt: 0,
+      stateSince: 0,
     },
   },
 ]
 
-/** Stamp the fictional ages against a real clock. */
+/** Stamp the fictional ages against a real clock: each session an hour old,
+ * its state held since a little before its last event. */
 export function demoAgents(nowSeconds: number): AgentSession[] {
   return AGENT_AGES.map(({ agent, age }) => ({
     ...agent,
     updatedAt: nowSeconds - age,
-    subagents: agent.subagents.map((sub) => ({
-      ...sub,
-      startedAt: nowSeconds - age - 40,
-    })),
+    startedAt: nowSeconds - age - 3600,
+    stateSince: nowSeconds - age - 100,
   }))
 }
 
@@ -167,7 +162,8 @@ export const AGENT_STATE_BLURBS: { state: string; blurb: string }[] = [
   { state: 'attention', blurb: 'needs you — breathes until you look' },
   { state: 'working', blurb: 'agent is mid-task' },
   { state: 'done', blurb: 'finished; marks read when you jump' },
-  { state: 'idle', blurb: 'session open, nothing running' },
+  { state: 'read', blurb: 'finished and seen' },
+  { state: 'idle', blurb: 'session open, waiting for a prompt' },
 ]
 
 /** A full bar snapshot, exactly as bar.rs would push one. */

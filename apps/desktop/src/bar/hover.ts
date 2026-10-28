@@ -42,7 +42,7 @@ const CLOSE_MS = 200
 /** Fail-safe if the Rust mouse feed ever stalls with a card open. */
 const IDLE_MS = 10_000
 /** Growth for a cell that didn't declare one — the agent card's height. */
-const DEFAULT_CARD_HEIGHT = 130
+const DEFAULT_CARD_HEIGHT = 150
 /** The strip's own height (bar.rs BAR_HEIGHT), the origin cards measure from. */
 const BAR_HEIGHT = 30
 /** Slack below a measured card so its border never lands on the window edge. */

@@ -18,7 +18,8 @@ const session = (over: Partial<AgentSession>): AgentSession => ({
   muxLabel: 'Scuttlarr',
   pid: 4242,
   pidComm: 'claude',
-  subagents: [],
+  startedAt: NOW - 3600,
+  stateSince: NOW - 42,
   ...over,
 })
 

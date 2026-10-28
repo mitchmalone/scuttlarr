@@ -99,35 +99,15 @@ pub struct AgentSession {
     /// matched against a known agent name: a new adapter needs no reaper change.
     #[serde(default)]
     pub pid_comm: Option<String>,
-    /// Subagents the session has forked and not yet finished (Claude's
-    /// `SubagentStart`/`SubagentStop`). They belong to the parent — shown in
-    /// its hover card, never as cells of their own.
+    /// Unix seconds of the first event — the session's age. 0 in records
+    /// persisted before 2026-10-28; readers fall back to `updated_at`.
     #[serde(default)]
-    pub subagents: Vec<Subagent>,
-}
-
-/// One running subagent of a session. Mirrored as `Subagent` in the frontend.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Subagent {
-    pub id: String,
-    /// The agent type: `Explore`, `general-purpose`, a custom name.
-    pub kind: String,
-    pub description: String,
     pub started_at: u64,
-}
-
-/// A subagent lifecycle event riding on a session event.
-#[derive(Debug, Clone, Default, Deserialize)]
-struct SubagentEvent {
+    /// Unix seconds the current `state` was entered: how long this turn has
+    /// run, how long a question has waited. Tool chatter inside a turn keeps
+    /// the state and so keeps the stamp.
     #[serde(default)]
-    op: String,
-    #[serde(default)]
-    id: String,
-    #[serde(default, rename = "type")]
-    kind: String,
-    #[serde(default)]
-    description: String,
+    pub state_since: u64,
 }
 
 /// Incoming wire event: an `AgentSession` minus the timestamp, all fields
@@ -155,8 +135,6 @@ struct AgentEvent {
     /// actually driving that session (diagnosis 2026-08-19).
     #[serde(default)]
     background: bool,
-    #[serde(default)]
-    subagent: Option<SubagentEvent>,
 }
 
 static SESSIONS: Mutex<Vec<AgentSession>> = Mutex::new(Vec::new());
@@ -224,7 +202,10 @@ fn own_list() -> Vec<AgentSession> {
 /// The rules, cheapest first — and every one of them errs towards keeping a
 /// session, because a ghost cell is an annoyance while a vanished live agent is
 /// a lie:
-/// - too old to matter (the existing `pruneHours` sweep) → gone;
+/// - `pruneHours` is a backstop for sessions nothing can vouch for, never a
+///   verdict on one whose pane is listed or whose process is alive (field
+///   report 2026-10-28: four agents, silent for days in open panes, swept off
+///   the bar while their siblings stayed);
 /// - has a tmux pane a `list-panes` read did list → alive, and cheaply: the
 ///   process table is never consulted for a pane we can see;
 /// - otherwise, if a pid is known, it decides: `comm` says gone, or now belongs
@@ -246,22 +227,20 @@ fn reap(
     let before = sessions.len();
     let mut stamped = false;
     sessions.retain_mut(|s| {
-        if now.saturating_sub(s.updated_at) > stale {
-            return false;
-        }
         // A live pane is proof of life, and a cheap one — settled without
-        // waking the process table at all.
+        // waking the process table at all, and whatever the age: idle is a
+        // state, not a death.
         if !s.mux_target.is_empty() && layout.contains_key(&s.mux_target) {
             return true;
         }
         let Some(pid) = s.pid else {
             // No process to interrogate. A pane we couldn't find in a layout we
-            // couldn't trust is ignorance, and ignorance keeps the session;
-            // one missing from a layout we could is the death certificate.
-            // With no pane either, silence is the only signal left, and it's
-            // held to a much shorter window.
+            // couldn't trust is ignorance, and ignorance keeps the session — up
+            // to the prune window; one missing from a layout we could trust is
+            // the death certificate. With no pane either, silence is the only
+            // signal left, and it's held to a much shorter window.
             if !s.mux_target.is_empty() {
-                return !layout_fresh;
+                return !layout_fresh && now.saturating_sub(s.updated_at) <= stale;
             }
             return now.saturating_sub(s.updated_at) <= UNVERIFIABLE_STALE_SECS;
         };
@@ -467,7 +446,7 @@ fn handle(stream: UnixStream, app: &AppHandle) {
         };
         let applied = {
             let mut sessions = SESSIONS.lock().unwrap();
-            apply(&mut sessions, event, now_secs(), stale_secs())
+            apply(&mut sessions, event, now_secs())
         };
         if applied {
             if let Err(e) = save(&state_file(), &own_list()) {
@@ -481,12 +460,12 @@ fn handle(stream: UnixStream, app: &AppHandle) {
 
 /// Fold one event into the session list. Semantics ported from the retired Go
 /// store: `ended` deletes; blank title/detail/tmux inherit the previous value;
-/// everything else upserts. Stale sessions are dropped on the way through.
-fn apply(sessions: &mut Vec<AgentSession>, event: AgentEvent, now: u64, stale: u64) -> bool {
+/// everything else upserts. Nothing is pruned here — liveness is `reap`'s job,
+/// on read, where the pane layout and process table are at hand.
+fn apply(sessions: &mut Vec<AgentSession>, event: AgentEvent, now: u64) -> bool {
     if event.session.is_empty() || event.agent.is_empty() {
         return false;
     }
-    sessions.retain(|s| now.saturating_sub(s.updated_at) <= stale);
     if event.state == "ended" {
         sessions.retain(|s| s.session != event.session);
         return true;
@@ -495,7 +474,6 @@ fn apply(sessions: &mut Vec<AgentSession>, event: AgentEvent, now: u64, stale: u
     if previous.is_none() && event.background && event.title.is_empty() {
         return false;
     }
-    let session_id = event.session.clone();
     let mut next = AgentSession {
         session: event.session,
         agent: event.agent,
@@ -510,6 +488,8 @@ fn apply(sessions: &mut Vec<AgentSession>, event: AgentEvent, now: u64, stale: u
         mux_target: event.tmux,
         updated_at: now,
         pid: event.pid,
+        started_at: now,
+        state_since: now,
         ..Default::default()
     };
     if let Some(i) = previous {
@@ -531,36 +511,29 @@ fn apply(sessions: &mut Vec<AgentSession>, event: AgentEvent, now: u64, stale: u
         if next.pid == old.pid {
             next.pid_comm = old.pid_comm.clone();
         }
-        // A finished turn has no subagents left; anything else carries them on.
-        if next.state != "done" {
-            next.subagents = old.subagents.clone();
+        // The clocks: the session is as old as its first event, and the state
+        // stamp survives any event that doesn't change the state.
+        next.started_at = if old.started_at == 0 {
+            old.updated_at
+        } else {
+            old.started_at
+        };
+        if next.state == old.state {
+            next.state_since = if old.state_since == 0 {
+                old.updated_at
+            } else {
+                old.state_since
+            };
         }
         sessions[i] = next;
     } else {
         sessions.push(next);
     }
-    if let Some(sub) = event.subagent {
-        if let Some(s) = sessions.iter_mut().find(|s| s.session == session_id) {
-            match sub.op.as_str() {
-                "start" if !sub.id.is_empty() => {
-                    s.subagents.retain(|x| x.id != sub.id);
-                    s.subagents.push(Subagent {
-                        id: sub.id,
-                        kind: sub.kind,
-                        description: sub.description,
-                        started_at: now,
-                    });
-                }
-                "stop" => s.subagents.retain(|x| x.id != sub.id),
-                _ => {}
-            }
-        }
-    }
     true
 }
 
 /// Jump to a session's pane by session id, marking a `done` session read
-/// (done → idle) on the way — "done (unread)" is a blue cell until visited.
+/// (done → read) on the way — "done · unread" wears the filled disc until visited.
 ///
 /// herdr sessions aren't in our store at all: herdr owns their state, so the
 /// jump is dispatched straight from the session key it minted.
@@ -622,11 +595,12 @@ pub fn forget_session(app: &AppHandle, session_id: &str) -> CmdResult<()> {
     Ok(())
 }
 
-/// Visiting a session reads it: done → idle. Returns its pane target.
+/// Visiting a session reads it: done → read. Returns its pane target. `read`
+/// is ours alone — no adapter emits it, and any event overwrites it.
 fn mark_read(sessions: &mut [AgentSession], session_id: &str) -> Option<String> {
     let session = sessions.iter_mut().find(|s| s.session == session_id)?;
     if session.state == "done" {
-        session.state = "idle".into();
+        session.state = "read".into();
     }
     Some(session.mux_target.clone())
 }
@@ -830,16 +804,11 @@ mod tests {
     #[test]
     fn upserts_and_times_stamps() {
         let mut s = Vec::new();
-        assert!(apply(
-            &mut s,
-            event("a", "working"),
-            100,
-            DEFAULT_STALE_SECS
-        ));
+        assert!(apply(&mut s, event("a", "working"), 100));
         assert_eq!(s.len(), 1);
         assert_eq!(s[0].state, "working");
         assert_eq!(s[0].updated_at, 100);
-        assert!(apply(&mut s, event("a", "idle"), 200, DEFAULT_STALE_SECS));
+        assert!(apply(&mut s, event("a", "idle"), 200));
         assert_eq!(s.len(), 1);
         assert_eq!(s[0].state, "idle");
         assert_eq!(s[0].updated_at, 200);
@@ -848,15 +817,10 @@ mod tests {
     #[test]
     fn rejects_anonymous_events() {
         let mut s = Vec::new();
-        assert!(!apply(
-            &mut s,
-            AgentEvent::default(),
-            100,
-            DEFAULT_STALE_SECS
-        ));
+        assert!(!apply(&mut s, AgentEvent::default(), 100));
         let mut no_agent = event("a", "working");
         no_agent.agent = String::new();
-        assert!(!apply(&mut s, no_agent, 100, DEFAULT_STALE_SECS));
+        assert!(!apply(&mut s, no_agent, 100));
         assert!(s.is_empty());
     }
 
@@ -866,13 +830,13 @@ mod tests {
         let mut first = event("a", "working");
         first.title = "Fix auth".into();
         first.tmux = "%3".into();
-        apply(&mut s, first, 100, DEFAULT_STALE_SECS);
-        apply(&mut s, event("a", "idle"), 200, DEFAULT_STALE_SECS);
+        apply(&mut s, first, 100);
+        apply(&mut s, event("a", "idle"), 200);
         assert_eq!(s[0].title, "Fix auth");
         assert_eq!(s[0].mux_target, "%3");
         let mut retitled = event("a", "working");
         retitled.title = "New task".into();
-        apply(&mut s, retitled, 300, DEFAULT_STALE_SECS);
+        apply(&mut s, retitled, 300);
         assert_eq!(s[0].title, "New task");
         assert_eq!(s[0].mux_target, "%3");
     }
@@ -884,77 +848,67 @@ mod tests {
         let mut s = Vec::new();
         let mut bg = event("spare", "idle");
         bg.background = true;
-        assert!(!apply(&mut s, bg.clone(), 100, DEFAULT_STALE_SECS));
+        assert!(!apply(&mut s, bg.clone(), 100));
         bg.state = "working".into();
-        assert!(!apply(&mut s, bg, 101, DEFAULT_STALE_SECS));
+        assert!(!apply(&mut s, bg, 101));
         assert!(s.is_empty());
         // Someone drives it: the prompt surfaces it, and later events stick.
         let mut driven = event("pty", "working");
         driven.background = true;
         driven.title = "fix the build".into();
-        assert!(apply(&mut s, driven, 200, DEFAULT_STALE_SECS));
+        assert!(apply(&mut s, driven, 200));
         let mut follow = event("pty", "done");
         follow.background = true;
-        assert!(apply(&mut s, follow, 201, DEFAULT_STALE_SECS));
+        assert!(apply(&mut s, follow, 201));
         assert_eq!(s.len(), 1);
         assert_eq!(s[0].state, "done");
         assert_eq!(s[0].title, "fix the build");
     }
 
     #[test]
-    fn subagents_ride_the_session_and_clear_on_done() {
-        let mut s = Vec::new();
-        apply(&mut s, event("a", "working"), 100, DEFAULT_STALE_SECS);
-        let sub = |op: &str, id: &str| SubagentEvent {
-            op: op.into(),
-            id: id.into(),
-            kind: "Explore".into(),
-            description: "find the bar code".into(),
-        };
-        let mut start = event("a", "working");
-        start.subagent = Some(sub("start", "s1"));
-        apply(&mut s, start, 110, DEFAULT_STALE_SECS);
-        let mut start2 = event("a", "working");
-        start2.subagent = Some(sub("start", "s2"));
-        apply(&mut s, start2, 111, DEFAULT_STALE_SECS);
-        assert_eq!(s[0].subagents.len(), 2);
-        assert_eq!(s[0].subagents[0].kind, "Explore");
-        assert_eq!(s[0].subagents[0].started_at, 110);
-        // Ordinary events in between keep them.
-        apply(&mut s, event("a", "working"), 120, DEFAULT_STALE_SECS);
-        assert_eq!(s[0].subagents.len(), 2);
-        let mut stop = event("a", "working");
-        stop.subagent = Some(sub("stop", "s1"));
-        apply(&mut s, stop, 130, DEFAULT_STALE_SECS);
-        assert_eq!(s[0].subagents.len(), 1);
-        assert_eq!(s[0].subagents[0].id, "s2");
-        // The turn finishing clears whatever is left.
-        apply(&mut s, event("a", "done"), 140, DEFAULT_STALE_SECS);
-        assert!(s[0].subagents.is_empty());
-    }
-
-    #[test]
     fn ended_deletes_the_session() {
         let mut s = Vec::new();
-        apply(&mut s, event("a", "working"), 100, DEFAULT_STALE_SECS);
-        apply(&mut s, event("b", "working"), 100, DEFAULT_STALE_SECS);
-        assert!(apply(&mut s, event("a", "ended"), 200, DEFAULT_STALE_SECS));
+        apply(&mut s, event("a", "working"), 100);
+        apply(&mut s, event("b", "working"), 100);
+        assert!(apply(&mut s, event("a", "ended"), 200));
         assert_eq!(s.len(), 1);
         assert_eq!(s[0].session, "b");
     }
 
     #[test]
-    fn stale_sessions_are_pruned_on_apply() {
+    fn apply_never_prunes_by_silence() {
+        // Age is not evidence; `reap` judges liveness with the layout and the
+        // process table in hand, and an event has neither.
         let mut s = Vec::new();
-        apply(&mut s, event("old", "idle"), 100, DEFAULT_STALE_SECS);
+        apply(&mut s, event("old", "idle"), 100);
         apply(
             &mut s,
             event("new", "working"),
-            100 + DEFAULT_STALE_SECS + 1,
-            DEFAULT_STALE_SECS,
+            100 + DEFAULT_STALE_SECS * 10,
         );
-        assert_eq!(s.len(), 1);
-        assert_eq!(s[0].session, "new");
+        assert_eq!(s.len(), 2);
+    }
+
+    #[test]
+    fn turn_and_session_clocks() {
+        let mut s = Vec::new();
+        apply(&mut s, event("a", "working"), 100);
+        assert_eq!((s[0].started_at, s[0].state_since), (100, 100));
+        // Tool chatter inside the turn keeps the turn's stamp.
+        apply(&mut s, event("a", "working"), 150);
+        assert_eq!((s[0].started_at, s[0].state_since), (100, 100));
+        apply(&mut s, event("a", "done"), 200);
+        assert_eq!((s[0].started_at, s[0].state_since), (100, 200));
+        // A record from before the clocks existed reads its age off updated_at.
+        let mut legacy = vec![AgentSession {
+            session: "b".into(),
+            agent: "claude".into(),
+            state: "idle".into(),
+            updated_at: 50,
+            ..Default::default()
+        }];
+        apply(&mut legacy, event("b", "idle"), 90);
+        assert_eq!((legacy[0].started_at, legacy[0].state_since), (50, 50));
     }
 
     fn layout(panes: &[&str]) -> std::collections::HashMap<String, PaneLocation> {
@@ -1195,18 +1149,75 @@ mod tests {
     }
 
     #[test]
+    fn a_live_pane_outlives_the_prune_window() {
+        // 2026-10-28: nine agents in panes, five on the bar — the silent four
+        // had been swept by age although tmux still listed every pane.
+        let mut s = vec![paned("a", "%1")];
+        assert!(!reap(
+            &mut s,
+            &layout(&["%1"]),
+            true,
+            100 + DEFAULT_STALE_SECS * 10,
+            DEFAULT_STALE_SECS,
+            no_procs
+        ));
+        assert_eq!(s.len(), 1);
+    }
+
+    #[test]
+    fn a_live_process_outlives_the_prune_window() {
+        let mut s = vec![pidded("a", 7, Some("claude"))];
+        assert!(!reap(
+            &mut s,
+            &layout(&[]),
+            true,
+            100 + DEFAULT_STALE_SECS * 10,
+            DEFAULT_STALE_SECS,
+            |_| Some("claude".to_owned())
+        ));
+        assert_eq!(s.len(), 1);
+        // ...and a dead one is gone however recent the last event.
+        let mut s = vec![pidded("a", 7, Some("claude"))];
+        assert!(reap(
+            &mut s,
+            &layout(&[]),
+            true,
+            101,
+            DEFAULT_STALE_SECS,
+            no_procs
+        ));
+        assert!(s.is_empty());
+    }
+
+    #[test]
+    fn an_unverifiable_pane_holder_still_hits_the_prune_window() {
+        // Ignorance keeps a session, but not forever: with tmux unreachable the
+        // bulk sweep is the only thing left to stop the bar filling with ghosts.
+        let mut s = vec![paned("a", "%1")];
+        assert!(reap(
+            &mut s,
+            &layout(&[]),
+            false,
+            100 + DEFAULT_STALE_SECS + 1,
+            DEFAULT_STALE_SECS,
+            no_procs
+        ));
+        assert!(s.is_empty());
+    }
+
+    #[test]
     fn pid_survives_events_that_omit_it_and_resets_the_comm_when_it_moves() {
         let mut s = Vec::new();
         let mut first = event("a", "working");
         first.pid = Some(11);
-        apply(&mut s, first, 100, DEFAULT_STALE_SECS);
+        apply(&mut s, first, 100);
         s[0].pid_comm = Some("claude".into());
-        apply(&mut s, event("a", "idle"), 200, DEFAULT_STALE_SECS);
+        apply(&mut s, event("a", "idle"), 200);
         assert_eq!(s[0].pid, Some(11));
         assert_eq!(s[0].pid_comm.as_deref(), Some("claude"));
         let mut moved = event("a", "working");
         moved.pid = Some(22);
-        apply(&mut s, moved, 300, DEFAULT_STALE_SECS);
+        apply(&mut s, moved, 300);
         assert_eq!(s[0].pid, Some(22));
         assert_eq!(s[0].pid_comm, None, "a new pid re-earns its fingerprint");
     }
@@ -1261,11 +1272,11 @@ bad
         let mut s = Vec::new();
         let mut done = event("a", "done");
         done.tmux = "%3".into();
-        apply(&mut s, done, 100, DEFAULT_STALE_SECS);
+        apply(&mut s, done, 100);
         assert_eq!(mark_read(&mut s, "a"), Some("%3".into()));
-        assert_eq!(s[0].state, "idle");
+        assert_eq!(s[0].state, "read");
         // Non-done states are untouched by a visit.
-        apply(&mut s, event("a", "working"), 200, DEFAULT_STALE_SECS);
+        apply(&mut s, event("a", "working"), 200);
         mark_read(&mut s, "a");
         assert_eq!(s[0].state, "working");
         assert_eq!(mark_read(&mut s, "missing"), None);

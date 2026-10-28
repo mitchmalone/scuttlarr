@@ -109,13 +109,16 @@ export type {
   UsagePace,
   UsageReport,
 } from './components/usage'
+export { AgentStateIcon } from './bar/agent-icons'
 export {
-  AGENT_GLYPHS,
   AGENT_STATE_LABELS,
   BAR_STRIP_HEIGHT,
   agentAge,
-  agentGlyph,
+  agentCrumbs,
+  agentDoing,
+  agentDuration,
   agentLocation,
+  agentMeta,
   agentStateLabel,
   wifiBars,
   wifiSignalLabel,

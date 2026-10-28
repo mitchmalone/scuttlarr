@@ -22,10 +22,12 @@ import {
   windowPace,
   worstPace,
 } from '../components/usage'
+import { AgentStateIcon } from './agent-icons'
 import {
   agentAge,
-  agentGlyph,
-  agentLocation,
+  agentCrumbs,
+  agentDoing,
+  agentMeta,
   agentStateLabel,
   batteryLook,
   batteryState,
@@ -277,17 +279,18 @@ export const BarClock = ({ children }: { children: ReactNode }) => (
 )
 
 /**
- * Agent session cells: one glyph per session, boxed by tmux session and ordered
- * by tab. Agents outside tmux share one dashed box — same shape, different
- * texture, so "no pane" reads as a place rather than as a stuck cell.
- * Hovering opens a dropdown card with the agent's task, state and tmux
- * location; clicking jumps to the pane (and marks a done session read).
+ * Agent session cells: one shape per session (`AgentStateIcon`), boxed by tmux
+ * session and ordered by tab. Agents outside tmux share one dashed box — same
+ * shape, different texture, so "no pane" reads as a place rather than as a
+ * stuck cell. Hovering opens a dropdown card that answers, in order: what
+ * state, what is it doing, where is it; clicking jumps to the pane (and marks
+ * a done session read).
  */
 export function BarAgents({
   agents,
   now,
   hover,
-  cardHeight = 130,
+  cardHeight = 150,
   onJump,
 }: {
   agents: AgentSession[]
@@ -314,12 +317,11 @@ export function BarAgents({
       onMouseEnter={() => hover.enter(`agent:${a.session}`, cardHeight)}
       onClick={() => onJump?.(a.session)}
     >
-      {agentGlyph(a.state)}
-      {a.subagents.length > 0 && (
-        <span className="bar-agent-subs">{a.subagents.length}</span>
-      )}
+      <AgentStateIcon state={a.state} />
     </button>
   )
+  const nowSecs = Math.floor(now.getTime() / 1000)
+  const doing = hovered ? agentDoing(hovered.state, hovered.detail) : null
 
   return (
     <div
@@ -339,25 +341,55 @@ export function BarAgents({
       )}
       {hovered && (
         <BarCard variant="agent" cardRef={hover.cardRef}>
-          <BarCardTitle>{hovered.title || hovered.agent}</BarCardTitle>
-          <BarCardLine className={`bar-agent-${hovered.state}`}>
-            {agentGlyph(hovered.state)} {agentStateLabel(hovered.state)} ·{' '}
-            {agentAge(hovered.updatedAt, now)} ago
-          </BarCardLine>
-          {hovered.detail && <BarCardDim>{hovered.detail}</BarCardDim>}
-          <BarCardDim>{agentLocation(hovered)}</BarCardDim>
-          {hovered.subagents.length > 0 && (
-            <div className="bar-card-subagents">
-              {hovered.subagents.map((sub) => (
-                <BarCardDim key={sub.id}>
-                  ⑂ {sub.kind}
-                  {sub.description && ` · ${sub.description}`} ·{' '}
-                  {agentAge(sub.startedAt, now)}
-                </BarCardDim>
-              ))}
+          <div className={`bar-agent-rule bar-agent-${hovered.state}`} />
+          <div className="bar-agent-head">
+            <div className={`bar-agent-swatch bar-agent-${hovered.state}`}>
+              <AgentStateIcon state={hovered.state} size={20} />
+            </div>
+            <div className="bar-agent-headtext">
+              <div className="bar-agent-stateline">
+                <span className={`bar-agent-state bar-agent-${hovered.state}`}>
+                  {agentStateLabel(hovered.state)}
+                </span>
+                <span className="bar-agent-age">
+                  {agentAge(hovered.updatedAt, now)}
+                </span>
+              </div>
+              <div className="bar-agent-title">
+                {hovered.title || hovered.agent}
+              </div>
+            </div>
+          </div>
+          {doing && (
+            <div className="bar-agent-doing">
+              {doing.icon && (
+                <DynamicIcon name={doing.icon as IconName} {...ICON_PROPS} />
+              )}
+              {doing.verb && (
+                <span className="bar-agent-verb">{doing.verb}</span>
+              )}
+              {doing.object && (
+                <span className="bar-agent-object">{doing.object}</span>
+              )}
             </div>
           )}
-          <BarCardHint>click cell to jump</BarCardHint>
+          <div className="bar-agent-crumbs">
+            {agentCrumbs(hovered).map((crumb, i) => (
+              <span key={`${i}-${crumb}`} className="bar-agent-crumb">
+                {crumb}
+              </span>
+            ))}
+          </div>
+          <div className="bar-agent-meta">
+            {agentMeta(hovered, nowSecs).map((m) => (
+              <span key={m}>{m}</span>
+            ))}
+          </div>
+          <BarCardHint>
+            {hovered.state === 'done'
+              ? 'click to jump · marks read'
+              : 'click to jump'}
+          </BarCardHint>
         </BarCard>
       )}
     </div>

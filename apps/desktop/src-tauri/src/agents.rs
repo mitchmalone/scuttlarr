@@ -471,14 +471,19 @@ fn apply(sessions: &mut Vec<AgentSession>, event: AgentEvent, now: u64) -> bool 
         return true;
     }
     let previous = sessions.iter().position(|s| s.session == event.session);
-    if previous.is_none() && event.background && event.title.is_empty() {
+    let title = if is_machine_title(&event.title) {
+        String::new()
+    } else {
+        event.title
+    };
+    if previous.is_none() && event.background && title.is_empty() {
         return false;
     }
     let mut next = AgentSession {
         session: event.session,
         agent: event.agent,
         state: event.state,
-        title: event.title,
+        title,
         detail: event.detail,
         mux: if event.tmux.is_empty() {
             String::new()
@@ -750,6 +755,34 @@ fn load(path: &std::path::Path) -> std::io::Result<Vec<AgentSession>> {
     }
 }
 
+/// A title the agent's harness wrote rather than the user: Claude Code hands
+/// task notifications, cross-session and subagent hand-back messages to the
+/// prompt hook wrapped in an XML-ish tag (`<task-notification>`,
+/// `<agent-message from="...">`, `<<autonomous-loop>>`). The hook already drops
+/// these; the store drops them too so an older hook, or another adapter, can
+/// never make a cell read like a template. A dropped title inherits the last
+/// real one.
+fn is_machine_title(title: &str) -> bool {
+    let body = title.trim_start_matches('<');
+    if body.len() == title.len() || title.len() - body.len() > 2 {
+        return false;
+    }
+    let mut chars = body.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !first.is_ascii_lowercase() {
+        return false;
+    }
+    for c in chars {
+        if c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || c == '_' {
+            continue;
+        }
+        return c == '>' || c.is_whitespace();
+    }
+    false
+}
+
 /// Fix up what a state file may contain: records written before `mux` existed
 /// carry a pane id and no kind (back then there was only one multiplexer it
 /// could have been), and any herdr record is a leftover from a build that
@@ -762,6 +795,9 @@ fn adopt_stored(sessions: Vec<AgentSession>) -> Vec<AgentSession> {
         .map(|mut s| {
             if s.mux.is_empty() && !s.mux_target.is_empty() {
                 s.mux = MUX_TMUX.to_owned();
+            }
+            if is_machine_title(&s.title) {
+                s.title.clear();
             }
             s
         })
@@ -839,6 +875,49 @@ mod tests {
         apply(&mut s, retitled, 300);
         assert_eq!(s[0].title, "New task");
         assert_eq!(s[0].mux_target, "%3");
+    }
+
+    #[test]
+    fn harness_written_prompts_never_become_titles() {
+        for t in [
+            "<task-notification> <task-id>bngwbk323</task-id>",
+            "<agent-message from=\"a12bc\"> [Subagent hand-back]",
+            "<cross-session-message from=\"uds:/tmp/x.sock\" from-name=\"Testing\"",
+            "<<autonomous-loop-dynamic>>",
+            "<system-reminder>",
+        ] {
+            assert!(is_machine_title(t), "{t}");
+        }
+        for t in [
+            "Fix auth",
+            "<3 this",
+            "< 5 items",
+            "<T> generics",
+            "a <b>",
+            "",
+        ] {
+            assert!(!is_machine_title(t), "{t}");
+        }
+        let mut s = Vec::new();
+        let mut first = event("a", "working");
+        first.title = "Fix auth".into();
+        apply(&mut s, first, 100);
+        let mut notified = event("a", "working");
+        notified.title = "<task-notification> <task-id>x</task-id>".into();
+        apply(&mut s, notified, 200);
+        assert_eq!(s[0].title, "Fix auth");
+        // A new session whose first prompt is the harness's gets no title at
+        // all rather than a tag; and a stored tag is scrubbed on load.
+        let mut fresh = event("b", "working");
+        fresh.title = "<agent-message from=\"z\"> hi".into();
+        apply(&mut s, fresh, 300);
+        assert_eq!(s[1].title, "");
+        let stored = adopt_stored(vec![AgentSession {
+            session: "c".into(),
+            title: "<cross-session-message from=\"q\">".into(),
+            ..Default::default()
+        }]);
+        assert_eq!(stored[0].title, "");
     }
 
     #[test]

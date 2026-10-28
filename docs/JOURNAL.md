@@ -6,6 +6,18 @@
 
 ---
 
+### 2026-10-28 · A prompt hook hears the harness too
+
+Agent cells read like templates — `<task-notification> <task-id>…`,
+`<agent-message from="…">`, `<cross-session-message …>` — because Claude Code delivers
+task notifications, cross-session mail and subagent hand-backs through
+`UserPromptSubmit`, the same event the hook mines for the title. The tell is the leading
+XML-ish tag: a lowercase name, then whitespace or `>`. The hook now blanks those
+(`human_prompt`), so the cell inherits the user's last real words; `agents.rs` applies
+the same rule in `apply` and scrubs stored titles on load, so an older hook or another
+adapter cannot reintroduce them. A session whose first prompt is machine-written has no
+title and shows its id prefix, which is honest; a tag was not.
+
 ### 2026-10-28 · The site legend imported the TUI barrel
 
 `apps/www` `page.tsx` is a Server Component. After the agent-dots change it

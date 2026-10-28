@@ -119,7 +119,7 @@ Agents, usage, plugins:
 - Settings → Agents shows both Claude accounts registered; a Claude turn paints a cell.
 - Usage limits against claude.ai/settings/usage for both accounts; the Codex tile
   includes beebee's sessions (mirror plugin).
-- Agent dots (2026-10-28): all nine tmux agents on the bar after their next hook event
+- Agent dots (2026-10-28): titles no longer read as `<task-notification>` tags (fixed same day, JOURNAL); all nine tmux agents on the bar after their next hook event
   (the four silent psyke/gogogo sessions were pruned before the fix); working ring spins,
   attention ring breathes in `warn`, done disc, read check after a jump, idle moon; the
   card's doing line reads `editing format.ts` not `PostToolUse · Edit` (needs the

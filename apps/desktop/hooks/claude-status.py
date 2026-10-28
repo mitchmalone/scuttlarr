@@ -21,6 +21,7 @@ launch, but only ones it recognises.
 
 import json
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -127,6 +128,18 @@ def tool_object(tool: str, tool_input) -> str:
     return ""
 
 
+def human_prompt(prompt: str) -> str:
+    """The prompt as a title, or blank when Claude Code wrote it rather than the
+    user: task notifications, cross-session and subagent hand-back messages
+    arrive on UserPromptSubmit wrapped in an XML-ish tag (`<task-notification>`,
+    `<agent-message from=...>`, `<<autonomous-loop>>`). A blank title inherits
+    the last real one in the store (agents.rs), so a cell keeps the user's
+    words rather than a tag."""
+    if re.match(r"<<?[a-z][a-z0-9_-]*(\s|>)", prompt):
+        return ""
+    return prompt
+
+
 def describe(event: str, tool: str, tool_input, message: str) -> str:
     """The card's "doing" line, as `Tool object`: `Edit format.ts`,
     `Bash pnpm verify`, `permission Bash scripts/release.sh`, or the
@@ -209,7 +222,7 @@ def main() -> None:
     if event == "SessionEnd" and str(payload.get("reason") or "") == "clear":
         return
     session = str(payload.get("session_id") or "claude-unknown")
-    prompt = str(payload.get("prompt") or "").replace("\n", " ").strip()
+    prompt = human_prompt(str(payload.get("prompt") or "").replace("\n", " ").strip())
     tool = str(payload.get("tool_name") or "").strip()
     message = (
         str(payload.get("message") or payload.get("notification_type") or "")

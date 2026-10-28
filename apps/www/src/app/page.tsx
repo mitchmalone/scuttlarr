@@ -1,4 +1,5 @@
-import { AgentStateIcon, agentStateLabel } from '@scuttlarr/tui'
+import { agentStateLabel } from '@scuttlarr/tui/bar'
+import { AgentStateIcon } from '@scuttlarr/tui/bar/agent-icons'
 import { GithubIcon, XIcon } from '@scuttlarr/tui/icons'
 import {
   AppWindow,

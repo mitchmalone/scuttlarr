@@ -8,6 +8,12 @@
  * classes in bar.css (`bar-agent-<state>`) colour it and the theme retints it.
  * Only two shapes move: the working ring spins, the attention ring breathes;
  * both animations live in bar.css and stop under Reduce Motion.
+ *
+ * Reachable as `@scuttlarr/tui/bar/agent-icons` as well as through the barrel.
+ * That entry point is load-bearing: the site's server component imports the
+ * glyph directly. Going through `.` drags in hook-using modules (`hooks.ts`,
+ * `controls.tsx`, `ask.tsx`) and fails the Next build. Keep this file free of
+ * hooks.
  */
 export function AgentStateIcon({
   state,

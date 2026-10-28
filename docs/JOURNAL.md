@@ -18,6 +18,17 @@ the same rule in `apply` and scrubs stored titles on load, so an older hook or a
 adapter cannot reintroduce them. A session whose first prompt is machine-written has no
 title and shows its id prefix, which is honest; a tag was not.
 
+### 2026-10-28 · The site legend imported the TUI barrel
+
+`apps/www` `page.tsx` is a Server Component. After the agent-dots change it
+imported `AgentStateIcon` and `agentStateLabel` from `@scuttlarr/tui`. The
+barrel re-exports `hooks.ts`, `controls.tsx` and `ask.tsx`, so Turbopack's
+`next build` refused the graph — the same failure as 2026-08-16, a different
+module. The error names the hook files, not the glyph. `agentStateLabel`
+already lives on `./bar` (no React). `AgentStateIcon` is hook-free SVG, so it
+gained `./bar/agent-icons`, the same shape as `./icons`. That file has to stay
+free of hooks.
+
 ### 2026-10-28 · A bulk prune that runs before the liveness checks is a liveness check
 
 Nine Claude sessions in tmux panes, five cells on the bar. `reap()` opened with the
